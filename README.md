@@ -1,8 +1,8 @@
-> ## Courseware Monitoring System
->
->
-> CoursewareMS / COURSEDESK is developed for the purpose of efficiency of submission of coursewares.
->
+## Courseware Monitoring System
+
+
+CoursewareMS / COURSEDESK is developed for the purpose of efficiency of submission of coursewares.
+
 
 **Developed by:**
 
