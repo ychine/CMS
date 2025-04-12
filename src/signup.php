@@ -8,12 +8,31 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
 </head>
 <body>
      <div class="container">
             <img src="./img/COURSEDOCK.svg"><br>
-            <div class="cmstitle">Courseware Monitoring System</div>
+            <div class="cmstitle">Courseware Monitoring System</div><br><br>
+            <div class="signintitle">Sign In</div>
+            <br>
+            <div class="signinbox">
+                <div class="tfieldname">Username</div>
+                <div class="tf">
+                    <input type="text" id="usernamelogin">
+                </div>
+
+                <div class="fieldrow">
+                    <div class="tfieldname">Password</div>
+                    <div class="forgotpass"><a href="#">Forgot password?</a></div>
+                </div>
+                <div class="tf">
+                    <input type="password" id="passwordlogin">
+                </div>
+            </div>
      </div>
     
 </body>
