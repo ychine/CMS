@@ -1,0 +1,37 @@
+body {
+    background-image: radial-gradient(ellipse at bottom,#304589,  #161E3A, #09112B, #020A27);
+    width: 100vw;
+    height: 100vh;
+    margin: 0; 
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 50px; 
+}
+
+.container img,
+.cmstitle {
+    width: 15%;
+    position: static; 
+    text-align: center;
+    
+}
+
+.cmstitle {
+    font-family: "Onest", sans-serif;
+    font-weight: 400;
+    font-size: clamp(0.4rem, 0.8vw, 0.9rem);
+    color: #E3E3E3;
+    margin-top: -10px;
+}
+
+
+.onest-regular {
+    font-family: "Onest", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+  }
