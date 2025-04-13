@@ -3,7 +3,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
-    background-image: radial-gradient(circle at bottom, #304589, #161E3A, #09112B, #020A27);
+    background-image: radial-gradient(circle at 50% 53%, #304589, #161E3A, #09112B);
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -37,7 +37,7 @@ body {
 
 .footer hr {
     border: none;
-    border-top: 0.2px solid #284BA3; 
+    border-top: 0.2px solid #314f9b; 
     margin: 10px auto;
     width: 80%;
 }
@@ -49,7 +49,7 @@ body {
     text-align: center;
     font-family: "Overpass", sans-serif;
     font-weight: 200;
-    font-size: 10px;
+    font-size: 12px;
     color: rgb(168, 168, 168);
     padding: 10px 0;
   
@@ -73,12 +73,9 @@ body {
 @keyframes fadeIn {
     from {
       opacity: 0;
-     
-     
     }
     to {
       opacity: 1;
-
     }
   }
 
@@ -95,7 +92,7 @@ body {
 }
 
 .signinbox {
-    
+    box-shadow: 0 0 20px 2px #304374;
     padding: 0.1rem;
     border-radius: 10px;
     background-color: #1D387B;
@@ -204,20 +201,22 @@ body {
 }
 
 .btnlogin {
+    border: 0.2px solid transparent;
     font-family: "Onest", sans-serif;
     font-weight: 500;
     color: white;
     border-radius: 5px;
-    border: 0;
     background-color: #51D55A;
     justify-content: center;
     align-items: center;
     width: 86%;
     padding: 10px;
+    margin-bottom: 10px;
 }
 
 .btnlogin:hover {
-
+    background-color: #3d9743;
+    border: 0.2px solid #51D55A;
 }
 
 .onest-regular {
