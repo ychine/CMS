@@ -44,13 +44,14 @@
   .form-box {
     background-color: #1d387b;
     border-radius: 12px;
-    padding: 35px;
+    padding: 25px;
     display: flex;
-    gap: 30px;
-    width: 90%;
-    max-width: 1000px;
+    gap: 20px;
+    width: 80%;
+    max-width: 900px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   }
+  
 
   .form-section {
     flex: 1;
