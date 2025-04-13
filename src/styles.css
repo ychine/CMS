@@ -1,11 +1,23 @@
 body {
-    background-image: radial-gradient(ellipse at bottom,#304589,  #161E3A, #09112B, #020A27);
+    
+    background-image: radial-gradient(circle at center, #304589, #161E3A, #09112B, #020A27);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    
     width: 100vw;
     height: 100vh;
     margin: 0; 
 }
 
+.fade-in {
+    animation: fadeIn 2s ease-in-out;
+    animation-fill-mode: both;
+}
+
 .container {
+    animation: fadeIn 3s ease-in-out;
+    animation-fill-mode: both;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -24,42 +36,82 @@ body {
     width: clamp(300px, 15%, 15%);
 }
 
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+     
+     
+    }
+    to {
+      opacity: 1;
+
+    }
+  }
+
+
 .cmstitle {
+    animation-fill-mode: both;
+    animation: fadeIn 4s ease-in-out;
     font-family: "Onest", sans-serif;
     font-weight: 400;
-    font-size: clamp(0.4rem, 0.8vw, 0.9rem);
+    font-size: clamp(12px, 0.8vw, 0.9rem);
     color: #E3E3E3;
     margin-top: -10px;
+    width: 100%;
 }
 
 .signinbox {
+    
     padding: 0.1rem;
     border-radius: 10px;
     background-color: #1D387B;
     width: clamp(300px, 30vw, 300px);
     height: auto;
-    min-height: 250px;
+    border: 0.5px solid #3d74ff;
+
 }
 
 .signintitle {
     color: #E3E3E3;
-    font-size: clamp(1rem, 2vw, 2.5rem);
+    font-size: clamp(25px, 2vw, 2.5rem);
     font-family: "Overpass", sans-serif;
     font-weight: 600;
-
+    width: 100%;
 }
 
 .tfieldname {
     margin-left: 22px;
     margin-right: 22px;
     text-align: left;
-    font-size: 12px;
     font-family: "Onest", sans-serif;
     font-weight: 500;
     color: #E3E3E3;
     margin-bottom: 5px;  
     margin-top: 15px;  
-    font-size: clamp(12px, 14px, 14px);
+    font-size: clamp(12px, 1.5vw, 12px);
+}
+
+.new-user-line {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-family: "Onest", sans-serif;
+    font-size: clamp(12px, 1.5vw, 12px);
+    color: #E3E3E3;
+    padding-bottom: 8px;
+}
+
+.new-user-line .reglink a {
+    color: #51D55A;
+    text-decoration: none;
+    font-weight: 500;
+   
+}
+
+.new-user-line .reglink a:hover {
+    text-decoration: underline;
 }
 
 .fieldrow {
@@ -85,7 +137,7 @@ body {
     font-weight: 300;
     color: #51D55A;
     text-decoration: none;
-    font-size: 12px;
+    font-size: clamp(12px, 1.5vw, 12px);
 }
 
 .forgotpass a:hover {

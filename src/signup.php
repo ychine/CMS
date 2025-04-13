@@ -15,7 +15,8 @@
 </head>
 <body>
      <div class="container">
-            <img src="./img/COURSEDOCK.svg"><br>
+            <img src="./img/COURSEDOCK.svg" class="fade-in"><br>
+     
             <div class="cmstitle">Courseware Monitoring System</div><br><br>
             <div class="signintitle">Sign In</div>
             <br>
@@ -34,12 +35,22 @@
                 
                 <br><br>
                 <button class="btnlogin" onclick="">Login</button>
+                <br>
                 </div>
+            </div>
+            <br>
+            <div class="signinbox">
+                <div class="new-user-line">
+                    <span class="newt">New to CourseDock?</span>
+                    <span class="reglink"><a href="#">Register here.</a></span>
+                  
+                </div>
+                
             </div>
      </div>
 
 
-     
+
     
 </body>
 </html>
