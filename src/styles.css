@@ -1,14 +1,15 @@
 body {
-    
-    background-image: radial-gradient(circle at center, #304589, #161E3A, #09112B, #020A27);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    background-image: radial-gradient(circle at bottom, #304589, #161E3A, #09112B, #020A27);
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    
-    width: 100vw;
-    height: 100vh;
-    margin: 0; 
+    transition: background-image 2s ease-in-out;
 }
+
 
 .fade-in {
     animation: fadeIn 2s ease-in-out;
@@ -16,20 +17,53 @@ body {
 }
 
 .container {
-    animation: fadeIn 3s ease-in-out;
-    animation-fill-mode: both;
+    flex: 1; 
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 50px; 
+    justify-content: center; 
+    animation: fadeIn 3s ease-in-out;
+    animation-fill-mode: both;
 }
 
 .container img, .signintitle,
 .cmstitle, .signinbox {
+    transform: translateY(-80px);
     width: 15%;
     position: static; 
     text-align: center;
     
+}
+
+.footer hr {
+    border: none;
+    border-top: 0.2px solid #284BA3; 
+    margin: 10px auto;
+    width: 80%;
+}
+
+.footer {
+    position: fixed;
+    bottom: 40px;
+   
+    text-align: center;
+    font-family: "Overpass", sans-serif;
+    font-weight: 200;
+    font-size: 10px;
+    color: rgb(168, 168, 168);
+    padding: 10px 0;
+  
+}
+
+
+.footer a {
+    color: rgb(168, 168, 168);
+    margin: 0 5px; 
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
 }
 
 .container img {
@@ -51,7 +85,7 @@ body {
 
 .cmstitle {
     animation-fill-mode: both;
-    animation: fadeIn 4s ease-in-out;
+    animation: fadeIn 2s ease-in-out;
     font-family: "Onest", sans-serif;
     font-weight: 400;
     font-size: clamp(12px, 0.8vw, 0.9rem);
@@ -73,7 +107,7 @@ body {
 
 .signintitle {
     color: #E3E3E3;
-    font-size: clamp(25px, 2vw, 2.5rem);
+    font-size: clamp(20px, 0.5vw, 0.5rem);
     font-family: "Overpass", sans-serif;
     font-weight: 600;
     width: 100%;
@@ -164,14 +198,26 @@ body {
     font-family: "Onest", sans-serif;
 }
 
+.tf input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #51D55A; 
+}
+
 .btnlogin {
+    font-family: "Onest", sans-serif;
+    font-weight: 500;
+    color: white;
     border-radius: 5px;
     border: 0;
     background-color: #51D55A;
     justify-content: center;
     align-items: center;
-    width: 85%;
+    width: 86%;
     padding: 10px;
+}
+
+.btnlogin:hover {
+
 }
 
 .onest-regular {

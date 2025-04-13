@@ -14,14 +14,15 @@
 
 </head>
 <body>
+    
      <div class="container">
             <img src="./img/COURSEDOCK.svg" class="fade-in"><br>
      
-            <div class="cmstitle">Courseware Monitoring System</div><br><br>
+            <div class="cmstitle">Courseware Monitoring System</div><br><br><br><br>
             <div class="signintitle">Sign In</div>
             <br>
             <div class="signinbox">
-                <div class="tfieldname">Username</div>
+                <div class="tfieldname">Username or email address</div>
                 <div class="tf">
                     <input type="text" id="usernamelogin">
                 </div>
@@ -43,11 +44,20 @@
                 <div class="new-user-line">
                     <span class="newt">New to CourseDock?</span>
                     <span class="reglink"><a href="#">Register here.</a></span>
-                  
                 </div>
+            </div>
+            <div class="footer">
+               
+            <hr><br>
+                © 2025 PLP - TeamOG1E. All rights reserved.
                 
+                <a href="#">About CourseDock</a>
+                <a href="#">Contact our Support</a>
+
             </div>
      </div>
+    
+    
 
 
 
