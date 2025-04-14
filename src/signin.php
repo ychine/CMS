@@ -45,7 +45,7 @@
             <div class="signinbox">
                 <div class="new-user-line">
                     <span class="newt">New to CourseDock?</span>
-                    <span class="reglink"><a href="#">Register here.</a></span>
+                    <span class="reglink"><a href="src/regform.php">Register here.</a></span>
                 </div>
             </div>
             <div class="footer">
