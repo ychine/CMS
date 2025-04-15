@@ -29,12 +29,11 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center; 
-    animation: fadeIn 3s ease-in-out;
-    animation-fill-mode: both;
+  
 }
 
-.container img, .signintitle,
-.cmstitle, .signinbox {
+.signintitle,
+.signinbox {
     transform: translateY(-80px);
     width: 15%;
     position: static; 
@@ -279,4 +278,36 @@ body {
 .signinbox .subtext {
     margin-left: 20px;
     text-align: left;
+}
+
+
+.header {
+    position: fixed;
+    top: 120px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 10;
+}
+
+.header img {
+    width: clamp(200px, 15%, 300px);
+    animation: fadeIn 2s ease-in-out;
+}
+
+.cmstitle {
+    animation: fadeIn 2s ease-in-out;
+    font-family: "Onest", sans-serif;
+    font-weight: 400;
+    font-size: clamp(12px, 0.8vw, 0.9rem);
+    color: #E3E3E3;
+    margin-top: 5px;
+}
+
+.container {
+    padding-top: 180px; 
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }

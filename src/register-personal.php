@@ -16,29 +16,29 @@
 
 </head>
 <body>
+
     <div class="header">
         <img src="../img/COURSEDOCK.svg" class="fade-in">
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-
      <div class="container">
-          
 
+               
                 
-                <div class="signinbox" id="signupStep1">
 
+                <div class="signinbox" id="signupStep2">
                     
-                    <h3>Sign-up</h3>
-                    <p class="subtext">Create your username and password.</p>
+                    <h3>Personal Information</h3>
+                    <p class="subtext">Create a profile and put information.</p>
                     
-
                     <div class="tfieldname">Create your username</div> 
                     
                         <div class="tf">
                             <input type="text" placeholder="">
                         </div>
                         
+                    
                     <div class="tfieldname">Password</div> 
                     
                         <div class="tf">
@@ -52,13 +52,13 @@
                         </div>
 
                     <br>
-                    <button class="btnlogin" style="width: 85%;" onclick="document.location='./register-personal.php'">Proceed to Personal Information ➜</button>
+                
 
                     <br> <br>
 
                 </div>
+           
 
-                
             <br><br>
     
             <div class="footer">
@@ -73,6 +73,7 @@
     </div>
 
      
+
     
 </body>
 </html>
