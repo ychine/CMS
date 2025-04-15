@@ -1,3 +1,11 @@
+.trylang {
+    color: #51D55A;
+    font-size: 16px;
+    font-family: "Onest", sans-serif;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
 body {
     display: flex;
     flex-direction: column;
@@ -9,7 +17,6 @@ body {
     background-attachment: fixed;
     transition: background-image 2s ease-in-out;
 }
-
 
 .fade-in {
     animation: fadeIn 2s ease-in-out;
@@ -34,6 +41,7 @@ body {
     text-align: center;
     
 }
+
 
 .footer hr {
     border: none;
@@ -91,6 +99,7 @@ body {
     width: 100%;
 }
 
+.signupbox2,
 .signinbox {
     box-shadow: 0 0 20px 2px #304374;
     padding: 0.1rem;
@@ -215,6 +224,7 @@ body {
 }
 
 .btnlogin:hover {
+    cursor: pointer;
     background-color: #3d9743;
     border: 0.2px solid #51D55A;
 }
@@ -233,7 +243,7 @@ body {
     font-style: normal;
 }
 
-.onest-medium {
+.onest-light {
     font-family: "Onest", sans-serif;
     font-optical-sizing: auto;
     font-weight: 300;
@@ -245,4 +255,28 @@ body {
     font-optical-sizing: auto;
     font-weight: 600;
     font-style: normal;
+}
+
+.signupbox2 h3,
+.signinbox h3 {
+    font-family: "Overpass", sans-serif;
+    color: #E3E3E3;
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+.signupbox2 .subtext,  
+.signinbox .subtext {
+    font-family: "Onest", sans-serif;
+    font-size: 13px;
+    color: #67e78c;
+    margin-bottom: 20px;
+  }
+
+.signupbox2 h3,
+.signupbox2 .subtext,
+.signinbox h3,
+.signinbox .subtext {
+    margin-left: 20px;
+    text-align: left;
 }
