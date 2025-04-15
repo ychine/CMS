@@ -16,38 +16,46 @@
 
 </head>
 <body>
-    
+
+    <div class="header">
+        <img src="./img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
+
      <div class="container">
-            <img src="./img/COURSEDOCK.svg" class="fade-in"><br>
-     
-            <div class="cmstitle">Courseware Monitoring System</div><br><br><br><br>
+          
+
             <div class="signintitle">Sign In</div>
             <br>
-            <div class="signinbox">
-                <div class="tfieldname">Username or email address</div>
-                <div class="tf">
-                    <input type="text" id="usernamelogin">
-                </div>
+            <form>
+                <div class="signinbox">
+                    <div class="tfieldname">Username or email address</div>
+                    <div class="tf">
+                        <input type="text" id="usernamelogin">
+                    </div>
 
-                <div class="fieldrow">
-                    <div class="tfieldname">Password</div>
-                    <div class="forgotpass"><a href="src/resetpass.php">Forgot password?</a></div>
+                    <div class="fieldrow">
+                        <div class="tfieldname">Password</div>
+                        <div class="forgotpass"><a href="src/resetpass.php">Forgot password?</a></div>
+                    </div>
+                    <div class="tf">
+                        <input type="password" id="passwordlogin">
+                    
+                    <br><br>
+                    <button class="btnlogin" onclick="">Login</button>
+                    <br>
+                    </div>
                 </div>
-                <div class="tf">
-                    <input type="password" id="passwordlogin">
-                
-                <br><br>
-                <button class="btnlogin" onclick="">Login</button>
-                <br>
-                </div>
-            </div>
+            </form>
+            
             <br>
             <div class="signinbox">
                 <div class="new-user-line">
                     <span class="newt">New to CourseDock?</span>
-                    <span class="reglink"><a href="src/regform.php">Register here.</a></span>
+                    <span class="reglink"><a href="./src/register.php">Register here.</a></span>
                 </div>
             </div>
+            
             <div class="footer">
                
             <hr><br>
