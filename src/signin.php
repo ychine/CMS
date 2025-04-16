@@ -16,15 +16,11 @@
 
 </head>
 <body>
-
-    <div class="header">
-        <img src="./img/COURSEDOCK.svg" class="fade-in">
-        <div class="cmstitle">Courseware Monitoring System</div>
-    </div>
-
+    
      <div class="container">
-          
-
+            <img src="./img/COURSEDOCK.svg" class="fade-in"><br>
+     
+            <div class="cmstitle">Courseware Monitoring System</div><br><br><br><br>
             <div class="signintitle">Sign In</div>
             <br>
             <form>

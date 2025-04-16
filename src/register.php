@@ -16,16 +16,17 @@
 
 </head>
 <body>
-    <div class="header">
-        <img src="../img/COURSEDOCK.svg" class="fade-in">
-        <div class="cmstitle">Courseware Monitoring System</div>
-    </div>
-
 
      <div class="container">
+            <img src="../img/COURSEDOCK.svg" class="fade-in"><br>
+     
+            <div class="cmstitle">Courseware Monitoring System</div><br><br><br><br>
+           
           
+            <br>
 
-                
+                <shape class="regbar"></shape>
+
                 <div class="signinbox" id="signupStep1">
 
                     
@@ -39,6 +40,7 @@
                             <input type="text" placeholder="">
                         </div>
                         
+                    
                     <div class="tfieldname">Password</div> 
                     
                         <div class="tf">
@@ -52,13 +54,45 @@
                         </div>
 
                     <br>
-                    <button class="btnlogin" style="width: 85%;" onclick="document.location='./register-personal.php'">Proceed to Personal Information ➜</button>
+                    <button class="btnlogin" style="width: 85%;" id="toStep2">Proceed to Personal Information ➜</button>
 
                     <br> <br>
 
                 </div>
 
+                <div class="signupbox2" id="signupStep2" style="display: none;">
+                    
+                    <h3>Personal Information</h3>
+                    <p class="subtext">Create a profile and put information.</p>
+                    
+
+                    <div class="tfieldname">Create your username</div> 
+                    
+                        <div class="tf">
+                            <input type="text" placeholder="">
+                        </div>
+                        
+                    
+                    <div class="tfieldname">Password</div> 
+                    
+                        <div class="tf">
+                            <input type="password" placeholder="**********">
+                        </div>
+
+                    <div class="tfieldname">Confirm Password</div> 
+                    
+                        <div class="tf">
+                            <input type="password"  placeholder="**********">
+                        </div>
+
+                    <br>
                 
+
+                    <br> <br>
+
+                </div>
+           
+
             <br><br>
     
             <div class="footer">
@@ -73,6 +107,12 @@
     </div>
 
      
+    <script>
+    document.getElementById("toStep2").addEventListener("click", function () {
+        document.getElementById("signupStep1").style.display = "none";
+        document.getElementById("signupStep2").style.display = "block";
+    });
+</script>
     
 </body>
 </html>
