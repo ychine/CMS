@@ -24,8 +24,6 @@
 
      <div class="container">
           
-
-                
                 <div class="signinbox" id="signupStep1">
 
                     
@@ -52,7 +50,39 @@
                         </div>
 
                     <br>
-                    <button class="btnlogin" style="width: 85%;" onclick="document.location='./register-personal.php'">Proceed to Personal Information ➜</button>
+                    <button class="btnlogin" style="width: 85%;" onclick="showStep2()">Proceed to Personal Information ➜</button>
+
+                    <br> <br>
+
+                </div>
+
+                
+                <div class="signinbox" id="signupStep2" style="display: none;">
+                    
+                    <h3>Personal Information</h3>
+                    <p class="subtext">Create a profile and put information.</p>
+                    
+                    <div class="tfieldname">Create your username</div> 
+                    
+                        <div class="tf">
+                            <input type="text" placeholder="">
+                        </div>
+                        
+                    
+                    <div class="tfieldname">Password</div> 
+                    
+                        <div class="tf">
+                            <input type="password" placeholder="**********">
+                        </div>
+
+                    <div class="tfieldname">Confirm Password</div> 
+                    
+                        <div class="tf">
+                            <input type="password"  placeholder="**********">
+                        </div>
+
+                    <br>
+                
 
                     <br> <br>
 
@@ -72,7 +102,12 @@
             </div>
     </div>
 
-     
+    <script>
+    function showStep2() {
+        document.getElementById('signupStep1').style.display = 'none';
+        document.getElementById('signupStep2').style.display = 'block';
+    }
+</script>
     
 </body>
 </html>
