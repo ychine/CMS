@@ -20,24 +20,30 @@
         <img src="../img/COURSEDOCK.svg" class="fade-in">
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
-    <div class="signintitle">Reset password</div>
-    <br>
-    <div class="container">
-         
+
+
+     <div class="container">
+            
+
+            <div class="signintitle">Reset Password</div>
+            <br>
+
             <form>
                 <div class="signinbox">
-                    
-                    <h3>Recover your account</h3>
-                   
-                    <div class="tfieldname">Email address</div>
+                    <div class="tfieldname">Username or email address</div>
                     <div class="tf">
-                        <input type="email" id="emaillogin">
+                        <input type="text" id="usernamelogin">
                     </div>
-                    <p class="subtext">A code will be sent to your email</p>
 
+                    <div class="fieldrow">
+                        <div class="tfieldname">Password</div>
+                        <div class="forgotpass"><a href="#">Forgot password?</a></div>
+                    </div>
                     <div class="tf">
+                        <input type="password" id="passwordlogin">
                     
-                    <button class="btnlogin" onclick="">Send code</button>
+                    <br><br>
+                    <button class="btnlogin" onclick="">Login</button>
                     <br>
                     </div>
                 </div>
@@ -46,16 +52,24 @@
             <div class="signinbox">
                 <div class="new-user-line">
                     <span class="newt">New to CourseDock?</span>
-                    <span class="reglink"><a href="register.php">Register here.</a></span>
+                    <span class="reglink"><a href="#">Register here.</a></span>
                 </div>
             </div>
             <div class="footer">
                
-                <hr><br>
-                © 2025 PLP - TeamOG1E. All rights reserved.<a href="#">About CourseDock</a> <a href="#">Contact our Support</a>
+            <hr><br>
+                © 2025 PLP - TeamOG1E. All rights reserved.
+                
+                <a href="#">About CourseDock</a>
+                <a href="#">Contact our Support</a>
 
             </div>
      </div>
+    
+    
+
+
+
     
 </body>
 </html>

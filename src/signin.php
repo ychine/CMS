@@ -22,14 +22,13 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-    <div class="signintitle">Sign In</div>
-    <br>
-    <div class="container">
+     <div class="container">
+          
 
-
+            <div class="signintitle">Sign In</div>
+            <br>
             <form>
-                <div class="signinbox"  >
-                    <h3>Login to CourseDock</h3>
+                <div class="signinbox">
                     <div class="tfieldname">Username or email address</div>
                     <div class="tf">
                         <input type="text" id="usernamelogin">
