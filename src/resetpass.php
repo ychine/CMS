@@ -20,7 +20,8 @@
         <img src="../img/COURSEDOCK.svg" class="fade-in">
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
-
+    <div class="signintitle">Reset password</div>
+    <br>
     <div class="container">
          
             <form>
