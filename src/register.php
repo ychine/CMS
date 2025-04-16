@@ -23,7 +23,7 @@
 
 
      <div class="container">
-          
+                
                 <div class="signinbox" id="signupStep1">
 
                     
@@ -62,7 +62,7 @@
                     <h3>Personal Information</h3>
                     <p class="subtext">Create a profile and put information.</p>
                     
-                    <div class="tfieldname">Create your username</div> 
+                    <div class="tfieldname">Pakiayos po itohhhh</div> 
                     
                         <div class="tf">
                             <input type="text" placeholder="">
@@ -89,7 +89,7 @@
                 </div>
 
                 
-            <br><br>
+           
     
             <div class="footer">
                
@@ -102,7 +102,7 @@
             </div>
     </div>
 
-    <script>
+    <script> 
     function showStep2() {
         document.getElementById('signupStep1').style.display = 'none';
         document.getElementById('signupStep2').style.display = 'block';
