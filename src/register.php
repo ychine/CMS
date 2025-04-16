@@ -16,19 +16,16 @@
 
 </head>
 <body>
+    <div class="header">
+        <img src="../img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
 
+    <br><br><br><br><br>
      <div class="container">
-            <img src="../img/COURSEDOCK.svg" class="fade-in"><br>
-     
-            <div class="cmstitle">Courseware Monitoring System</div><br><br><br><br>
-           
           
-            <br>
-
-                <shape class="regbar"></shape>
-
                 <div class="signinbox" id="signupStep1">
-
+                
                     
                     <h3>Sign-up</h3>
                     <p class="subtext">Create your username and password.</p>
@@ -40,7 +37,6 @@
                             <input type="text" placeholder="">
                         </div>
                         
-                    
                     <div class="tfieldname">Password</div> 
                     
                         <div class="tf">
@@ -54,45 +50,81 @@
                         </div>
 
                     <br>
-                    <button class="btnlogin" style="width: 85%;" id="toStep2">Proceed to Personal Information ➜</button>
+                    <button class="btnlogin" style="width: 85%;" onclick="showStep2()">Proceed to Personal Information ➜</button>
 
                     <br> <br>
 
                 </div>
 
-                <div class="signupbox2" id="signupStep2" style="display: none;">
-                    
+                
+                <div class="signinbox" id="signupStep2" style="display: none;">
+
                     <h3>Personal Information</h3>
                     <p class="subtext">Create a profile and put information.</p>
-                    
 
-                    <div class="tfieldname">Create your username</div> 
                     
+                <div class="fieldrow aligned-fields">
+                    <div style="width: 48%;">
+                    <div class="tfieldname" style = "margin-left: 3.5px;">First Name</div> 
                         <div class="tf">
                             <input type="text" placeholder="">
                         </div>
-                        
-                    
-                    <div class="tfieldname">Password</div> 
-                    
-                        <div class="tf">
-                            <input type="password" placeholder="**********">
-                        </div>
+                    </div>
 
-                    <div class="tfieldname">Confirm Password</div> 
-                    
+                    <div style="width: 48%;">
+                        <div class="tfieldname" style = "margin-left: 3.5px;">Surname</div>   
                         <div class="tf">
-                            <input type="password"  placeholder="**********">
+                            <input type="text" placeholder="">
                         </div>
+                    </div>
+                </div>  
 
-                    <br>
                 
+               
+                    <div class="tfieldname">Email Address</div> 
 
-                    <br> <br>
+                        <div class="tf">
+                            <input type="text" placeholder="">
+                        </div>
+
+                    <div class="tfieldname">Gender</div>
+                    
+                <div class="gender-options">
+
+                    <label class="radio-wrap">
+                        <input type="radio" name="gender" value="Male" />
+                        <span class="radio-label">Male</span>
+                    </label>
+
+                    <label class="radio-wrap">
+                        <input type="radio" name="gender" value="Female" />
+                        <span class="radio-label">Female</span>
+                    </label>
 
                 </div>
-           
 
+                <div class="tfieldname">Join Faculty with a Code?</div> 
+                <div class="fieldrow aligned-fields">
+                    <div style="width: 57%;">
+                        <div class="tf">
+                            <input type="text" placeholder="">
+                        </div>
+                    </div>
+
+                    <div class="faculty-join">
+                       <button class="btnjoin"> Join ➜</button>
+                    </div>
+
+                    
+                </div>  
+                
+                
+ 
+                <br><br>
+            </div>
+
+
+                
             <br><br>
     
             <div class="footer">
@@ -106,12 +138,11 @@
             </div>
     </div>
 
-     
     <script>
-    document.getElementById("toStep2").addEventListener("click", function () {
-        document.getElementById("signupStep1").style.display = "none";
-        document.getElementById("signupStep2").style.display = "block";
-    });
+    function showStep2() {
+        document.getElementById('signupStep1').style.display = 'none';
+        document.getElementById('signupStep2').style.display = 'block';
+    }
 </script>
     
 </body>

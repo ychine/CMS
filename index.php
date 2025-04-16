@@ -14,12 +14,8 @@
   
     include "./src/signin.php";
     
-    
     ?>
-    <div>
-
     
-    </div>
 </body>
 
 </html>

@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In | CourseDock</title>
-    <link href="src/styles.css" rel="stylesheet">
+    <link href="src/styles.css?v=1.0.1" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
@@ -16,11 +16,15 @@
 
 </head>
 <body>
-    
+
+    <div class="header">
+        <img src="./img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
+
      <div class="container">
-            <img src="./img/COURSEDOCK.svg" class="fade-in"><br>
-     
-            <div class="cmstitle">Courseware Monitoring System</div><br><br><br><br>
+          
+
             <div class="signintitle">Sign In</div>
             <br>
             <form>
