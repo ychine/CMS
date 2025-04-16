@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CourseDock</title>
+    <title>Reset password | CourseDock</title>
     <link href="../img/cdicon.svg" rel="icon">
-    <link href="styles.css" rel="stylesheet">
+    <link href="styles.css?v=1.0.1" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
@@ -16,30 +16,38 @@
 </head>
 <body>
 
+    <div class="header">
+        <img src="../img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
+
+
      <div class="container">
-            <img src="../img/COURSEDOCK.svg" class="fade-in"><br>
-     
-            <div class="cmstitle">Courseware Monitoring System</div><br><br><br><br>
+            
+
             <div class="signintitle">Reset Password</div>
             <br>
-            <div class="signinbox">
-                <div class="tfieldname">Username or email address</div>
-                <div class="tf">
-                    <input type="text" id="usernamelogin">
-                </div>
 
-                <div class="fieldrow">
-                    <div class="tfieldname">Password</div>
-                    <div class="forgotpass"><a href="#">Forgot password?</a></div>
+            <form>
+                <div class="signinbox">
+                    <div class="tfieldname">Username or email address</div>
+                    <div class="tf">
+                        <input type="text" id="usernamelogin">
+                    </div>
+
+                    <div class="fieldrow">
+                        <div class="tfieldname">Password</div>
+                        <div class="forgotpass"><a href="#">Forgot password?</a></div>
+                    </div>
+                    <div class="tf">
+                        <input type="password" id="passwordlogin">
+                    
+                    <br><br>
+                    <button class="btnlogin" onclick="">Login</button>
+                    <br>
+                    </div>
                 </div>
-                <div class="tf">
-                    <input type="password" id="passwordlogin">
-                
-                <br><br>
-                <button class="btnlogin" onclick="">Login</button>
-                <br>
-                </div>
-            </div>
+            </form>
             <br>
             <div class="signinbox">
                 <div class="new-user-line">
