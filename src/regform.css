@@ -188,6 +188,11 @@
   .btn:hover {
     background-color: #3d9743;
     border: 0.2px solid #51D55A;
+  }
+
+  .btn-join:hover {
+    background-color: #3d9743;
+    border: 0.2px solid #51D55A;
 
   }
 
