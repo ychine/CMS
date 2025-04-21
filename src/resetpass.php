@@ -23,8 +23,6 @@
 
      <div class="container">
 
-        
-         <br><br>
             <form>
                 <div class="signinbox">
                    <h3>Account recovery</h3>
@@ -35,7 +33,7 @@
                     <div class="tf">
                         <input type="text" id="emailrecover">
                     </div>
-                    <p class="subtext">A recovery link will be sent to your email address.</p>
+                    <p class="subtext">A code will be sent to your email address.</p>
                 
                     <button class="btnlogin" onclick="">Send Code</button>
                     <br><br>
