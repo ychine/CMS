@@ -1,9 +1,8 @@
-.trylang {
-    color: #51D55A;
-    font-size: 16px;
-    font-family: "Onest", sans-serif;
-    text-align: center;
-    margin-bottom: 10px;
+.signinbox hr {
+    border: none;
+    border-top: 0.2px solid #2f4b91; 
+  
+    width: 100%;
 }
 
 body {
@@ -23,23 +22,15 @@ body {
     animation-fill-mode: both;
 }
 
-.container {
-    flex: 1; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; 
-  
-}
 
 
 .signintitle,
 .signinbox {
     transform: translateY(-80px);
-    width: 15%;
     position: static; 
     text-align: center;
-    
+    text-shadow: 0 0 3px 3px #3d9743;
+   
 }
 
 
@@ -75,7 +66,7 @@ body {
 }
 
 .container img {
-    width: clamp(300px, 15%, 15%);
+    width: clamp(380px, 20%, 20%);
 }
 
 @keyframes fadeIn {
@@ -102,10 +93,11 @@ body {
 .signupbox2,
 .signinbox {
     box-shadow: 0 0 20px 2px #304374;
-    padding: 0.1rem;
+    padding-left: 22px;
+    padding-right: 22px;
     border-radius: 10px;
     background-color: #1D387B;
-    width: clamp(300px, 30vw, 300px);
+    width: clamp(320px, 30vw, 320px);
     height: auto;
     border: 0.5px solid #3d74ff;
 
@@ -113,15 +105,16 @@ body {
 
 .signintitle {
     color: #E3E3E3;
-    font-size: clamp(20px, 0.5vw, 0.5rem);
+    font-size: clamp(25px, 0.5vw, 0.5rem);
     font-family: "Overpass", sans-serif;
+    position: fixed;
+    transform: translate(0, -300px);
     font-weight: 600;
     width: 100%;
 }
 
 .tfieldname {
-    margin-left: 22px;
-    margin-right: 22px;
+    
     text-align: left;
     font-family: "Onest", sans-serif;
     font-weight: 500;
@@ -129,6 +122,7 @@ body {
     margin-bottom: 5px;  
     margin-top: 15px;  
     font-size: clamp(12px, 1.5vw, 12px);
+    width: auto;
 }
 
 .new-user-line {
@@ -156,18 +150,18 @@ body {
 
 .fieldrow {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    margin: 0 auto;
+    justify-content: space-between; 
+    align-items: center; 
+    width: 100%; 
+    margin: 0 auto; 
+    
 }
 
-
 .aligned-fields {
-    width: calc(100% - 38px); 
+    width: 100%; 
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    gap: 20px;
 }
 
 
@@ -178,7 +172,6 @@ body {
     font-family: "Onest", sans-serif;
     font-weight: 500;
     color: #E3E3E3;
-    margin-right: 22px;
     margin-bottom: 5px;  
     margin-top: 15px;  
 }
@@ -200,18 +193,20 @@ body {
     align-items: center;
     margin-top: 5px;
     flex-direction: column;
-  
+
+    
 }
 
 .tf input {
     box-shadow: inset 0 2px 2px 2px rgba(0, 0, 0, 0.2);
     color: white;
     background-color: #13275B;
-    width: 80%;
+    width: 100%;
     padding: 10px;
     border-radius: 5px;
     border: none;
     font-family: "Onest", sans-serif;
+    box-sizing: border-box;
 }
 
 .tf input:focus {
@@ -228,7 +223,7 @@ body {
     background-color: #51D55A;
     justify-content: center;
     align-items: center;
-    width: 86%;
+    width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -287,7 +282,7 @@ body {
 .signupbox2 .subtext,  
 .signinbox .subtext {
     font-family: "Onest", sans-serif;
-    font-size: 13px;
+    font-size: clamp(12px, 1.5vw, 12px);
     color: #67e78c;
     margin-bottom: 20px;
   }
@@ -296,14 +291,14 @@ body {
 .signupbox2 .subtext,
 .signinbox h3,
 .signinbox .subtext {
-    margin-left: 20px;
+
     text-align: left;
 }
 
 
 .header {
     position: fixed;
-    top: 120px;
+    top: 100px;
     left: 0;
     right: 0;
     text-align: center;
@@ -311,7 +306,7 @@ body {
 }
 
 .header img {
-    width: clamp(200px, 15%, 300px);
+    width: clamp(330px, 20%, 400px);
     animation: fadeIn 2s ease-in-out;
 }
 
@@ -319,25 +314,26 @@ body {
     animation: fadeIn 2s ease-in-out;
     font-family: "Onest", sans-serif;
     font-weight: 400;
-    font-size: clamp(12px, 0.8vw, 0.9rem);
+    font-size: clamp(14px, 0.8vw, 0.9rem);
     color: #E3E3E3;
     margin-top: 5px;
 }
 
 .container {
-    padding-top: 180px; 
+    
+    padding-top: 100px; 
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; 
 }
-
 
 .gender-options {
     display: flex;
     gap: 15px;
     margin-top: 10px;
-    margin-left: 22px;
+ 
 }
 
 

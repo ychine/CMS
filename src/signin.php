@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In | CourseDock</title>
-    <link href="src/styles.css?v=1.0.1" rel="stylesheet">
+    <link href="src/styles.css?v=1.0" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
@@ -23,25 +23,32 @@
     </div>
 
      <div class="container">
-          
 
-            <div class="signintitle">Sign In</div>
-            <br>
+    
             <form>
                 <div class="signinbox">
+                    <h3>Log In to CourseDock</h3>
+                    <p class="subtext">Enter your username or email and password to log in.</p> 
+
+                    <hr>
+
                     <div class="tfieldname">Username or email address</div>
+                    
                     <div class="tf">
                         <input type="text" id="usernamelogin">
                     </div>
-
                     <div class="fieldrow">
                         <div class="tfieldname">Password</div>
                         <div class="forgotpass"><a href="src/resetpass.php">Forgot password?</a></div>
                     </div>
                     <div class="tf">
                         <input type="password" id="passwordlogin">
-                    
-                    <br><br>
+                   
+                    <br>
+                     
+
+                    <br>
+
                     <button class="btnlogin" onclick="">Login</button>
                     <br>
                     </div>
