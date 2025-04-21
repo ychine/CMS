@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset password | CourseDock</title>
     <link href="../img/cdicon.svg" rel="icon">
-    <link href="styles.css?v=1.0.1" rel="stylesheet">
+    <link href="styles.css?v=1.0" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
@@ -23,30 +23,24 @@
 
 
      <div class="container">
-            
-
-            <div class="signintitle">Reset Password</div>
-            <br>
-
+        
+         <br><br>
             <form>
                 <div class="signinbox">
-                    <div class="tfieldname">Username or email address</div>
+                    <h3>Account recovery</h3>
+                  
+                    <div class="tfieldname">Enter your email address.</div>
                     <div class="tf">
-                        <input type="text" id="usernamelogin">
+                        <input type="text" id="emailrecover">
                     </div>
-
-                    <div class="fieldrow">
-                        <div class="tfieldname">Password</div>
-                        <div class="forgotpass"><a href="#">Forgot password?</a></div>
-                    </div>
-                    <div class="tf">
-                        <input type="password" id="passwordlogin">
-                    
+                    <p class="subtext">A code will be sent to your email address.</p>
+                
+                    <button class="btnlogin" onclick="">Send Code</button>
                     <br><br>
-                    <button class="btnlogin" onclick="">Login</button>
-                    <br>
-                    </div>
-                </div>
+                    
+                
+            </div>
+               
             </form>
             <br>
             <div class="signinbox">

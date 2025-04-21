@@ -7,12 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="../img/cdicon.svg" rel="icon">
-    <link href="styles.css?v=1.0.1" rel="stylesheet">
+    <link href="styles.css?v=1.0" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | CourseDock</title>
-   
-    
 
 </head>
 <body>
@@ -21,70 +19,74 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
+    
     <br><br><br><br><br>
+    
+
      <div class="container">
-          
-                <div class="signinbox" id="signupStep1">
                 
+                <div class="signintitle">Registration</div> 
+             
+                    <div class="signinbox" id="signupStep1" style= "width: clamp(1;">
                     
-                    <h3>Sign-up</h3>
-                    <p class="subtext">Create your username and password.</p>
-                    
-
-                    <div class="tfieldname">Create your username</div> 
-                    
-                        <div class="tf">
-                            <input type="text" placeholder="">
-                        </div>
                         
-                    <div class="tfieldname">Password</div> 
-                    
-                        <div class="tf">
-                            <input type="password" placeholder="**********">
-                        </div>
+                        <h3>Username and Password</h3>
+                        <p class="subtext">Create your username and password.</p>
+                        
 
-                    <div class="tfieldname">Confirm Password</div> 
-                    
-                        <div class="tf">
-                            <input type="password"  placeholder="**********">
-                        </div>
+                        <div class="tfieldname">Create your username</div> 
+                        
+                            <div class="tf">
+                                <input type="text" placeholder="">
+                            </div>
+                            
+                        <div class="tfieldname">Password</div> 
+                        
+                            <div class="tf">
+                                <input type="password" placeholder="**********">
+                            </div>
 
-                    <br>
-                    <button class="btnlogin" style="width: 85%;" onclick="showStep2()">Proceed to Personal Information ➜</button>
+                        <div class="tfieldname">Confirm Password</div> 
+                        
+                            <div class="tf">
+                                <input type="password"  placeholder="**********">
+                            </div>
 
-                    <br> <br>
+                        <br>
+                        <button class="btnlogin"  onclick="showStep2()">Proceed to Personal Information ➜</button>
 
-                </div>
+                        <br> <br>
 
-                
-                <div class="signinbox" id="signupStep2" style="display: none;">
-
-                    <h3>Personal Information</h3>
-                    <p class="subtext">Create a profile and put information.</p>
-
-                    
-                <div class="fieldrow aligned-fields">
-                    <div style="width: 48%;">
-                    <div class="tfieldname" style = "margin-left: 3.5px;">First Name</div> 
-                        <div class="tf">
-                            <input type="text" placeholder="">
-                        </div>
                     </div>
-
-                    <div style="width: 48%;">
-                        <div class="tfieldname" style = "margin-left: 3.5px;">Surname</div>   
-                        <div class="tf">
-                            <input type="text" placeholder="">
-                        </div>
-                    </div>
-                </div>  
-
                 
+
+                    <div class="signinbox" id="signupStep2" style="display: none;">
+
+                        <h3>Personal Information</h3>
+                        <p class="subtext">Create a profile and put information.</p>
+                        
+                    <div class="fieldrow aligned-fields">
+                        <div style="width: 50%;">
+                        <div class="tfieldname">First Name</div> 
+                            <div class="tf">
+                                <input type="text" placeholder="JUAN">
+                            </div>
+                        </div>
+
+                        <div style="width: 50%;">
+                            <div class="tfieldname">Surname</div>   
+                            <div class="tf">
+                                <input type="text" placeholder="DELA CRUZ">
+                            </div>
+                        </div>
+                    </div>  
+
+                    
                
                     <div class="tfieldname">Email Address</div> 
 
                         <div class="tf">
-                            <input type="text" placeholder="">
+                            <input type="text" placeholder="example@mail.com">
                         </div>
 
                     <div class="tfieldname">Gender</div>
@@ -103,6 +105,8 @@
 
                 </div>
 
+
+                <!--
                 <div class="tfieldname">Join Faculty with a Code?</div> 
                 <div class="fieldrow aligned-fields">
                     <div style="width: 57%;">
@@ -116,13 +120,14 @@
                     </div>
 
                     
-                </div>  
+                </div> 
+                --> 
                 
-                
- 
                 <br><br>
-            </div>
-
+                <button class="btnlogin" onclick="">Submit</button>
+                    <br><br>
+                </div>
+           
 
                 
             <br><br>
