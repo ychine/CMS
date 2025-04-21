@@ -28,7 +28,7 @@
                         <h3>Registration</h3>
                         <p class="subtext">Create your username and password.</p>
 
-                        <hr>
+                    <hr>
 
                         <div class="tfieldname">Create your username</div> 
                         
