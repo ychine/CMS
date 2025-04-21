@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset password | CourseDock</title>
     <link href="../img/cdicon.svg" rel="icon">
-    <link href="styles.css?v=1.0.1" rel="stylesheet">
+    <link href="styles.css?v=1.0" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
@@ -21,38 +21,34 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-
      <div class="container">
-            
 
-            <div class="signintitle">Reset Password</div>
-            <br>
-
+        
+         <br><br>
             <form>
                 <div class="signinbox">
-                    <div class="tfieldname">Username or email address</div>
-                    <div class="tf">
-                        <input type="text" id="usernamelogin">
-                    </div>
+                   <h3>Account recovery</h3>
 
-                    <div class="fieldrow">
-                        <div class="tfieldname">Password</div>
-                        <div class="forgotpass"><a href="#">Forgot password?</a></div>
-                    </div>
+                    <hr>
+                  
+                    <div class="tfieldname">Enter your email address.</div>
                     <div class="tf">
-                        <input type="password" id="passwordlogin">
-                    
-                    <br><br>
-                    <button class="btnlogin" onclick="">Login</button>
-                    <br>
+                        <input type="text" id="emailrecover">
                     </div>
-                </div>
+                    <p class="subtext">A recovery link will be sent to your email address.</p>
+                
+                    <button class="btnlogin" onclick="">Send Code</button>
+                    <br><br>
+                    
+                
+            </div>
+               
             </form>
             <br>
             <div class="signinbox">
                 <div class="new-user-line">
                     <span class="newt">New to CourseDock?</span>
-                    <span class="reglink"><a href="#">Register here.</a></span>
+                    <span class="reglink"><a href="./register.php">Register here.</a></span>
                 </div>
             </div>
             <div class="footer">
