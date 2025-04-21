@@ -23,27 +23,32 @@
     </div>
 
      <div class="container">
-          
 
-         
-            <br><br>
+    
             <form>
                 <div class="signinbox">
                     <h3>Log In to CourseDock</h3>
-                    <p class="subtext">Enter your username or email and password to log in.</p>
+                    <p class="subtext">Enter your username or email and password to log in.</p> 
+
+                    <hr>
+
                     <div class="tfieldname">Username or email address</div>
+                    
                     <div class="tf">
                         <input type="text" id="usernamelogin">
                     </div>
-
                     <div class="fieldrow">
                         <div class="tfieldname">Password</div>
                         <div class="forgotpass"><a href="src/resetpass.php">Forgot password?</a></div>
                     </div>
                     <div class="tf">
                         <input type="password" id="passwordlogin">
-                    
-                    <br><br>
+                   
+                    <br>
+                     
+
+                    <br>
+
                     <button class="btnlogin" onclick="">Login</button>
                     <br>
                     </div>

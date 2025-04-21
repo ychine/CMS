@@ -21,19 +21,21 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-
      <div class="container">
+
         
          <br><br>
             <form>
                 <div class="signinbox">
-                    <h3>Account recovery</h3>
+                   <h3>Account recovery</h3>
+
+                    <hr>
                   
                     <div class="tfieldname">Enter your email address.</div>
                     <div class="tf">
                         <input type="text" id="emailrecover">
                     </div>
-                    <p class="subtext">A code will be sent to your email address.</p>
+                    <p class="subtext">A recovery link will be sent to your email address.</p>
                 
                     <button class="btnlogin" onclick="">Send Code</button>
                     <br><br>
@@ -46,7 +48,7 @@
             <div class="signinbox">
                 <div class="new-user-line">
                     <span class="newt">New to CourseDock?</span>
-                    <span class="reglink"><a href="#">Register here.</a></span>
+                    <span class="reglink"><a href="./register.php">Register here.</a></span>
                 </div>
             </div>
             <div class="footer">

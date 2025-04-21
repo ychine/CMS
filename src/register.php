@@ -19,20 +19,16 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-    
-    <br><br><br><br><br>
-    
-
+    <br><br><br><br>
      <div class="container">
-                
-                <div class="signintitle">Registration</div> 
-             
-                    <div class="signinbox" id="signupStep1" style= "width: clamp(1;">
+
+                    <div class="signinbox" id="signupStep1">
                     
                         
-                        <h3>Username and Password</h3>
+                        <h3>Registration</h3>
                         <p class="subtext">Create your username and password.</p>
-                        
+
+                        <hr>
 
                         <div class="tfieldname">Create your username</div> 
                         
@@ -64,6 +60,7 @@
 
                         <h3>Personal Information</h3>
                         <p class="subtext">Create a profile and put information.</p>
+                        <hr>
                         
                     <div class="fieldrow aligned-fields">
                         <div style="width: 50%;">
@@ -130,8 +127,15 @@
            
 
                 
-            <br><br>
-    
+            <br>
+            
+            <div class="signinbox">
+                <div class="new-user-line">
+                    <span class="newt">I already have an Account.</span>
+                    <span class="reglink"><a href="../index.php">Log In</a></span>
+                </div>
+            </div>
+
             <div class="footer">
                
             <hr><br>

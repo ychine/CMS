@@ -1,4 +1,9 @@
-
+.signinbox hr {
+    border: none;
+    border-top: 0.2px solid #2f4b91; 
+  
+    width: 100%;
+}
 
 body {
     display: flex;
@@ -21,7 +26,7 @@ body {
 
 .signintitle,
 .signinbox {
-    transform: translateY(-50px);
+    transform: translateY(-80px);
     position: static; 
     text-align: center;
     text-shadow: 0 0 3px 3px #3d9743;
@@ -103,7 +108,7 @@ body {
     font-size: clamp(25px, 0.5vw, 0.5rem);
     font-family: "Overpass", sans-serif;
     position: fixed;
-    transform: translate(0, -320px);
+    transform: translate(0, -300px);
     font-weight: 600;
     width: 100%;
 }
@@ -147,8 +152,9 @@ body {
     display: flex;
     justify-content: space-between; 
     align-items: center; 
-    width: 90%; 
+    width: 100%; 
     margin: 0 auto; 
+    
 }
 
 .aligned-fields {
