@@ -19,7 +19,7 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-    <br><br><br><br>
+    
      <div class="container">
 
                     <div class="signinbox" id="signupStep1">
