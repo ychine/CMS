@@ -1,3 +1,19 @@
+<?php
+
+$toastMessage = "";
+$toastType = "";
+
+$mysqli = new mysqli("localhost", "root", "", "cms");
+
+if ($mysqli->connect_error) {
+    $toastMessage = "❌ Failed to connect to database.";
+    $toastType = "error";
+} else {
+    $toastMessage = "✅ Successfully connected to database.";
+    $toastType = "success";
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +29,42 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
+
+    <style>
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            color: #fff;
+            border-radius: 10px;
+            font-family: 'Onest', sans-serif;
+            font-size: 14px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: fadein 0.5s, fadeout 0.5s 3s;
+        }
+
+        .toast.success {
+            background-color: #28a745;
+        }
+
+        .toast.error {
+            background-color: #dc3545;
+        }
+
+        @keyframes fadein {
+            from { opacity: 0; bottom: 20px; }
+            to { opacity: 1; bottom: 30px; }
+        }
+
+        @keyframes fadeout {
+            from { opacity: 1; bottom: 30px; }
+            to { opacity: 0; bottom: 20px; }
+        }
+
+    </style>
 </head>
 <body>
     <div class="header">
@@ -22,7 +74,11 @@
     
 
      <div class="container">
-   
+            <?php if (!empty($toastMessage)) : ?>
+                    <div class="toast <?php echo $toastType; ?>">
+                        <?php echo $toastMessage; ?>
+                    </div>
+            <?php endif; ?>
 
             <form>
                 <div class="signinbox">
