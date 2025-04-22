@@ -22,8 +22,8 @@
     
      <div class="container">
 
-    
 
+            <form action="testform.php" method="POST">
                     <div class="signinbox" id="signupStep1">
                     
                         
@@ -35,23 +35,23 @@
                         <div class="tfieldname">Create your username</div> 
                         
                             <div class="tf">
-                                <input type="text" placeholder="">
+                                <input type="text" name="username" placeholder="" id = "username" required>
                             </div>
                             
                         <div class="tfieldname">Password</div> 
                         
                             <div class="tf">
-                                <input type="password" placeholder="**********">
+                                <input type="password" name="password" placeholder="**********" id="password" required>
                             </div>
 
                         <div class="tfieldname">Confirm Password</div> 
                         
                             <div class="tf">
-                                <input type="password"  placeholder="**********">
+                                <input type="password"  name="confirmpass"  placeholder="**********" id="confirmpass" required>
                             </div>
 
                         <br>
-                        <button class="btnlogin"  onclick="showStep2()">Proceed to Personal Information ➜</button>
+                        <button class="btnlogin"  type = "button"  onclick="validations()">Proceed to Personal Information ➜</button>
 
                         <br> <br>
 
@@ -68,14 +68,14 @@
                         <div style="width: 50%;">
                         <div class="tfieldname">First Name</div> 
                             <div class="tf">
-                                <input type="text" placeholder="JUAN">
+                                <input type="text" name="fname" placeholder="JUAN" required>
                             </div>
                         </div>
 
                         <div style="width: 50%;">
                             <div class="tfieldname">Surname</div>   
                             <div class="tf">
-                                <input type="text" placeholder="DELA CRUZ">
+                                <input type="text" name="lname" placeholder="DELA CRUZ" required>
                             </div>
                         </div>
                     </div>  
@@ -85,7 +85,7 @@
                     <div class="tfieldname">Email Address</div> 
 
                         <div class="tf">
-                            <input type="text" placeholder="example@mail.com">
+                            <input type="text" name="email" placeholder="example@mail.com" required>
                         </div>
 
                     <div class="tfieldname">Gender</div>
@@ -93,7 +93,7 @@
                 <div class="gender-options">
 
                     <label class="radio-wrap">
-                        <input type="radio" name="gender" value="Male" />
+                        <input type="radio" name="gender" value="Male" required />
                         <span class="radio-label">Male</span>
                     </label>
 
@@ -119,12 +119,15 @@
                     </div>
 
                     
-                </div> 
+                </div>  
                 --> 
                 <br>
-                <button class="btnlogin" onclick="">Submit</button>
+            
+                <button class="btnlogin" type="submit">Submit</button>
                     <br><br>
+            
                 </div>
+            </form> 
            
 
                 
@@ -149,15 +152,28 @@
     </div>
 
     <script>
-    function showStep2() {
-        document.getElementById('signupStep1').style.display = 'none';
-        document.getElementById('signupStep2').style.display = 'block';
-    }
-</script>
+        function validations() {
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+            var confirmPassword = document.getElementById("confirmpass").value;
+
+
+            if (username === "" || password === "" || confirmPassword === "") {
+            alert("Please fill in all fields.");
+            return false;
+        }
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match! Please try again.");
+                return false; 
+            }
+
+
+            document.getElementById('signupStep1').style.display = 'none';
+            document.getElementById('signupStep2').style.display = 'block';
+        }
+    </script>
+
     
 </body>
 </html>
-
-
-
-
