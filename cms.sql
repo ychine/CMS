@@ -22,18 +22,16 @@
 DROP TABLE IF EXISTS `accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+
 CREATE TABLE `accounts` (
   `AccountID` int(11) NOT NULL AUTO_INCREMENT,
-  `PersonnelID` int(11) NOT NULL,
   `Username` varchar(50) NOT NULL,
   `Password` varchar(255) NOT NULL,
   `Email` varchar(100) NOT NULL,
   `CreatedAt` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`AccountID`),
   UNIQUE KEY `Username` (`Username`),
-  UNIQUE KEY `Email` (`Email`),
-  UNIQUE KEY `PersonnelID_UNIQUE` (`PersonnelID`),
-  CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `Email` (`Email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -98,17 +96,21 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `personnel`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `personnel` (
-  `PersonnelID` int(11) NOT NULL,
-  `PersonnelName` varchar(100) DEFAULT NULL,
+  `PersonnelID` int(11) NOT NULL AUTO_INCREMENT,
+  `FirstName` varchar(50) NOT NULL,
+  `LastName` varchar(50) NOT NULL,
+  `Gender` enum('Male','Female','Other') DEFAULT NULL,
   `Role` varchar(10) DEFAULT NULL,
   `FacultyID` int(11) DEFAULT NULL,
+  `AccountID` int(11) DEFAULT NULL,
   PRIMARY KEY (`PersonnelID`),
   KEY `FacultyID` (`FacultyID`),
-  CONSTRAINT `personnel_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
+  KEY `AccountID` (`AccountID`),
+  CONSTRAINT `personnel_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`),
+  CONSTRAINT `personnel_ibfk_2` FOREIGN KEY (`AccountID`) REFERENCES `accounts` (`AccountID`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
