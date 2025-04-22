@@ -93,11 +93,11 @@ body {
 .signupbox2,
 .signinbox {
     box-shadow: 0 0 20px 2px #304374;
-    padding-left: 22px;
-    padding-right: 22px;
+    padding-left: clamp(10px, 2vw, 20px);
+    padding-right: clamp(10px, 2vw, 20px);
     border-radius: 10px;
     background-color: #1D387B;
-    width: clamp(320px, 30vw, 320px);
+    width: clamp(300px, 20vw, 300px);
     height: auto;
     border: 0.5px solid #3d74ff;
     
@@ -218,6 +218,7 @@ body {
 .btnlogin {
     border: 0.2px solid transparent;
     font-family: "Onest", sans-serif;
+    font-size: 100px;
     font-weight: 500;
     color: white;
     border-radius: 5px;
@@ -238,7 +239,7 @@ body {
     transform: scale(1.02);
 }
 
-.btnloin:active {
+.btnlogin:active {
     background-color: #3ea147;
     transform: scale(0.98);
 }
@@ -283,9 +284,9 @@ body {
 .signupbox2 .subtext,  
 .signinbox .subtext {
     font-family: "Onest", sans-serif;
-    font-size: clamp(12px, 1.5vw, 12px);
+    font-size: clamp(10px, 1.2vw, 10px);
     color: #67e78c;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
 .signupbox2 h3,
