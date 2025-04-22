@@ -10,7 +10,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
-    background-image: radial-gradient(circle at 50% 53%, #304589, #161E3A, #09112B);
+    background-image: radial-gradient(circle at 50% 53%, #304589, #101836, #040a1d);
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-attachment: fixed;
