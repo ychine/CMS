@@ -15,14 +15,14 @@
 
 </head>
 <body>
-
-   
-
-     <div class="container">
-     <div class="header">
+    <div class="header">
         <img src="../img/COURSEDOCK.svg" class="fade-in">
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
+    
+
+     <div class="container">
+   
 
             <form>
                 <div class="signinbox">
