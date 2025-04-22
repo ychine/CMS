@@ -7,20 +7,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="../img/cdicon.svg" rel="icon">
-    <link href="styles.css?v=1.0" rel="stylesheet">
+    <link href="styles.css?v=1.0.0" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | CourseDock</title>
 
 </head>
 <body>
-    <div class="header">
-        <img src="../img/COURSEDOCK.svg" class="fade-in">
-        <div class="cmstitle">Courseware Monitoring System</div>
-    </div>
+    
 
     
      <div class="container">
+
+     <div class="header">
+        <img src="../img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
 
                     <div class="signinbox" id="signupStep1">
                     
@@ -119,8 +121,7 @@
                     
                 </div> 
                 --> 
-                
-                <br><br>
+                <br>
                 <button class="btnlogin" onclick="">Submit</button>
                     <br><br>
                 </div>

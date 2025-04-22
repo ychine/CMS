@@ -17,13 +17,14 @@
 </head>
 <body>
 
-    <div class="header">
-        <img src="./img/COURSEDOCK.svg" class="fade-in">
-        <div class="cmstitle">Courseware Monitoring System</div>
-    </div>
+  
 
      <div class="container">
 
+     <div class="header">
+        <img src="./img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
     
             <form>
                 <div class="signinbox">
@@ -44,9 +45,6 @@
                     <div class="tf">
                         <input type="password" id="passwordlogin">
                    
-                    <br>
-                     
-
                     <br>
 
                     <button class="btnlogin" onclick="">Login</button>
