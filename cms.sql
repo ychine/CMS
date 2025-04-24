@@ -1,6 +1,6 @@
 -- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
 --
--- Host: localhost    Database: CMS
+-- Host: localhost    Database: cms
 -- ------------------------------------------------------
 -- Server version	10.4.32-MariaDB
 
@@ -22,7 +22,6 @@
 DROP TABLE IF EXISTS `accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-
 CREATE TABLE `accounts` (
   `AccountID` int(11) NOT NULL AUTO_INCREMENT,
   `Username` varchar(50) NOT NULL,
@@ -32,7 +31,7 @@ CREATE TABLE `accounts` (
   PRIMARY KEY (`AccountID`),
   UNIQUE KEY `Username` (`Username`),
   UNIQUE KEY `Email` (`Email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,6 +40,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
+INSERT INTO `accounts` VALUES (1,'edrianvm','$2y$10$e8u/wrNiSqZLM1DJXJtoVO/KALCr2SLxeT0ZwKNP5FfrkB5LRAqn6','edrianmartinez400@gmail.com','2025-04-22 22:29:33'),(2,'edrianvm2','$2y$10$qORCuh8zgQQoTfMjAjanB.4vuIHHydUJywafQEJzn5QL8aYQKwDOS','sample@gmail.com','2025-04-22 23:31:50'),(4,'diesel','$2y$10$Hi5TLnAZY0Kxo4mo7hUN.uhz1WYPhc.5KqVGORQQ2nWOlWgvs/qae','test@gmail.com','2025-04-23 00:33:14');
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -96,6 +96,8 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `personnel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `personnel` (
   `PersonnelID` int(11) NOT NULL AUTO_INCREMENT,
   `FirstName` varchar(50) NOT NULL,
@@ -109,8 +111,7 @@ CREATE TABLE `personnel` (
   KEY `AccountID` (`AccountID`),
   CONSTRAINT `personnel_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`),
   CONSTRAINT `personnel_ibfk_2` FOREIGN KEY (`AccountID`) REFERENCES `accounts` (`AccountID`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -119,6 +120,7 @@ CREATE TABLE `personnel` (
 
 LOCK TABLES `personnel` WRITE;
 /*!40000 ALTER TABLE `personnel` DISABLE KEYS */;
+INSERT INTO `personnel` VALUES (1,'Edrian','Martinez','Male','user',NULL,1),(2,'ed','rian','Male','user',NULL,2),(4,'test','test','Male','user',NULL,4);
 /*!40000 ALTER TABLE `personnel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -215,4 +217,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-22 14:58:57
+-- Dump completed on 2025-04-24 15:05:31
