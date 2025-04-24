@@ -405,3 +405,38 @@ body {
     background-color: #3ea147;
     transform: scale(0.98);
 }
+
+
+/*TOAST or notifffff :D reuse it if uu can @ED AND @MILAN*/
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 10%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    color: #fff;
+    border-radius: 10px;
+    font-family: 'Onest', sans-serif;
+    font-size: 14px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    animation: fadein 0.5s, fadeout 0.5s 3s;
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+@keyframes fadein {
+    from { opacity: 0; bottom: 20px; }
+    to { opacity: 1; bottom: 30px; }
+}
+
+@keyframes fadeout {
+    from { opacity: 1; bottom: 30px; }
+    to { opacity: 0; bottom: 20px; }
+}
