@@ -1,8 +1,5 @@
-
-
 <?php
 session_start();
-
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $userInput = $_POST['username'];
@@ -14,7 +11,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Connection failed: " . $conn->connect_error);
     }
 
-   
     $sql = "SELECT * FROM accounts WHERE Username = ? OR Email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $userInput, $userInput);
@@ -23,33 +19,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result && $result->num_rows === 1) {
         $row = $result->fetch_assoc();
-        
+
         if (password_verify($passInput, $row['Password'])) {
             $_SESSION['AccountID'] = $row['AccountID'];
             $_SESSION['Username'] = $row['Username'];
+            
+            $conn->close();
             header("Location: sampledashboard.php");
             exit();
         } else {
-            echo "<script>alert('Invalid username or password.'); window.location.href='../index.php';</script>";
+            $conn->close();
+            header("Location: ../index.php?error=invalid");
             exit();
         }
     } else {
-        echo "<script>alert('Invalid username or password.'); window.location.href='../index.php';</script>";
-        exit();//ibahin natin to ksi pangit ang alert
+        $conn->close();
+        header("Location: ../index.php?error=invalid");
+        exit();
     }
-
-    $conn->close();
 }
-
 
 if (!isset($_SESSION['Username'])) {
     header("Location: ../index.php");
     exit();
 }
-
-
-
 ?>
+
 
 
 <!DOCTYPE html>
@@ -58,7 +53,7 @@ if (!isset($_SESSION['Username'])) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Sign In | CourseDock</title>
-        <link href="styles.css?v=1.0" rel="stylesheet">
+        <link href="../styles.css?v=1.0" rel="stylesheet">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
@@ -70,7 +65,8 @@ if (!isset($_SESSION['Username'])) {
     <body>
 
         <div class="header">
-            <img src="../img/COURSEDOCK.svg" class="fade-in">
+           <img src="../../img/COURSEDOCK.svg" class="fade-in">
+
             <div class="cmstitle">Courseware Monitoring System</div>
         </div>
 </body>
