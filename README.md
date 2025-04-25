@@ -7,8 +7,8 @@
 >>
 >>Benitez, Richelle Dorothy  
 >>Martinez, John Edrian  
->>Santos, Milan Franco
->>Cantorna, Rhonalyn
+>>Santos, Milan Franco  
+>>Cantorna, Rhonalyn  
 >>Navarro, Rex
 >>
 > __*Developed for the purpose of our Final Project in the ff courses:*__  
