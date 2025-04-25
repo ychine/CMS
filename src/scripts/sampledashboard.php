@@ -29,12 +29,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         } else {
             $conn->close();
-            header("Location: ../index.php?error=invalid");
+            header("Location: ../../index.php?error=invalid");
             exit();
         }
     } else {
         $conn->close();
-        header("Location: ../index.php?error=invalid");
+        header("Location: ../../index.php?error=invalid");
         exit();
     }
 }
@@ -69,5 +69,10 @@ if (!isset($_SESSION['Username'])) {
 
             <div class="cmstitle">Courseware Monitoring System</div>
         </div>
+
+        <?php if (isset($_GET['error']) && $_GET['error'] === 'invalid'): ?>
+        <div class="toast error">Invalid username or password.</div>
+    <?php endif; ?>
+    
 </body>
 </html>

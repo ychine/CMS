@@ -148,10 +148,23 @@
                 <a href="#">About CourseDock</a>
                 <a href="#">Contact our Support</a>
 
+
             </div>
     </div>
 
+
     <script>
+
+            function showToast(message, type = 'error') {
+                        const toast = document.createElement('div');
+                        toast.className = `toast ${type}`;
+                        toast.innerText = message;
+                        document.body.appendChild(toast);
+
+                        setTimeout(() => {
+                            toast.remove();
+                        }, 3500);
+                    }
         function validations() {
             var username = document.getElementById("username").value;
             var password = document.getElementById("password").value;
@@ -159,12 +172,12 @@
 
 
             if (username === "" || password === "" || confirmPassword === "") {
-            alert("Please fill in all fields.");
+            showToast("Please fill in all fields.");
             return false;
         }
 
             if (password !== confirmPassword) {
-                alert("Passwords do not match! Please try again.");
+                showToast("Passwords do not match! Please try again.");
                 return false; 
             }
 

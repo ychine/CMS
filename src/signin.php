@@ -35,14 +35,14 @@
                         <div class="tfieldname">Username or email address</div>
                         
                         <div class="tf">
-                            <input type="text" id="usernamelogin" name="username" required>
+                            <input type="text" id="usernamelogin" name="username" >
                         </div>
                         <div class="fieldrow">
                             <div class="tfieldname">Password</div>
                             <div class="forgotpass"><a href="src/resetpass.php">Forgot password?</a></div>
                         </div>
                         <div class="tf">
-                            <input type="password" name="password" id="passwordlogin" required>
+                            <input type="password" name="password" id="passwordlogin" >
                     
                         <br>
 
@@ -72,6 +72,43 @@
         </div>
 
         
+        <script>
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const username = document.getElementById('usernamelogin').value.trim();
+        const password = document.getElementById('passwordlogin').value.trim();
+        
+        if (username === '' || password === '') {
+            e.preventDefault(); // Stop form submission
+
+            // Create and show a toast
+            const toast = document.createElement('div');
+            toast.className = 'toast error';
+            toast.innerText = 'Please fill in all fields.';
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+
+            return;
+        }
+    });
+
+    // Check if error=invalid is in URL and show toast
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'invalid') {
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerText = 'Invalid username or password.';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+</script>
+
         
 
 
