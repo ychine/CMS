@@ -7,7 +7,9 @@
 >>
 >>Benitez, Richelle Dorothy  
 >>Martinez, John Edrian  
->>Santos, Milan Franco 
+>>Santos, Milan Franco
+>>Cantorna, Rhonalyn
+>>Navarro, Rex
 >>
 > __*Developed for the purpose of our Final Project in the ff courses:*__  
 >> <sub> IT 103 - Advanced Database Systems <br> </sub>
