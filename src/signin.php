@@ -74,28 +74,35 @@
         
         <script>
     const form = document.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        const username = document.getElementById('usernamelogin').value.trim();
-        const password = document.getElementById('passwordlogin').value.trim();
-        
-        if (username === '' || password === '') {
-            e.preventDefault(); // Stop form submission
+    const usernameField = document.getElementById('usernamelogin');
+    const passwordField = document.getElementById('passwordlogin');
 
-            // Create and show a toast
+    form.addEventListener('submit', function(e) {
+        const username = usernameField.value.trim();
+        const password = passwordField.value.trim();
+
+        if (username === '' || password === '') {
+            e.preventDefault();
+
+           
+            if (username === '') usernameField.classList.add('error-border');
+            if (password === '') passwordField.classList.add('error-border');
+
+            
             const toast = document.createElement('div');
             toast.className = 'toast error';
             toast.innerText = 'Please fill in all fields.';
             document.body.appendChild(toast);
 
             setTimeout(() => {
-                toast.remove();
+                toast.remove(); 
             }, 3000);
 
             return;
         }
     });
 
-    // Check if error=invalid is in URL and show toast
+    // Display toast for login error (e.g., invalid login)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('error') === 'invalid') {
         const toast = document.createElement('div');
@@ -107,7 +114,21 @@
             toast.remove();
         }, 3000);
     }
+
+    // Remove red border as the user types (optional but helpful UX)
+    usernameField.addEventListener('input', () => {
+        if (usernameField.value.trim() !== '') {
+            usernameField.classList.remove('error-border');
+        }
+    });
+
+    passwordField.addEventListener('input', () => {
+        if (passwordField.value.trim() !== '') {
+            passwordField.classList.remove('error-border');
+        }
+    });
 </script>
+
 
         
 
