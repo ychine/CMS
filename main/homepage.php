@@ -32,7 +32,7 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
   <link href="../src/styles.css" rel="stylesheet" />
   <title>Dashboard | Coursedock</title>
   <link href="../img/cdicon.svg" rel="icon">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
     .font-overpass { font-family: 'Overpass', sans-serif; }
@@ -100,31 +100,136 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
 
  
   <?php if ($showFacultyPopup): ?>
-    
         <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
-            <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
-                <h2 class="text-2xl/7 text-amber-50 font-onest font-normal mb-4">Welcome to CourseDock!</h2>
-                <p class="text-0 m-60b-6">You are not currently part of any faculty.</p>
+        <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
 
-                <div class="flex flex-col space-y-4">
-                    <form action="create_faculty.php" method="POST">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">
-                            Create a New Faculty
-                        </button>
-                    </form>
-
-                    <form action="join_faculty.php" method="POST" class="space-y-2">
-                        <input type="text" name="faculty_code" placeholder="Enter Faculty Code" 
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-blue-400" 
-                            maxlength="5" required>
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition">
-                            Join Faculty
-                        </button>
-                    </form>
-                </div>
+            <!-- Welcome Section -->
+            <div id="welcome-section" class="flex flex-col items-center justify-center">
+            <h2 class="text-xl text-amber-50 font-onest font-thin mb-1">Welcome to</h2>
+            <img src="../img/COURSEDOCK.svg" class="w-[180px] mb-4" />
             </div>
+
+            <!-- Create Faculty Title -->
+            <h2 id="create-title" class="hidden text-2xl text-[#020A27] font-overpass font-semibold tracking-wide mb-4">
+            Creating a Faculty
+            </h2>
+
+            <!-- Join Faculty Title -->
+            <h2 id="join-title" class="hidden text-2xl text-[#020A27] font-overpass font-semibold tracking-wide mb-4">
+            Join with a Code
+            </h2>
+
+
+            <!-- Popup main menu buttons -->
+            <div id="popup-menu" class="flex flex-col space-y-4">
+            <p class="text-white font-normal font-onest text-[14px] mb-4">You are not currently part of any faculty.</p>
+
+            <button onclick="showCreateForm()" class="btnlogin text-[14px]">
+                Create a New Faculty
+            </button>
+
+            <div class="flex items-center justify-center mt-0 mb-2">
+                <hr class="flex-grow border-t-2 border-white mx-2">
+                <p class="text-white font-normal font-onest text-[12px]">or</p>
+                <hr class="flex-grow border-t-2 border-white mx-2">
+            </div>
+
+            <button onclick="showJoinForm()" class="btnlogin text-[14px]">
+                Join Faculty
+            </button>
+            </div>
+
+            <!-- Create Faculty Form -->
+            <div id="create-form" class="hidden flex flex-col space-y-4">
+            <form action="create_faculty.php" method="POST" class="space-y-4">
+
+                <input type="text" name="faculty_name" placeholder="Faculty Name" required
+                class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+
+                <div class="flex flex-col items-start text-left w-full space-y-2">
+                <label class="text-white text-sm font-onest">Faculty Code:</label>
+
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                    <input type="text" name="faculty_code" id="generatedCode" readonly
+                        class="w-full px-3 py-2 pr-10 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+                    <!-- Copy Button inside input -->
+                    <button type="button" onclick="copyCode()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-green-600 hover:bg-green-800 text-white px-2 py-1 rounded">
+                        Copy
+                    </button>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button type="button" onclick="generateCode()"
+                    class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-md text-sm">
+                    Generate
+                    </button>
+                </div>
+                </div>
+
+                <button type="submit" class="btnlogin text-[14px] mt-4">
+                Create Faculty
+                </button>
+            </form>
+            </div>
+
+            <!-- Join Faculty Form -->
+            <div id="join-form" class="hidden flex flex-col space-y-4">
+            <form action="join_faculty.php" method="POST" class="space-y-4">
+
+                <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
+                class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+
+                <button type="submit" class="btnlogin text-[14px] mt-4">
+                Join Faculty
+                </button>
+            </form>
+            </div>
+
         </div>
-    <?php endif; ?>
+        </div>
+
+        <!-- SCRIPT -->
+        <script>
+        function showCreateForm() {
+        document.getElementById('popup-menu').classList.add('hidden');
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('create-title').classList.remove('hidden');
+        document.getElementById('join-title').classList.add('hidden');
+        document.getElementById('create-form').classList.remove('hidden');
+        document.getElementById('join-form').classList.add('hidden');
+        }
+
+        function showJoinForm() {
+        document.getElementById('popup-menu').classList.add('hidden');
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('join-title').classList.remove('hidden');
+        document.getElementById('create-title').classList.add('hidden');
+        document.getElementById('join-form').classList.remove('hidden');
+        document.getElementById('create-form').classList.add('hidden');
+        }
+
+        function generateCode() {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 5; i++) {
+            code += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        document.getElementById('generatedCode').value = code;
+        }
+
+        function copyCode() {
+        const codeInput = document.getElementById('generatedCode');
+        codeInput.select();
+        codeInput.setSelectionRange(0, 99999); // For mobile compatibility
+        document.execCommand('copy');
+        alert('Code copied!');
+        }
+        </script>
+        <?php endif; ?>
+
+
 
 
 
