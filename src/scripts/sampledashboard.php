@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['Username'] = $row['Username'];
             
             $conn->close();
-            header("Location: sampledashboard.php");
+            header("Location: ../../index.php?error=invalid");
             exit();
         } else {
             $conn->close();
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->close();
         header("Location: ../../index.php?error=invalid");
         exit();
-    }
+    }   
 }
 
 if (!isset($_SESSION['Username'])) {
