@@ -25,7 +25,6 @@ if (!empty($salutation) && !empty($lastName)) {
 
 $accountID = $_SESSION['AccountID'];
 
-// Get user's role and faculty status
 $query = "SELECT Role, FacultyID FROM personnel WHERE AccountID = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $accountID);
@@ -79,7 +78,8 @@ $conn->close();
        
         .collapsed #logo, 
         .collapsed #logo-text {
-            visibility: hidden;  
+            visibility: hidden; 
+            transition: all 0s ease; 
         }
 
       
@@ -94,15 +94,19 @@ $conn->close();
         }
 
         #toggleSidebar {
-            transition: all 0.3s ease;
+            transition: all 0.5s ease-in-out;
         }
 
         .collapsed #toggleSidebar {
             position: absolute;
-            left: 3.5%; 
-            width: ;
-            background-color: #51D55A;
-            color: white; 
+        
+            width: 35px;
+            height: 35px;
+            background-color: #324f96;
+            color: white;
+            display: flex;            
+            align-items: center;      
+            justify-content: center; 
         }
 
         .collapsed .menu-item {
@@ -214,15 +218,153 @@ $conn->close();
         </div>
     </div>
 
-    <script>
-        const toggleBtn = document.getElementById('toggleSidebar');
-        const sidebar = document.getElementById('sidebar');
-        const chevronIcon = document.getElementById('chevronIcon');
+    <!-- for new users lang na walang faculty-->
+  <?php if ($showFacultyPopup): ?>
+        <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+        <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
 
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            chevronIcon.classList.toggle('rotate-180');
-        });
-    </script>
+            <!-- Welcome Section -->
+            <div id="welcome-section" class="flex flex-col items-center justify-center">
+            <h2 class="text-xl text-amber-50 font-onest font-thin mb-1">Welcome to</h2>
+            <img src="../img/COURSEDOCK.svg" class="w-[180px] mb-4" />
+            </div>
+
+            <!-- Create Faculty Title -->
+            <h3 id="create-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
+            ❇️ Creating a Faculty
+            </h3>
+
+            <!-- Join Faculty Title -->
+            <h3 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
+            Join with a Code
+            </h3>
+
+
+            <!-- Popup main menu buttons -->
+            <div id="popup-menu" class="flex flex-col space-y-4">
+            <p class="text-white font-normal font-onest text-[12px] mb-4">You are not currently part of any faculty.</p>
+
+            <button onclick="showCreateForm()" class="btnlogin text-[14px]">
+                Create a New Faculty
+            </button>
+
+            <div class="flex items-center justify-center mt-0 mb-2">
+                <hr class="flex-grow border-t-2 border-white mx-2">
+                <p class="text-white font-normal font-onest text-[12px]">or</p>
+                <hr class="flex-grow border-t-2 border-white mx-2">
+            </div>
+
+            <button onclick="showJoinForm()" class="btnlogin text-[14px]">
+                Join Faculty
+            </button>
+            </div>
+
+            <!-- Create Faculty Form -->
+            <div id="create-form" class="hidden flex flex-col space-y-4">
+                <hr>
+            <form action="src/scripts/create_faculty.php" method="POST" class="space-y-4">
+
+                <p class="subtext">Create faculty name and generate faculty code.</p> 
+
+                <input type="text" name="faculty_name" placeholder="Faculty Name" required
+                class="w-full px-3 py-2 rounded-md shadow-inner text-[12px] bg-[#13275B] text-white border border-[#304374] font-onest text-center" />
+
+
+                <div class="flex flex-col items-start text-left w-full space-y-2">
+                <label class="text-white text-sm font-onest">Faculty Code:</label>
+
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                    <input type="text" name="faculty_code" id="generatedCode" readonly
+                        class="w-full px-3 py-2 pr-10 rounded-md text-[12px] shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+
+                    <button type="button" onclick="copyCode()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-green-600 hover:bg-green-800 text-white px-2 py-1 rounded">
+                        Copy
+                    </button>
+                    </div>
+
+
+                    <button type="button" onclick="generateCode()"
+                    class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-md text-sm">
+                    Generate
+                    </button>
+                </div>
+                     <p class="text-[10px] subtext ">Note: Faculty's code is permanent once created!</p> 
+                </div>
+
+                <button type="submit" class="btnlogin text-[14px] mt-2">
+                Create Faculty
+                </button>
+            </form>
+            </div>
+
+            <!-- Join Faculty Form -->
+            <div id="join-form" class="hidden flex flex-col space-y-4">
+              <hr>
+            <form action="join_faculty.php" method="POST" class="space-y-4">
+
+                <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
+                class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+
+                <button type="submit" class="btnlogin text-[14px] mt-4">
+                Join Faculty
+                </button>
+            </form>
+            </div>
+
+        </div>
+        </div>
+
+
+        <script>
+
+
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const chevronIcon = document.getElementById('chevronIcon');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                chevronIcon.classList.toggle('rotate-180');
+            });
+
+            function showCreateForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('create-title').classList.remove('hidden');
+            document.getElementById('join-title').classList.add('hidden');
+            document.getElementById('create-form').classList.remove('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+            }
+
+            function showJoinForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('join-title').classList.remove('hidden');
+            document.getElementById('create-title').classList.add('hidden');
+            document.getElementById('join-form').classList.remove('hidden');
+            document.getElementById('create-form').classList.add('hidden');
+            }
+
+            function generateCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 5; i++) {
+                code += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            document.getElementById('generatedCode').value = code;
+            }
+
+            function copyCode() {
+            const codeInput = document.getElementById('generatedCode');
+            codeInput.select();
+            codeInput.setSelectionRange(0, 99999); 
+            document.execCommand('copy');
+            alert('Code copied!');
+            }
+            </script>
+   
+        <?php endif; ?>
 </body>
 </html>
