@@ -20,7 +20,7 @@ $stmt = $conn->prepare("INSERT INTO faculties (Faculty, JoinCode) VALUES (?, ?)"
 $stmt->bind_param("ss", $facultyName, $facultyCode);
 
 if ($stmt->execute()) {
- 
+
     $newFacultyID = $conn->insert_id;
 
     $updatePersonnel = "UPDATE personnel SET FacultyID = ?, Role = 'DN' WHERE AccountID = ?";
@@ -32,8 +32,10 @@ if ($stmt->execute()) {
 
     $_SESSION['Role'] = 'DN';
 
+
     $stmt->close();
     $conn->close();
+
 
     echo "<script>
     

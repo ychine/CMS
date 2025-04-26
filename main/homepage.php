@@ -48,6 +48,7 @@ if ($row = $result->fetch_assoc()) {
     }
 }
 
+
 $stmt->close();
 $conn->close();
 ?>
@@ -262,7 +263,7 @@ $conn->close();
             <!-- Create Faculty Form -->
             <div id="create-form" class="hidden flex flex-col space-y-4">
                 <hr>
-            <form action="src/scripts/create_faculty.php" method="POST" class="space-y-4">
+            <form action="../src/scripts/create_faculty.php" method="POST" class="space-y-4">
 
                 <p class="subtext">Create faculty name and generate faculty code.</p> 
 
@@ -318,17 +319,6 @@ $conn->close();
 
 
         <script>
-
-
-            const toggleBtn = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const chevronIcon = document.getElementById('chevronIcon');
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                chevronIcon.classList.toggle('rotate-180');
-            });
-
             function showCreateForm() {
             document.getElementById('popup-menu').classList.add('hidden');
             document.getElementById('welcome-section').classList.add('hidden');
@@ -366,5 +356,16 @@ $conn->close();
             </script>
    
         <?php endif; ?>
+
+        <script>
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const chevronIcon = document.getElementById('chevronIcon');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                chevronIcon.classList.toggle('rotate-180');
+            });
+        </script>
 </body>
 </html>
