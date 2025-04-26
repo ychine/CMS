@@ -12,10 +12,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if (empty($_POST['username']) || empty($_POST['password']) || empty($_POST['email']) || empty($_POST['fname']) || empty($_POST['lname']) || empty($_POST['gender'])) {
-    echo "<script>alert('All fields are required! Please fill in all the fields.'); window.history.back();</script>";
-    exit();
-}
+
 
 
 $username = $_POST['username'];

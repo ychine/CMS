@@ -202,14 +202,14 @@ body {
     width: 100%;
     padding: 10px;
     border-radius: 5px;
-    border: none;
+    border: 1px solid #304374;
     font-family: "Onest", sans-serif;
     box-sizing: border-box;
 }
 
 .tf input:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #51D55A; 
+    box-shadow: 0 0 0 1px #51D55A; 
 }
 
 .btnlogin {
@@ -439,4 +439,30 @@ body {
 @keyframes fadeout {
     from { opacity: 1; bottom: 30px; }
     to { opacity: 0; bottom: 20px; }
+}
+
+
+.tf input.error-border {
+    border: 1px solid #dc3545 !important;
+    box-shadow: 0 0 1px #dc3545 !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    
+}
+
+input.match-border {
+    border: 2px solid #4CAF50; 
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+    100% { transform: translateX(0); }
+  }
+  
+
+.shake {
+  animation: shake 0.4s ease-in-out;;
 }

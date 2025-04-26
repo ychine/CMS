@@ -35,19 +35,19 @@
                         <div class="tfieldname">Create your username</div> 
                         
                             <div class="tf">
-                                <input type="text" name="username" placeholder="" id = "username" required>
+                                <input type="text" name="username" placeholder="" id = "username" >
                             </div>
                             
                         <div class="tfieldname">Password</div> 
                         
                             <div class="tf">
-                                <input type="password" name="password" placeholder="**********" id="password" required>
+                                <input type="password" name="password" placeholder="**********" id="password" >
                             </div>
 
                         <div class="tfieldname">Confirm Password</div> 
                         
                             <div class="tf">
-                                <input type="password"  name="confirmpass"  placeholder="**********" id="confirmpass" required>
+                                <input type="password"  name="confirmpass"  placeholder="**********" id="confirmpass" >
                             </div>
 
                         <br>
@@ -68,14 +68,14 @@
                         <div style="width: 50%;">
                         <div class="tfieldname">First Name</div> 
                             <div class="tf">
-                                <input type="text" name="fname" placeholder="JUAN" required>
+                                <input type="text" name="fname" placeholder="JUAN" id = "fname">
                             </div>
                         </div>
 
                         <div style="width: 50%;">
                             <div class="tfieldname">Surname</div>   
                             <div class="tf">
-                                <input type="text" name="lname" placeholder="DELA CRUZ" required>
+                                <input type="text" name="lname" placeholder="DELA CRUZ"id = "lname">
                             </div>
                         </div>
                     </div>  
@@ -85,7 +85,7 @@
                     <div class="tfieldname">Email Address</div> 
 
                         <div class="tf">
-                            <input type="text" name="email" placeholder="example@mail.com" required>
+                            <input type="text" name="email" placeholder="example@mail.com" id = "email">
                         </div>
 
                     <div class="tfieldname">Gender</div>
@@ -93,7 +93,7 @@
                 <div class="gender-options">
 
                     <label class="radio-wrap">
-                        <input type="radio" name="gender" value="Male" required />
+                        <input type="radio" name="gender" value="Male"  />
                         <span class="radio-label">Male</span>
                     </label>
 
@@ -154,39 +154,151 @@
 
 
     <script>
+       
+        function showToast(message, type = 'error') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            document.body.appendChild(toast);
 
-            function showToast(message, type = 'error') {
-                        const toast = document.createElement('div');
-                        toast.className = `toast ${type}`;
-                        toast.innerText = message;
-                        document.body.appendChild(toast);
-
-                        setTimeout(() => {
-                            toast.remove();
-                        }, 3500);
-                    }
-        function validations() {
-            var username = document.getElementById("username").value;
-            var password = document.getElementById("password").value;
-            var confirmPassword = document.getElementById("confirmpass").value;
-
-
-            if (username === "" || password === "" || confirmPassword === "") {
-            showToast("Please fill in all fields.");
-            return false;
+            setTimeout(() => {
+                toast.remove();
+            }, 3500);
         }
 
-            if (password !== confirmPassword) {
-                showToast("Passwords do not match! Please try again.");
-                return false; 
+       
+                    function validations() {
+                var username = document.getElementById("username").value;
+                var password = document.getElementById("password").value;
+                var confirmPassword = document.getElementById("confirmpass").value;
+
+                document.getElementById("username").classList.remove('error-border');
+                document.getElementById("password").classList.remove('error-border');
+                document.getElementById("confirmpass").classList.remove('error-border');
+
+                var errorMessage = '';
+                var isValid = true;
+
+                if (username === "") {
+                    document.getElementById("username").classList.add('error-border');
+                    isValid = false;
+                    errorMessage = 'Please fill in all fields correctly.'; 
+                }
+
+                
+                if (isValid) {
+
+                    if (password === "") {
+                        document.getElementById("password").classList.add('error-border');
+                        isValid = false;
+                        errorMessage = 'Please fill in all fields correctly.'; 
+                    }
+
+                    
+                    if (confirmPassword === "") {
+                        document.getElementById("confirmpass").classList.add('error-border');
+                        isValid = false;
+                        errorMessage = 'Please fill in all fields correctly.'; 
+                    }
+
+                    
+                    if (password !== confirmPassword) {
+                        document.getElementById("password").classList.add('error-border');
+                        document.getElementById("confirmpass").classList.add('error-border');
+                        isValid = false;
+                        errorMessage = "Passwords do not match! Please try again."; 
+                    }
+                }
+
+                
+                if (isValid) {
+                    document.getElementById('signupStep1').style.display = 'none';
+                    document.getElementById('signupStep2').style.display = 'block';
+                } else {
+                    showToast(errorMessage);
+                }
+
+                            document.querySelector("form").addEventListener("submit", function (e) {
+                    let isValidStep2 = true;
+
+                    const fname = document.getElementById("fname");
+                    const lname = document.getElementById("lname");
+                    const email = document.getElementById("email");
+                    const gender = document.querySelector('input[name="gender"]:checked');
+                    const genderOptions = document.querySelector(".gender-options");
+
+                    [fname, lname, email].forEach(field => {
+                        field.classList.remove('error-border');
+                        if (field.value.trim() === "") {
+                            field.classList.add('error-border');
+                            isValidStep2 = false;
+                        }
+                    });
+
+                    
+                    
+
+                    if (!gender) {
+                        isValidStep2 = false;
+
+                        genderOptions.classList.add("shake");
+
+                        setTimeout(() => {
+                            genderOptions.classList.remove("shake");
+                        }, 400);
+                    }
+
+                    if (!isValidStep2) {
+                        e.preventDefault();
+                        showToast("Please fill in all fields correctly.");
+                    }
+                });
+
+                
+
+
+                document.querySelector('input[name="username"]').addEventListener('input', function() {
+                    if (this.classList.contains('error-border')) {
+                        this.classList.remove('error-border');
+                    }
+                });
+
+                document.querySelector('input[name="password"]').addEventListener('input', function() {
+                    if (this.classList.contains('error-border')) {
+                        this.classList.remove('error-border');
+                    }
+                });
+
+                document.querySelector('input[name="confirmpass"]').addEventListener('input', function() {
+                    if (this.classList.contains('error-border')) {
+                        this.classList.remove('error-border');
+                    }
+                });
+
+                document.querySelector('input[name="fname"]').addEventListener('input', function() {
+                    if (this.classList.contains('error-border')) {
+                        this.classList.remove('error-border');
+                    }
+                });
+
+                document.querySelector('input[name="lname"]').addEventListener('input', function() {
+                    if (this.classList.contains('error-border')) {
+                        this.classList.remove('error-border');
+                    }
+                });
+
+                document.querySelector('input[name="email"]').addEventListener('input', function() {
+                    if (this.classList.contains('error-border')) {
+                        this.classList.remove('error-border');
+                    }
+                });
+
+                
             }
 
 
-            document.getElementById('signupStep1').style.display = 'none';
-            document.getElementById('signupStep2').style.display = 'block';
-        }
+        
     </script>
-
     
 </body>
 </html>
