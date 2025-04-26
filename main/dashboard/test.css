@@ -1,0 +1,379 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  body {
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  .app-container {
+    display: flex;
+    flex: 1;
+  }
+  
+  /* Sidebar Styles */
+  .sidebar {
+    width: 250px;
+    background-color: #1a3a72;
+    color: white;
+    padding: 20px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+  }
+  
+  .logo-container {
+    padding: 10px 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 20px;
+  }
+  
+  .logo {
+    font-size: 22px;
+    font-weight: bold;
+  }
+  
+  .logo span {
+    color: #7cbbf1;
+  }
+  
+  .tagline {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 5px;
+  }
+  
+  .menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .menu-item.active {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+  }
+  
+  /* Main Content Styles */
+  .main-content {
+    flex: 1;
+    margin-left: 250px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .greeting {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .action-icons {
+    display: flex;
+    gap: 20px;
+    color: #777;
+  }
+  
+  .action-icons span {
+    cursor: pointer;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .name {
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  .role {
+    font-size: 12px;
+    color: #777;
+  }
+  
+  .avatar {
+    width: 35px;
+    height: 35px;
+    background-color: #1a3a72;
+    border-radius: 50%;
+  }
+  
+  /* Content Styles */
+  .content {
+    display: flex;
+    padding: 25px;
+    gap: 25px;
+  }
+  
+  .tasks-section {
+    flex: 3;
+  }
+  
+  .files-section {
+    flex: 1;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+  }
+  
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .section-header h3 {
+    color: #555;
+    font-size: 16px;
+  }
+  
+  .course-code {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  
+  /* Task Card Styles */
+  .task-card {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .faculty-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .faculty-avatar {
+    width: 35px;
+    height: 35px;
+    background-color: #6b6b6b;
+    border-radius: 50%;
+  }
+  
+  .faculty-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .faculty-name {
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  .faculty-role {
+    font-size: 12px;
+    color: #777;
+  }
+  
+  .deadline {
+    color: #d32f2f;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  .task-content {
+    font-style: italic;
+    color: #444;
+  }
+  
+  /* Approval Section Styles */
+  .approval-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .approval-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .approval-header h3 {
+    color: #333;
+    font-size: 16px;
+  }
+  
+  .complete-label {
+    font-weight: 500;
+    color: #555;
+  }
+  
+  .course-card {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+  }
+  
+  .course-info {
+    flex: 1;
+  }
+  
+  .course-name {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .course-badges {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .badge {
+    width: 60px;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+  }
+  
+  .status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .status-label {
+    font-weight: 500;
+  }
+  
+  .pending .status-label {
+    color: #ff9800;
+  }
+  
+  .completed .status-label {
+    color: #4caf50;
+  }
+  
+  .checkbox {
+    margin-top: 5px;
+    font-size: 14px;
+  }
+  
+  .signed-by {
+    font-size: 12px;
+    color: #777;
+    margin-top: 5px;
+  }
+  
+  /* Files Section Styles */
+  .files-section h3 {
+    color: #333;
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+  
+  .file-placeholder {
+    height: 50px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .submit-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #1a3a72;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 15px;
+    transition: background-color 0.2s;
+  }
+  
+  .submit-btn:hover {
+    background-color: #15305d;
+  }
+  
+  /* Footer Styles */
+  footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #1a3a72;
+    color: white;
+    font-size: 12px;
+    margin-left: 250px;
+  }
+  
+  /* Floating Task Button */
+  .task-floating-button {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .task-floating-button button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  .task-floating-button button:hover {
+    background-color: #3d8b40;
+  }
