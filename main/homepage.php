@@ -6,13 +6,12 @@ if (!isset($_SESSION['Username'])) {
     exit();
 }
 
-
 $conn = new mysqli("localhost", "root", "", "CMS");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
+// Greeting part (no change)
 $salutation = isset($_SESSION['Salutation']) ? $_SESSION['Salutation'] : '';
 $lastName = isset($_SESSION['LastName']) ? $_SESSION['LastName'] : '';
 $greeting = "Good day";
@@ -22,18 +21,28 @@ if (!empty($salutation) && !empty($lastName)) {
     $greeting .= "!";
 }
 
-$showFacultyPopup = false;
 $accountID = $_SESSION['AccountID'];
 
-$query = "SELECT FacultyID FROM personnel WHERE AccountID = ?";
+$query = "SELECT Role, FacultyID FROM personnel WHERE AccountID = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $accountID);
 $stmt->execute();
 $result = $stmt->get_result();
 
+$dashboardPage = "";
+$showFacultyPopup = false;
+
 if ($row = $result->fetch_assoc()) {
     if (empty($row['FacultyID'])) {
         $showFacultyPopup = true;
+    }
+
+    if (!empty($row['Role'])) {
+        if ($row['Role'] === 'DN') {
+            $dashboardPage = "dashboard/dn-dash.php";
+        } elseif ($row['Role'] === 'PH') {
+            $dashboardPage = "dashboard/ph-dash.php";
+        }
     }
 }
 
@@ -113,12 +122,12 @@ $conn->close();
         <div class="font-poppins text-[24px] font-semibold">Profile</div>
       </div>
 
-      <iframe src="dashboard/ph-dash.php" class="w-full flex-1" frameborder="0"></iframe>
+      <iframe src="<?php echo htmlspecialchars($dashboardPage); ?>" class="w-full flex-1" frameborder="0"></iframe>
 
     </div>
   </div>
 
- 
+<!-- for new users lang na walang faculty-->
   <?php if ($showFacultyPopup): ?>
         <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
         <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
@@ -162,7 +171,7 @@ $conn->close();
             <!-- Create Faculty Form -->
             <div id="create-form" class="hidden flex flex-col space-y-4">
                 <hr>
-            <form action="../src/scripts/create_faculty.php" method="POST" class="space-y-4">
+            <form action="src/scripts/create_faculty.php" method="POST" class="space-y-4">
 
                 <p class="subtext">Create faculty name and generate faculty code.</p> 
                 

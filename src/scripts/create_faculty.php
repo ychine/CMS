@@ -32,16 +32,14 @@ if ($stmt->execute()) {
 
     $_SESSION['Role'] = 'DN';
 
-    // Close the connection
     $stmt->close();
     $conn->close();
 
-    // Return success to hide the popup, load the Dean's dashboard, and show toast
     echo "<script>
     
             document.getElementById('showFacultyPopup').style.display = 'none';
 
-            document.querySelector('iframe').src = 'dn-dash.php';
+            document.querySelector('iframe').src = '../main/dashboard/dn-dash.php';
 
             var toast = document.createElement('div');
             toast.className = 'toast success fade-in';
