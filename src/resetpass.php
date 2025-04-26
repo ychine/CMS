@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,19 +14,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
+
 </head>
 <body>
-
     <div class="header">
         <img src="../img/COURSEDOCK.svg" class="fade-in">
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
+    
 
      <div class="container">
+            <?php if (!empty($toastMessage)) : ?>
+                    <div class="toast <?php echo $toastType; ?>">
+                        <?php echo $toastMessage; ?>
+                    </div>
+            <?php endif; ?>
 
-        
-         <br><br>
-            <form>
+            <form method="post" action="send-password-reset.php">
                 <div class="signinbox">
                    <h3>Account recovery</h3>
 
@@ -35,13 +40,13 @@
                     <div class="tf">
                         <input type="text" id="emailrecover">
                     </div>
-                    <p class="subtext">A recovery link will be sent to your email address.</p>
+                    <p class="subtext">A code will be sent to your email address.</p>
                 
                     <button class="btnlogin" onclick="">Send Code</button>
                     <br><br>
                     
                 
-            </div>
+                </div>
                
             </form>
             <br>

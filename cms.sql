@@ -1,177 +1,281 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
+-- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
 --
--- Host: 127.0.0.1
--- Generation Time: Apr 15, 2025 at 03:07 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: cms
+-- ------------------------------------------------------
+-- Server version	10.4.32-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Database: `cms`
+-- Table structure for table `accounts`
 --
 
--- --------------------------------------------------------
+DROP TABLE IF EXISTS `accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `accounts` (
+  `AccountID` int(11) NOT NULL AUTO_INCREMENT,
+  `Username` varchar(50) NOT NULL,
+  `Password` varchar(255) NOT NULL,
+  `Email` varchar(100) NOT NULL,
+  `CreatedAt` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`AccountID`),
+  UNIQUE KEY `Username` (`Username`),
+  UNIQUE KEY `Email` (`Email`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `accounts`
+--
+
+LOCK TABLES `accounts` WRITE;
+/*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
+INSERT INTO `accounts` VALUES (1,'edrianvm','$2y$10$e8u/wrNiSqZLM1DJXJtoVO/KALCr2SLxeT0ZwKNP5FfrkB5LRAqn6','edrianmartinez400@gmail.com','2025-04-22 22:29:33'),(2,'edrianvm2','$2y$10$qORCuh8zgQQoTfMjAjanB.4vuIHHydUJywafQEJzn5QL8aYQKwDOS','sample@gmail.com','2025-04-22 23:31:50'),(4,'diesel','$2y$10$Hi5TLnAZY0Kxo4mo7hUN.uhz1WYPhc.5KqVGORQQ2nWOlWgvs/qae','test@gmail.com','2025-04-23 00:33:14');
+/*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `courses`
 --
 
+DROP TABLE IF EXISTS `courses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `courses` (
   `CourseCode` varchar(10) NOT NULL,
   `Title` varchar(100) DEFAULT NULL,
-  `CurriculumYear` int(11) DEFAULT NULL
+  `CurriculumYear` int(11) DEFAULT NULL,
+  PRIMARY KEY (`CourseCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `courses`
+--
+
+LOCK TABLES `courses` WRITE;
+/*!40000 ALTER TABLE `courses` DISABLE KEYS */;
+/*!40000 ALTER TABLE `courses` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `faculties`
 --
 
+DROP TABLE IF EXISTS `faculties`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `faculties` (
-  `FacultyID` int(11) NOT NULL,
-  `Faculty` varchar(100) DEFAULT NULL
+  `FacultyID` int(11) NOT NULL AUTO_INCREMENT,
+  `Faculty` varchar(100) DEFAULT NULL,
+  `JoinCode` varchar(5) NOT NULL,
+  PRIMARY KEY (`FacultyID`),
+  UNIQUE KEY `JoinCode` (`JoinCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `faculties`
+--
+
+LOCK TABLES `faculties` WRITE;
+/*!40000 ALTER TABLE `faculties` DISABLE KEYS */;
+/*!40000 ALTER TABLE `faculties` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `personnel`
 --
 
+DROP TABLE IF EXISTS `personnel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `personnel` (
-  `PersonnelID` int(11) NOT NULL,
-  `PersonnelName` varchar(100) DEFAULT NULL,
+  `PersonnelID` int(11) NOT NULL AUTO_INCREMENT,
+  `FirstName` varchar(50) NOT NULL,
+  `LastName` varchar(50) NOT NULL,
+  `Gender` enum('Male','Female','Other') DEFAULT NULL,
   `Role` varchar(10) DEFAULT NULL,
-  `FacultyID` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `FacultyID` int(11) DEFAULT NULL,
+  `AccountID` int(11) DEFAULT NULL,
+  PRIMARY KEY (`PersonnelID`),
+  KEY `FacultyID` (`FacultyID`),
+  KEY `AccountID` (`AccountID`),
+  CONSTRAINT `personnel_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`),
+  CONSTRAINT `personnel_ibfk_2` FOREIGN KEY (`AccountID`) REFERENCES `accounts` (`AccountID`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `personnel`
+--
+
+LOCK TABLES `personnel` WRITE;
+/*!40000 ALTER TABLE `personnel` DISABLE KEYS */;
+INSERT INTO `personnel` VALUES (1,'Edrian','Martinez','Male','user',NULL,1),(2,'ed','rian','Male','user',NULL,2),(4,'test','test','Male','user',NULL,4);
+/*!40000 ALTER TABLE `personnel` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `submissioncourses`
 --
 
+DROP TABLE IF EXISTS `submissioncourses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `submissioncourses` (
   `SubmissionID` int(11) NOT NULL,
   `CourseCode` varchar(10) NOT NULL,
-  `LeadID` int(11) DEFAULT NULL
+  `LeadID` int(11) DEFAULT NULL,
+  PRIMARY KEY (`SubmissionID`,`CourseCode`),
+  KEY `CourseCode` (`CourseCode`),
+  KEY `LeadID` (`LeadID`),
+  CONSTRAINT `submissioncourses_ibfk_1` FOREIGN KEY (`SubmissionID`) REFERENCES `submissions` (`SubmissionID`),
+  CONSTRAINT `submissioncourses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`),
+  CONSTRAINT `submissioncourses_ibfk_3` FOREIGN KEY (`LeadID`) REFERENCES `personnel` (`PersonnelID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `submissioncourses`
+--
+
+LOCK TABLES `submissioncourses` WRITE;
+/*!40000 ALTER TABLE `submissioncourses` DISABLE KEYS */;
+/*!40000 ALTER TABLE `submissioncourses` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `submissions`
 --
 
+DROP TABLE IF EXISTS `submissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `submissions` (
   `SubmissionID` int(11) NOT NULL,
   `FacultyID` int(11) DEFAULT NULL,
   `Printed` varchar(20) DEFAULT NULL,
   `Esign` varchar(100) DEFAULT NULL,
   `SchoolYear` varchar(20) DEFAULT NULL,
-  `Term` varchar(10) DEFAULT NULL
+  `Term` varchar(10) DEFAULT NULL,
+  PRIMARY KEY (`SubmissionID`),
+  KEY `FacultyID` (`FacultyID`),
+  CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `submissions`
+--
+
+LOCK TABLES `submissions` WRITE;
+/*!40000 ALTER TABLE `submissions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `submissions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `task_assignments`
+--
+
+DROP TABLE IF EXISTS `task_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `task_assignments` (
+  `TaskID` int(11) NOT NULL,
+  `PersonnelID` int(11) NOT NULL,
+  PRIMARY KEY (`TaskID`,`PersonnelID`),
+  KEY `PersonnelID` (`PersonnelID`),
+  CONSTRAINT `task_assignments_ibfk_1` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`),
+  CONSTRAINT `task_assignments_ibfk_2` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `task_assignments`
+--
+
+LOCK TABLES `task_assignments` WRITE;
+/*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tasks`
+--
+
+DROP TABLE IF EXISTS `tasks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tasks` (
+  `TaskID` int(11) NOT NULL AUTO_INCREMENT,
+  `Title` varchar(255) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `CreatedBy` int(11) DEFAULT NULL,
+  `FacultyID` int(11) DEFAULT NULL,
+  `DueDate` date DEFAULT NULL,
+  `Status` enum('Pending','In Progress','Completed') DEFAULT 'Pending',
+  `CreatedAt` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`TaskID`),
+  KEY `CreatedBy` (`CreatedBy`),
+  KEY `FacultyID` (`FacultyID`),
+  CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
+  CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tasks`
+--
+
+LOCK TABLES `tasks` WRITE;
+/*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `teammembers`
 --
 
+DROP TABLE IF EXISTS `teammembers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `teammembers` (
   `SubmissionID` int(11) NOT NULL,
-  `MembersID` int(11) NOT NULL
+  `MembersID` int(11) NOT NULL,
+  PRIMARY KEY (`SubmissionID`,`MembersID`),
+  KEY `MembersID` (`MembersID`),
+  CONSTRAINT `teammembers_ibfk_1` FOREIGN KEY (`SubmissionID`) REFERENCES `submissions` (`SubmissionID`),
+  CONSTRAINT `teammembers_ibfk_2` FOREIGN KEY (`MembersID`) REFERENCES `personnel` (`PersonnelID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Indexes for dumped tables
+-- Dumping data for table `teammembers`
 --
 
---
--- Indexes for table `courses`
---
-ALTER TABLE `courses`
-  ADD PRIMARY KEY (`CourseCode`);
+LOCK TABLES `teammembers` WRITE;
+/*!40000 ALTER TABLE `teammembers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `teammembers` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
---
--- Indexes for table `faculties`
---
-ALTER TABLE `faculties`
-  ADD PRIMARY KEY (`FacultyID`);
-
---
--- Indexes for table `personnel`
---
-ALTER TABLE `personnel`
-  ADD PRIMARY KEY (`PersonnelID`),
-  ADD KEY `FacultyID` (`FacultyID`);
-
---
--- Indexes for table `submissioncourses`
---
-ALTER TABLE `submissioncourses`
-  ADD PRIMARY KEY (`SubmissionID`,`CourseCode`),
-  ADD KEY `CourseCode` (`CourseCode`),
-  ADD KEY `LeadID` (`LeadID`);
-
---
--- Indexes for table `submissions`
---
-ALTER TABLE `submissions`
-  ADD PRIMARY KEY (`SubmissionID`),
-  ADD KEY `FacultyID` (`FacultyID`);
-
---
--- Indexes for table `teammembers`
---
-ALTER TABLE `teammembers`
-  ADD PRIMARY KEY (`SubmissionID`,`MembersID`),
-  ADD KEY `MembersID` (`MembersID`);
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `personnel`
---
-ALTER TABLE `personnel`
-  ADD CONSTRAINT `personnel_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`);
-
---
--- Constraints for table `submissioncourses`
---
-ALTER TABLE `submissioncourses`
-  ADD CONSTRAINT `submissioncourses_ibfk_1` FOREIGN KEY (`SubmissionID`) REFERENCES `submissions` (`SubmissionID`),
-  ADD CONSTRAINT `submissioncourses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`),
-  ADD CONSTRAINT `submissioncourses_ibfk_3` FOREIGN KEY (`LeadID`) REFERENCES `personnel` (`PersonnelID`);
-
---
--- Constraints for table `submissions`
---
-ALTER TABLE `submissions`
-  ADD CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`);
-
---
--- Constraints for table `teammembers`
---
-ALTER TABLE `teammembers`
-  ADD CONSTRAINT `teammembers_ibfk_1` FOREIGN KEY (`SubmissionID`) REFERENCES `submissions` (`SubmissionID`),
-  ADD CONSTRAINT `teammembers_ibfk_2` FOREIGN KEY (`MembersID`) REFERENCES `personnel` (`PersonnelID`);
-COMMIT;
-
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-04-26 17:01:44

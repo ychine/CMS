@@ -10,7 +10,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
-    background-image: radial-gradient(circle at 50% 53%, #304589, #161E3A, #09112B);
+    background-image: radial-gradient(circle at 50% 53%, #304589, #101836, #040a1d);
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -26,8 +26,7 @@ body {
 
 .signintitle,
 .signinbox {
-    transform: translateY(-80px);
-    position: static; 
+   
     text-align: center;
     text-shadow: 0 0 3px 3px #3d9743;
    
@@ -86,18 +85,17 @@ body {
     font-weight: 400;
     font-size: clamp(12px, 0.8vw, 0.9rem);
     color: #E3E3E3;
-    margin-top: -10px;
     width: 100%;
 }
 
 .signupbox2,
 .signinbox {
     box-shadow: 0 0 20px 2px #304374;
-    padding-left: 22px;
-    padding-right: 22px;
+    padding-left: clamp(20px, 2vw, 10px);
+    padding-right: clamp(20px, 2vw, 10px);
     border-radius: 10px;
     background-color: #1D387B;
-    width: clamp(320px, 30vw, 320px);
+    width: clamp(300px, 20vw, 300px);
     height: auto;
     border: 0.5px solid #3d74ff;
 
@@ -204,19 +202,20 @@ body {
     width: 100%;
     padding: 10px;
     border-radius: 5px;
-    border: none;
+    border: 1px solid #304374;
     font-family: "Onest", sans-serif;
     box-sizing: border-box;
 }
 
 .tf input:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #51D55A; 
+    box-shadow: 0 0 0 1px #51D55A; 
 }
 
 .btnlogin {
     border: 0.2px solid transparent;
     font-family: "Onest", sans-serif;
+    font-size: 12px;
     font-weight: 500;
     color: white;
     border-radius: 5px;
@@ -237,7 +236,7 @@ body {
     transform: scale(1.02);
 }
 
-.btnloin:active {
+.btnlogin:active {
     background-color: #3ea147;
     transform: scale(0.98);
 }
@@ -282,9 +281,9 @@ body {
 .signupbox2 .subtext,  
 .signinbox .subtext {
     font-family: "Onest", sans-serif;
-    font-size: clamp(12px, 1.5vw, 12px);
+    font-size: clamp(12px, 1.2vw, 12px);
     color: #67e78c;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
 .signupbox2 h3,
@@ -297,16 +296,15 @@ body {
 
 
 .header {
-    position: fixed;
-    top: 100px;
-    left: 0;
-    right: 0;
+    margin-top: 50px;
+    position: relative;
+    width: 100%;
     text-align: center;
-    z-index: 10;
+    margin-bottom: 20px;
 }
 
 .header img {
-    width: clamp(330px, 20%, 400px);
+    width: clamp(250px, 20%, 300px);
     animation: fadeIn 2s ease-in-out;
 }
 
@@ -320,13 +318,13 @@ body {
 }
 
 .container {
-    
-    padding-top: 100px; 
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; 
+    justify-content: flex-start; 
+    padding-top: 40px; 
+    padding-bottom: 80px;
 }
 
 .gender-options {
@@ -406,4 +404,65 @@ body {
 .btnjoin:active {
     background-color: #3ea147;
     transform: scale(0.98);
+}
+
+
+/*TOAST or notifffff :D reuse it if uu can @ED AND @MILAN*/
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    color: #fff;
+    border-radius: 10px;
+    font-family: 'Onest', sans-serif;
+    font-size: 14px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    animation: fadein 0.5s, fadeout 0.5s 3s;
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+@keyframes fadein {
+    from { opacity: 0; bottom: 20px; }
+    to { opacity: 1; bottom: 30px; }
+}
+
+@keyframes fadeout {
+    from { opacity: 1; bottom: 30px; }
+    to { opacity: 0; bottom: 20px; }
+}
+
+
+.tf input.error-border {
+    border: 1px solid #dc3545 !important;
+    box-shadow: 0 0 1px #dc3545 !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    
+}
+
+input.match-border {
+    border: 2px solid #4CAF50; 
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+    100% { transform: translateX(0); }
+  }
+  
+
+.shake {
+  animation: shake 0.4s ease-in-out;;
 }
