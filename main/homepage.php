@@ -6,6 +6,13 @@ if (!isset($_SESSION['Username'])) {
     exit();
 }
 
+
+$conn = new mysqli("localhost", "root", "", "CMS");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+
 $salutation = isset($_SESSION['Salutation']) ? $_SESSION['Salutation'] : '';
 $lastName = isset($_SESSION['LastName']) ? $_SESSION['LastName'] : '';
 $greeting = "Good day";
@@ -16,11 +23,24 @@ if (!empty($salutation) && !empty($lastName)) {
 }
 
 $showFacultyPopup = false;
-if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === true) {
-    $showFacultyPopup = true;
-    unset($_SESSION['ShowFacultyPopup']);
+$accountID = $_SESSION['AccountID'];
+
+$query = "SELECT FacultyID FROM personnel WHERE AccountID = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $accountID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($row = $result->fetch_assoc()) {
+    if (empty($row['FacultyID'])) {
+        $showFacultyPopup = true;
+    }
 }
+
+$stmt->close();
+$conn->close();
 ?>
+
 
 
 <!DOCTYPE html>
@@ -110,19 +130,19 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
             </div>
 
             <!-- Create Faculty Title -->
-            <h2 id="create-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
-            Creating a Faculty
-            </h2>
+            <h3 id="create-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
+            ❇️ Creating a Faculty
+            </h3>
 
             <!-- Join Faculty Title -->
-            <h2 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
+            <h3 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
             Join with a Code
-            </h2>
+            </h3>
 
 
             <!-- Popup main menu buttons -->
             <div id="popup-menu" class="flex flex-col space-y-4">
-            <p class="text-white font-normal font-onest text-[14px] mb-4">You are not currently part of any faculty.</p>
+            <p class="text-white font-normal font-onest text-[12px] mb-4">You are not currently part of any faculty.</p>
 
             <button onclick="showCreateForm()" class="btnlogin text-[14px]">
                 Create a New Faculty
@@ -141,10 +161,14 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
 
             <!-- Create Faculty Form -->
             <div id="create-form" class="hidden flex flex-col space-y-4">
-            <form action="create_faculty.php" method="POST" class="space-y-4">
+                <hr>
+            <form action="../src/scripts/create_faculty.php" method="POST" class="space-y-4">
 
+                <p class="subtext">Create faculty name and generate faculty code.</p> 
+                
                 <input type="text" name="faculty_name" placeholder="Faculty Name" required
-                class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+                class="w-full px-3 py-2 rounded-md shadow-inner text-[12px] bg-[#13275B] text-white border border-[#304374] font-onest text-center" />
+
 
                 <div class="flex flex-col items-start text-left w-full space-y-2">
                 <label class="text-white text-sm font-onest">Faculty Code:</label>
@@ -152,23 +176,24 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
                 <div class="flex items-center gap-2">
                     <div class="relative flex-1">
                     <input type="text" name="faculty_code" id="generatedCode" readonly
-                        class="w-full px-3 py-2 pr-10 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
-                    <!-- Copy Button inside input -->
+                        class="w-full px-3 py-2 pr-10 rounded-md text-[12px] shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+                 
                     <button type="button" onclick="copyCode()"
                         class="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-green-600 hover:bg-green-800 text-white px-2 py-1 rounded">
                         Copy
                     </button>
                     </div>
 
-                    <!-- Generate Button -->
+                   
                     <button type="button" onclick="generateCode()"
                     class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-md text-sm">
                     Generate
                     </button>
                 </div>
+                     <p class="text-[10px] subtext ">Note: Faculty's code is permanent once created!</p> 
                 </div>
 
-                <button type="submit" class="btnlogin text-[14px] mt-4">
+                <button type="submit" class="btnlogin text-[14px] mt-2">
                 Create Faculty
                 </button>
             </form>
@@ -176,6 +201,7 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
 
             <!-- Join Faculty Form -->
             <div id="join-form" class="hidden flex flex-col space-y-4">
+              <hr>
             <form action="join_faculty.php" method="POST" class="space-y-4">
 
                 <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
@@ -222,7 +248,7 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
         function copyCode() {
         const codeInput = document.getElementById('generatedCode');
         codeInput.select();
-        codeInput.setSelectionRange(0, 99999); // For mobile compatibility
+        codeInput.setSelectionRange(0, 99999); 
         document.execCommand('copy');
         alert('Code copied!');
         }
