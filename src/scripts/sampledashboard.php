@@ -11,7 +11,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Connection failed: " . $conn->connect_error);
     }
 
-    $sql = "SELECT * FROM accounts WHERE Username = ? OR Email = ?";
+    $sql = "SELECT a.*, p.Gender, p.LastName 
+            FROM accounts a
+            LEFT JOIN personnel p ON a.AccountID = p.AccountID
+            WHERE a.Username = ? OR a.Email = ?";
+    
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $userInput, $userInput);
     $stmt->execute();
@@ -23,20 +27,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($passInput, $row['Password'])) {
             $_SESSION['AccountID'] = $row['AccountID'];
             $_SESSION['Username'] = $row['Username'];
-            $_SESSION['Role'] = $row['Role']; 
+            $_SESSION['Role'] = $row['Role'];
+
+           
+            $gender = $row['Gender'];
+            if ($gender == "Male") {
+                $_SESSION['Salutation'] = "Mr.";
+            } elseif ($gender == "Female") {
+                $_SESSION['Salutation'] = "Ms.";
+            } else {
+                $_SESSION['Salutation'] = ""; 
+            }
+
+            $_SESSION['LastName'] = $row['LastName'];
 
             $conn->close();
 
-            // Redirect based on role
+        
             if (is_null($row['Role'])) {
-                // Role is NULL
-                header("Location: ../choosefaculty.php");
+                $_SESSION['ShowFacultyPopup'] = true;
+                header("Location: ../../main/homepage.php");
             } elseif ($row['Role'] == "ProgHead") {
                 header("Location: ../../dashboard/ph-dash.php");
             } else {
                 header("Location: ../sampledashboard.php");
             }
             exit();
+
         } else {
             $conn->close();
             header("Location: ../../index.php?error=invalid");

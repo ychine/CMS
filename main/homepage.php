@@ -1,12 +1,10 @@
 <?php
 session_start();
 
-
 if (!isset($_SESSION['Username'])) {
     header("Location: ../index.php");
     exit();
 }
-
 
 $salutation = isset($_SESSION['Salutation']) ? $_SESSION['Salutation'] : '';
 $lastName = isset($_SESSION['LastName']) ? $_SESSION['LastName'] : '';
@@ -16,7 +14,14 @@ if (!empty($salutation) && !empty($lastName)) {
 } else {
     $greeting .= "!";
 }
+
+$showFacultyPopup = false;
+if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === true) {
+    $showFacultyPopup = true;
+    unset($_SESSION['ShowFacultyPopup']);
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,6 +29,7 @@ if (!empty($salutation) && !empty($lastName)) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="../src/tailwind/output.css" rel="stylesheet" />
+  <link href="../src/styles.css" rel="stylesheet" />
   <title>Dashboard | Coursedock</title>
   <link href="../img/cdicon.svg" rel="icon">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -91,6 +97,37 @@ if (!empty($salutation) && !empty($lastName)) {
 
     </div>
   </div>
+
+ 
+  <?php if ($showFacultyPopup): ?>
+    
+        <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
+                <h2 class="text-2xl/7 text-amber-50 font-onest font-normal mb-4">Welcome to CourseDock!</h2>
+                <p class="text-0 m-60b-6">You are not currently part of any faculty.</p>
+
+                <div class="flex flex-col space-y-4">
+                    <form action="create_faculty.php" method="POST">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">
+                            Create a New Faculty
+                        </button>
+                    </form>
+
+                    <form action="join_faculty.php" method="POST" class="space-y-2">
+                        <input type="text" name="faculty_code" placeholder="Enter Faculty Code" 
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-blue-400" 
+                            maxlength="5" required>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition">
+                            Join Faculty
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+
+
 
 </body>
 </html>
