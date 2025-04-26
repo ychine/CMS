@@ -11,7 +11,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Connection failed: " . $conn->connect_error);
     }
 
-    $sql = "SELECT * FROM accounts WHERE Username = ? OR Email = ?";
+    $sql = "SELECT a.*, p.Gender, p.LastName 
+            FROM accounts a
+            LEFT JOIN personnel p ON a.AccountID = p.AccountID
+            WHERE a.Username = ? OR a.Email = ?";
+    
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $userInput, $userInput);
     $stmt->execute();
@@ -23,10 +27,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($passInput, $row['Password'])) {
             $_SESSION['AccountID'] = $row['AccountID'];
             $_SESSION['Username'] = $row['Username'];
-            
+            $_SESSION['Role'] = $row['Role'];
+
+           
+            $gender = $row['Gender'];
+            if ($gender == "Male") {
+                $_SESSION['Salutation'] = "Mr.";
+            } elseif ($gender == "Female") {
+                $_SESSION['Salutation'] = "Ms.";
+            } else {
+                $_SESSION['Salutation'] = ""; 
+            }
+
+            $_SESSION['LastName'] = $row['LastName'];
+
             $conn->close();
-            header("Location: ../../index.php?error=invalid");
+
+        
+            if (is_null($row['Role'])) {
+                $_SESSION['ShowFacultyPopup'] = true;
+                header("Location: ../../main/homepage.php");
+            } elseif ($row['Role'] == "ProgHead") {
+                header("Location: ../../dashboard/ph-dash.php");
+            } else {
+                header("Location: ../sampledashboard.php");
+            }
             exit();
+
         } else {
             $conn->close();
             header("Location: ../../index.php?error=invalid");
@@ -36,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->close();
         header("Location: ../../index.php?error=invalid");
         exit();
-    }   
+    }
 }
 
 if (!isset($_SESSION['Username'])) {
@@ -44,35 +71,3 @@ if (!isset($_SESSION['Username'])) {
     exit();
 }
 ?>
-
-
-
-<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sign In | CourseDock</title>
-        <link href="../styles.css?v=1.0" rel="stylesheet">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
-    </head>
-    <body>
-
-        <div class="header">
-           <img src="../../img/COURSEDOCK.svg" class="fade-in">
-
-            <div class="cmstitle">Courseware Monitoring System</div>
-        </div>
-
-        <?php if (isset($_GET['error']) && $_GET['error'] === 'invalid'): ?>
-        <div class="toast error">Invalid username or password.</div>
-    <?php endif; ?>
-    
-</body>
-</html>

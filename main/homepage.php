@@ -110,12 +110,12 @@ if (isset($_SESSION['ShowFacultyPopup']) && $_SESSION['ShowFacultyPopup'] === tr
             </div>
 
             <!-- Create Faculty Title -->
-            <h2 id="create-title" class="hidden text-2xl text-[#020A27] font-overpass font-semibold tracking-wide mb-4">
+            <h2 id="create-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
             Creating a Faculty
             </h2>
 
             <!-- Join Faculty Title -->
-            <h2 id="join-title" class="hidden text-2xl text-[#020A27] font-overpass font-semibold tracking-wide mb-4">
+            <h2 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
             Join with a Code
             </h2>
 
