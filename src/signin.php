@@ -79,9 +79,8 @@
         const password = document.getElementById('passwordlogin').value.trim();
         
         if (username === '' || password === '') {
-            e.preventDefault(); // Stop form submission
+            e.preventDefault(); 
 
-            // Create and show a toast
             const toast = document.createElement('div');
             toast.className = 'toast error';
             toast.innerText = 'Please fill in all fields.';
@@ -95,7 +94,7 @@
         }
     });
 
-    // Check if error=invalid is in URL and show toast
+
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('error') === 'invalid') {
         const toast = document.createElement('div');

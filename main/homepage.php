@@ -1,3 +1,23 @@
+<?php
+session_start();
+
+
+if (!isset($_SESSION['Username'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
+
+$salutation = isset($_SESSION['Salutation']) ? $_SESSION['Salutation'] : '';
+$lastName = isset($_SESSION['LastName']) ? $_SESSION['LastName'] : '';
+$greeting = "Good day";
+if (!empty($salutation) && !empty($lastName)) {
+    $greeting .= ", {$salutation} {$lastName}!";
+} else {
+    $greeting .= "!";
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,14 +34,13 @@
   </style>
 </head>
 
-<body class="w-full h-screen bg-[#020A27] px-3 pt-3 flex items-start justify-center">
+<body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
 
   <!-- wrapper para sa lahat!-->
   <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-white shadow-lg">
 
     <!-- sidebar -->
     <div class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col">
-
 
       <div class="text-left leading-tight mb-8 ml-2 font-onest">
         <img src="../img/COURSEDOCK.svg" class="w-[180px]" />
@@ -45,7 +64,6 @@
           <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
           Faculty
         </div>
-       
         <div class="flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
           <img src="../img/materials-icon.png" alt="Curriculum" class="w-[22px] mr-[22px]" />
           Curriculum Materials
@@ -62,7 +80,9 @@
 
       <!-- topbar -->
       <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
-        <div class="font-onest text-[24px] font-light" style="letter-spacing: -0.03em;">Good day, Dean Tan!</div>
+        <div class="font-onest text-[24px] font-light" style="letter-spacing: -0.03em;">
+          <?php echo htmlspecialchars($greeting); ?>
+        </div>
 
         <div class="font-poppins text-[24px] font-semibold">Profile</div>
       </div>

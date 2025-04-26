@@ -76,9 +76,11 @@ DROP TABLE IF EXISTS `faculties`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `faculties` (
-  `FacultyID` int(11) NOT NULL,
+  `FacultyID` int(11) NOT NULL AUTO_INCREMENT,
   `Faculty` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`FacultyID`)
+  `JoinCode` varchar(5) NOT NULL,
+  PRIMARY KEY (`FacultyID`),
+  UNIQUE KEY `JoinCode` (`JoinCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -183,6 +185,65 @@ LOCK TABLES `submissions` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `task_assignments`
+--
+
+DROP TABLE IF EXISTS `task_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `task_assignments` (
+  `TaskID` int(11) NOT NULL,
+  `PersonnelID` int(11) NOT NULL,
+  PRIMARY KEY (`TaskID`,`PersonnelID`),
+  KEY `PersonnelID` (`PersonnelID`),
+  CONSTRAINT `task_assignments_ibfk_1` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`),
+  CONSTRAINT `task_assignments_ibfk_2` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `task_assignments`
+--
+
+LOCK TABLES `task_assignments` WRITE;
+/*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `tasks`
+--
+
+DROP TABLE IF EXISTS `tasks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tasks` (
+  `TaskID` int(11) NOT NULL AUTO_INCREMENT,
+  `Title` varchar(255) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `CreatedBy` int(11) DEFAULT NULL,
+  `FacultyID` int(11) DEFAULT NULL,
+  `DueDate` date DEFAULT NULL,
+  `Status` enum('Pending','In Progress','Completed') DEFAULT 'Pending',
+  `CreatedAt` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`TaskID`),
+  KEY `CreatedBy` (`CreatedBy`),
+  KEY `FacultyID` (`FacultyID`),
+  CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
+  CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tasks`
+--
+
+LOCK TABLES `tasks` WRITE;
+/*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `teammembers`
 --
 
@@ -217,4 +278,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-24 15:05:31
+-- Dump completed on 2025-04-26 17:01:44

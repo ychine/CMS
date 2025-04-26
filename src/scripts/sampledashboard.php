@@ -23,9 +23,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($passInput, $row['Password'])) {
             $_SESSION['AccountID'] = $row['AccountID'];
             $_SESSION['Username'] = $row['Username'];
-            
+            $_SESSION['Role'] = $row['Role']; 
+
             $conn->close();
-            header("Location: sampledashboard.php");
+
+            // Redirect based on role
+            if (is_null($row['Role'])) {
+                // Role is NULL
+                header("Location: ../choosefaculty.php");
+            } elseif ($row['Role'] == "ProgHead") {
+                header("Location: ../../dashboard/ph-dash.php");
+            } else {
+                header("Location: ../sampledashboard.php");
+            }
             exit();
         } else {
             $conn->close();
@@ -44,35 +54,3 @@ if (!isset($_SESSION['Username'])) {
     exit();
 }
 ?>
-
-
-
-<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sign In | CourseDock</title>
-        <link href="../styles.css?v=1.0" rel="stylesheet">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Onest&display=swap" rel="stylesheet">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
-    </head>
-    <body>
-
-        <div class="header">
-           <img src="../../img/COURSEDOCK.svg" class="fade-in">
-
-            <div class="cmstitle">Courseware Monitoring System</div>
-        </div>
-
-        <?php if (isset($_GET['error']) && $_GET['error'] === 'invalid'): ?>
-        <div class="toast error">Invalid username or password.</div>
-    <?php endif; ?>
-    
-</body>
-</html>
