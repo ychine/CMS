@@ -1,19 +1,17 @@
 <?php
 session_start();
 
-// Redirect if user is not logged in
 if (!isset($_SESSION['Username'])) {
     header("Location: ../index.php");
     exit();
 }
 
-// Connect to database
 $conn = new mysqli("localhost", "root", "", "CMS");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Greeting setup
+
 $salutation = $_SESSION['Salutation'] ?? '';
 $lastName = $_SESSION['LastName'] ?? '';
 $greeting = "Good day";
@@ -59,7 +57,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../src/tailwind/output.css" rel="stylesheet" />
     <link href="../src/styles.css" rel="stylesheet" />
-    <title>Home | Coursedock</title>
+    <title>Home | CourseDock</title>
     <link href="../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -158,7 +156,7 @@ $conn->close();
 <body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
-    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-white shadow-lg">
+    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
 
         <!-- Sidebar -->
         <div id="sidebar" class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">
@@ -206,7 +204,7 @@ $conn->close();
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col h-full">
-            <!-- Topbar -->
+
             <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
                 <div class="font-onest text-[24px] font-normal" style="letter-spacing: -0.03em;">
                     <?php echo htmlspecialchars($greeting); ?>
@@ -221,7 +219,7 @@ $conn->close();
 
     <!-- for new users lang na walang faculty-->
   <?php if ($showFacultyPopup): ?>
-        <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+         <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm fade-in">
         <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
 
             <!-- Welcome Section -->
@@ -239,7 +237,6 @@ $conn->close();
             <h3 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
             Join with a Code
             </h3>
-
 
             <!-- Popup main menu buttons -->
             <div id="popup-menu" class="flex flex-col space-y-4">
@@ -358,14 +355,14 @@ $conn->close();
         <?php endif; ?>
 
         <script>
-            const toggleBtn = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const chevronIcon = document.getElementById('chevronIcon');
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const chevronIcon = document.getElementById('chevronIcon');
 
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                chevronIcon.classList.toggle('rotate-180');
-            });
-        </script>
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            chevronIcon.classList.toggle('rotate-180');
+        });
+    </script>
 </body>
 </html>
