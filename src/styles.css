@@ -17,6 +17,7 @@ body {
     transition: background-image 2s ease-in-out;
 }
 
+
 .fade-in {
     animation: fadeIn 2s ease-in-out;
     animation-fill-mode: both;
@@ -465,4 +466,42 @@ input.match-border {
 
 .shake {
   animation: shake 0.4s ease-in-out;;
+}
+
+
+.sidebar-item {
+  @apply flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition;
+}
+
+.sidebar-icon {
+  @apply w-[22px] mr-[22px];
+}
+
+.sidebar-text {
+  @apply transition-all duration-300;
+}
+
+#sidebar.collapsed .sidebar-text {
+  display: none;
+}
+
+#sidebar.collapsed {
+  width: 80px;
+}
+
+#sidebar.collapsed #sidebar-logo {
+  content: url("../img/cdicon.svg");
+  width: 40px;
+}
+
+#sidebar.collapsed #sidebar-desc {
+  display: none;
+}
+
+#sidebar.collapsed .sidebar-create {
+  display: none;
+}
+
+#sidebar.collapsed #chevron-icon {
+  transform: rotate(180deg);
 }

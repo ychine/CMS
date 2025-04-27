@@ -12,7 +12,8 @@
 <body>
     
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-        <h1 class="py-[10px] text-[35px] font-overpass font-bold">Dashboard dean</h1>
+     <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard dean</h1>
+
         <div class="grid grid-cols-2 gap-5">
         <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
   <div class="flex items-center justify-between mb-6">
