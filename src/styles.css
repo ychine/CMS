@@ -17,7 +17,6 @@ body {
     transition: background-image 2s ease-in-out;
 }
 
-
 .fade-in {
     animation: fadeIn 2s ease-in-out;
     animation-fill-mode: both;

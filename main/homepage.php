@@ -11,9 +11,9 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Greeting part (no change)
-$salutation = isset($_SESSION['Salutation']) ? $_SESSION['Salutation'] : '';
-$lastName = isset($_SESSION['LastName']) ? $_SESSION['LastName'] : '';
+
+$salutation = $_SESSION['Salutation'] ?? '';
+$lastName = $_SESSION['LastName'] ?? '';
 $greeting = "Good day";
 if (!empty($salutation) && !empty($lastName)) {
     $greeting .= ", {$salutation} {$lastName}!";
@@ -46,155 +46,180 @@ if ($row = $result->fetch_assoc()) {
     }
 }
 
+
 $stmt->close();
 $conn->close();
 ?>
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="../src/tailwind/output.css" rel="stylesheet" />
-  <link href="../src/styles.css" rel="stylesheet" />
-  <title>Dashboard | Coursedock</title>
-  <link href="../img/cdicon.svg" rel="icon">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .font-overpass { font-family: 'Overpass', sans-serif; }
-    .font-onest { font-family: 'Onest', sans-serif; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../src/tailwind/output.css" rel="stylesheet" />
+    <link href="../src/styles.css" rel="stylesheet" />
+    <title>Home | CourseDock</title>
+    <link href="../img/cdicon.svg" rel="icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-overpass { font-family: 'Overpass', sans-serif; }
+        .font-onest { font-family: 'Onest', sans-serif; }
 
-    .profile-container {
-      position: relative;
-      display: inline-block;
-    }
+        /* Sidebar */
+
+        #sidebar {
+            transition: width 0.3s;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+       
+        .collapsed #logo, 
+        .collapsed #logo-text {
+            visibility: hidden; 
+            transition: all 0s ease; 
+        }
+
+      
+        .collapsed .link-text {
+            display: none;      
+        }
+
+       
+        .collapsed {
+            width: 80px;
+            align-items: center;
+        }
+
+        #toggleSidebar {
+            transition: all 0.5s ease-in-out;
+        }
+
+        .collapsed #toggleSidebar {
+            position: absolute;
+        
+            width: 35px;
+            height: 35px;
+            background-color: #324f96;
+            color: white;
+            display: flex;            
+            align-items: center;      
+            justify-content: center; 
+        }
+
+        .collapsed .menu-item {
+            width: 50px; 
+            height: 50px;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            padding: 0; 
+            border-radius: 20%; 
+         
+        }
+
+
+        .collapsed .menu-item img {
+            width: 24px;
+            height: 24px;
+            margin: 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #13275B;
+        }
+
     
-    .profile-dropdown {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      min-width: 180px;
-      z-index: 100;
-      overflow: hidden;
-      display: none;
-    }
-    
-    .profile-container:hover .profile-dropdown {
-      display: block;
-    }
-    
-    .profile-dropdown-item {
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      color: #333;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .profile-dropdown-item:hover {
-      background-color: #f5f5f5;
-    }
-    
-    .logout-item {
-      border-top: 1px solid #eaeaea;
-    }
-    
-    .logout-item:hover {
-      background-color: #fff0f0;
-      color: #e53e3e;
-    }
-  </style>
+        .link-text {
+            font-size: 16px;
+            color: #E3E3E3;
+            font-family: 'Onest', sans-serif;
+            font-weight: 400;
+            transition: opacity 0.3s ease;
+        }
+
+
+
+    </style>
 </head>
 
 <body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
 
-  <!-- wrapper para sa lahat!-->
-  <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-white shadow-lg">
+    <!-- Wrapper -->
+    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
 
-    <!-- sidebar -->
-    <div class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col">
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">
+            <div class="text-left leading-tight mb-4 ml-2 font-onest flex items-center justify-between">
+                <div class="flex flex-col items-start">
+                    <img src="../img/COURSEDOCK.svg" class="w-[180px] transition-all duration-300" id="logo" />
+                    <p class="text-[10px] font-light transition-all duration-300" id="logo-text">Courseware Monitoring System</p>
+                </div>
 
-      <div class="text-left leading-tight mb-8 ml-2 font-onest">
-        <img src="../img/COURSEDOCK.svg" class="w-[180px]" />
-        <p class="text-[10px] font-light">Courseware Monitoring System</p>
-      </div>
+                <button id="toggleSidebar" class="ml-3 bg-[#1D387B] border-2 border-[#2A4484] w-[30px] h-[30px] rounded-full flex items-center justify-center shadow-md transition-transform">
+                    <svg id="chevronIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
 
-      <div class="flex flex-col gap-[8px]">
-        <div class="flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-          <img src="../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
-          Dashboard
-        </div>
-        <div class="flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-          <img src="../img/materials-icon.png" alt="Curriculum" class="w-[22px] mr-[22px]" />
-          Tasks
-        </div>
-        <div class="flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-          <img src="../img/notification-icon.png" alt="Notifications" class="w-[22px] mr-[22px]" />
-          Inbox
-        </div>
-        <div class="flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-          <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
-          Faculty
-        </div>
-        <div class="flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-          <img src="../img/materials-icon.png" alt="Curriculum" class="w-[22px] mr-[22px]" />
-          Curriculum Materials
-        </div>
-      </div>
+            <div class="p-2 flex flex-col gap-[8px]">
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Dashboard</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Tasks</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/notification-icon.png" alt="Inbox" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Inbox</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Faculty</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Curriculum Materials</span>
+                </div>
+            </div>
 
-      <button class="mt-auto bg-green-600 hover:bg-green-800 text-white px-4 py-3 rounded-md text-lg font-bold transition">
-        + Create
-      </button>
+
+            <button class="mt-auto bg-green-600 hover:bg-green-800 text-white px-4 py-3 rounded-md text-lg font-bold transition">
+                + Create
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col h-full">
+
+            <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
+                <div class="font-onest text-[24px] font-normal" style="letter-spacing: -0.03em;">
+                    <?php echo htmlspecialchars($greeting); ?>
+                </div>
+                <div class="font-poppins text-[24px] font-semibold">Profile</div>
+            </div>
+
+            <!-- Dynamic Content -->
+            <iframe src="<?php echo htmlspecialchars($dashboardPage); ?>" class="w-full flex-1" frameborder="0"></iframe>
+        </div>
     </div>
 
-    <!-- Main Panel top bar and content inside -->
-    <div class="flex-1 flex flex-col h-full">
-
-      <!-- topbar -->
-      <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
-        <div class="font-onest text-[24px] font-light" style="letter-spacing: -0.03em;">
-          <?php echo htmlspecialchars($greeting); ?>
-        </div>
-
-        <div class="profile-container">
-          <div class="font-poppins text-[24px] font-semibold cursor-pointer flex items-center gap-1">
-            Profile 
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="ml-1">
-              <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-            </svg>
-          </div>
-          
-          <div class="profile-dropdown">
-            <div class="profile-dropdown-item">
-              View Profile
-            </div>
-            <div class="profile-dropdown-item">
-              Settings
-            </div>
-            <div class="profile-dropdown-item logout-item" onclick="location.href='../index.php'">
-              Logout
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <iframe src="<?php echo htmlspecialchars($dashboardPage); ?>" class="w-full flex-1" frameborder="0"></iframe>
-
-    </div>
-  </div>
-
-<!-- for new users lang na walang faculty-->
+    <!-- for new users lang na walang faculty-->
   <?php if ($showFacultyPopup): ?>
-        <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm">
+         <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm fade-in">
         <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
 
             <!-- Welcome Section -->
@@ -212,7 +237,6 @@ $conn->close();
             <h3 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
             Join with a Code
             </h3>
-
 
             <!-- Popup main menu buttons -->
             <div id="popup-menu" class="flex flex-col space-y-4">
@@ -236,10 +260,10 @@ $conn->close();
             <!-- Create Faculty Form -->
             <div id="create-form" class="hidden flex flex-col space-y-4">
                 <hr>
-            <form action="src/scripts/create_faculty.php" method="POST" class="space-y-4">
+            <form action="../src/scripts/create_faculty.php" method="POST" class="space-y-4">
 
                 <p class="subtext">Create faculty name and generate faculty code.</p> 
-                
+
                 <input type="text" name="faculty_name" placeholder="Faculty Name" required
                 class="w-full px-3 py-2 rounded-md shadow-inner text-[12px] bg-[#13275B] text-white border border-[#304374] font-onest text-center" />
 
@@ -251,14 +275,14 @@ $conn->close();
                     <div class="relative flex-1">
                     <input type="text" name="faculty_code" id="generatedCode" readonly
                         class="w-full px-3 py-2 pr-10 rounded-md text-[12px] shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
-                 
+
                     <button type="button" onclick="copyCode()"
                         class="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-green-600 hover:bg-green-800 text-white px-2 py-1 rounded">
                         Copy
                     </button>
                     </div>
 
-                   
+
                     <button type="button" onclick="generateCode()"
                     class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-md text-sm">
                     Generate
@@ -290,49 +314,55 @@ $conn->close();
         </div>
         </div>
 
-        <!-- SCRIPT -->
+
         <script>
-        function showCreateForm() {
-        document.getElementById('popup-menu').classList.add('hidden');
-        document.getElementById('welcome-section').classList.add('hidden');
-        document.getElementById('create-title').classList.remove('hidden');
-        document.getElementById('join-title').classList.add('hidden');
-        document.getElementById('create-form').classList.remove('hidden');
-        document.getElementById('join-form').classList.add('hidden');
-        }
+            function showCreateForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('create-title').classList.remove('hidden');
+            document.getElementById('join-title').classList.add('hidden');
+            document.getElementById('create-form').classList.remove('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+            }
 
-        function showJoinForm() {
-        document.getElementById('popup-menu').classList.add('hidden');
-        document.getElementById('welcome-section').classList.add('hidden');
-        document.getElementById('join-title').classList.remove('hidden');
-        document.getElementById('create-title').classList.add('hidden');
-        document.getElementById('join-form').classList.remove('hidden');
-        document.getElementById('create-form').classList.add('hidden');
-        }
+            function showJoinForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('join-title').classList.remove('hidden');
+            document.getElementById('create-title').classList.add('hidden');
+            document.getElementById('join-form').classList.remove('hidden');
+            document.getElementById('create-form').classList.add('hidden');
+            }
 
-        function generateCode() {
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 5; i++) {
-            code += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        document.getElementById('generatedCode').value = code;
-        }
+            function generateCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 5; i++) {
+                code += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            document.getElementById('generatedCode').value = code;
+            }
 
-        function copyCode() {
-        const codeInput = document.getElementById('generatedCode');
-        codeInput.select();
-        codeInput.setSelectionRange(0, 99999); 
-        document.execCommand('copy');
-        alert('Code copied!');
-        }
-        </script>
+            function copyCode() {
+            const codeInput = document.getElementById('generatedCode');
+            codeInput.select();
+            codeInput.setSelectionRange(0, 99999); 
+            document.execCommand('copy');
+            alert('Code copied!');
+            }
+            </script>
+   
         <?php endif; ?>
 
+        <script>
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const chevronIcon = document.getElementById('chevronIcon');
 
-
-
-
-
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            chevronIcon.classList.toggle('rotate-180');
+        });
+    </script>
 </body>
 </html>
