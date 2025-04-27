@@ -11,16 +11,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
-$salutation = $_SESSION['Salutation'] ?? '';
-$lastName = $_SESSION['LastName'] ?? '';
-$greeting = "Good day";
-if (!empty($salutation) && !empty($lastName)) {
-    $greeting .= ", {$salutation} {$lastName}!";
-} else {
-    $greeting .= "!";
-}
-
 $accountID = $_SESSION['AccountID'];
 
 $query = "SELECT Role, FacultyID FROM personnel WHERE AccountID = ?";
@@ -31,10 +21,22 @@ $result = $stmt->get_result();
 
 $dashboardPage = "";
 $showFacultyPopup = false;
+$facultyName = '';
 
 if ($row = $result->fetch_assoc()) {
     if (empty($row['FacultyID'])) {
         $showFacultyPopup = true;
+    } else {
+       
+        $facultyQuery = "SELECT Faculty FROM faculties WHERE FacultyID = ?";
+        $facultyStmt = $conn->prepare($facultyQuery);
+        $facultyStmt->bind_param("i", $row['FacultyID']);
+        $facultyStmt->execute();
+        $facultyResult = $facultyStmt->get_result();
+        if ($facultyRow = $facultyResult->fetch_assoc()) {
+            $facultyName = strtoupper($facultyRow['Faculty']);
+        }
+        $facultyStmt->close();
     }
 
     if (!empty($row['Role'])) {
@@ -46,10 +48,11 @@ if ($row = $result->fetch_assoc()) {
     }
 }
 
-
 $stmt->close();
 $conn->close();
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -251,9 +254,10 @@ $conn->close();
         <div class="flex-1 flex flex-col h-full">
 
             <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
-                <div class="font-onest text-[24px] font-normal" style="letter-spacing: -0.03em;">
-                    <?php echo htmlspecialchars($greeting); ?>
+                <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
+                    <?php echo htmlspecialchars($facultyName); ?>
                 </div>
+             
                 <div class="profile-container">
                   <div class="font-poppins text-[24px] font-semibold cursor-pointer flex items-center gap-1">
                     Profile 
