@@ -1,6 +1,15 @@
 <?php
 
-$token = $_GET["token"];
+if (isset($_GET["success"]) && $_GET["success"] === "passwordupdated") {
+    // Skip token validation if we're just showing success message
+    $success = true;
+} else {
+    // Normal token validation
+    $token = $_GET["token"] ?? "";
+    
+    if (empty($token)) {
+        die("No token provided");
+    }
 
 $token_hash = hash("sha256", $token);
 
@@ -25,6 +34,8 @@ if ($user === null) {
 
 if (strtotime($user["reset_token_expires_at"]) <= time()) {
     die("token has expired");
+}
+
 }
 
 ?>
@@ -81,7 +92,83 @@ if (strtotime($user["reset_token_expires_at"]) <= time()) {
             </div> 
         </form> 
 
+
+        <div class="signinbox">
+                <div class="new-user-line">
+                    <span class="reglink"><a href="../../index.php">Log In again</a></span>
+                </div>
+            </div>
+
+            <div class="footer">
+               
+            <hr><br>
+                © 2025 PLP - TeamOG1E. All rights reserved.
+                
+                <a href="#">About CourseDock</a>
+                <a href="#">Contact our Support</a>
+
     </div> 
+
+
+    <script>
+    const urlParams = new URLSearchParams(window.location.search);
+
+
+    if (urlParams.get('error') === 'emptyfields') {
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerText = 'Please fill in all password fields.';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    if (urlParams.get('error') === 'passwordmismatch') {
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerText = 'Passwords do not match.';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    if (urlParams.get('error') === 'invalidtoken') {
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerText = 'Invalid or missing reset token.';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    if (urlParams.get('error') === 'tokenexpired') {
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerText = 'Reset link has expired. Please request again.';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    if (urlParams.get('success') === 'passwordupdated') {
+        const toast = document.createElement('div');
+        toast.className = 'toast success';
+        toast.innerText = 'Password updated successfully! You can now log in.';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+</script>
 
 </body>
 </html>

@@ -27,8 +27,14 @@ if (strtotime($user["reset_token_expires_at"]) <= time()) {
     die("token has expired");
 }
 
-if ($_POST["password"] !== $_POST ["password_confirm"]) {
-    die("Password must match");
+if (empty($_POST["password"]) || empty($_POST["password_confirm"])) {
+    header('Location: reset-password.php?error=emptyfields&token=' . urlencode($token));
+    exit();
+}
+
+if ($_POST["password"] !== $_POST["password_confirm"]) {
+    header('Location: reset-password.php?error=passwordmismatch&token=' . urlencode($token));
+    exit();
 }
 
 $password_hash = password_hash($_POST["password"], PASSWORD_DEFAULT);
@@ -45,5 +51,6 @@ $stmt->bind_param("ss", $password_hash, $user["AccountID"]);
 
 $stmt->execute();
 
-echo "Password updated. You can now login.";
+header('Location: reset-password.php?success=passwordupdated');
+exit();
 ?>
