@@ -102,6 +102,17 @@
             toast.remove();
         }, 3000);
     }
+
+    if (urlParams.get('success') === 'emailsent') {
+    const toast = document.createElement('div');
+    toast.className = 'toast success';
+    toast.innerText = 'Password reset email sent!';
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+    }
     </script>
 
 </body>
