@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,6 +154,9 @@
     </div>
 
 
+    
+
+
     <script>
        
         function showToast(message, type = 'error') {
@@ -296,10 +300,19 @@
                 
             }
 
-            
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const success = urlParams.get('success');
 
-            
+            if (error) {
+                showToast(error, 'error');
+            }
 
+            if (success) {
+                showToast(success, 'success');
+            }
+        });
         
     </script>
     
