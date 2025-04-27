@@ -66,6 +66,52 @@ $conn->close();
     body { font-family: 'Inter', sans-serif; }
     .font-overpass { font-family: 'Overpass', sans-serif; }
     .font-onest { font-family: 'Onest', sans-serif; }
+
+    .profile-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .profile-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 180px;
+      z-index: 100;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .profile-container:hover .profile-dropdown {
+      display: block;
+    }
+    
+    .profile-dropdown-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .profile-dropdown-item:hover {
+      background-color: #f5f5f5;
+    }
+    
+    .logout-item {
+      border-top: 1px solid #eaeaea;
+    }
+    
+    .logout-item:hover {
+      background-color: #fff0f0;
+      color: #e53e3e;
+    }
   </style>
 </head>
 
@@ -119,7 +165,26 @@ $conn->close();
           <?php echo htmlspecialchars($greeting); ?>
         </div>
 
-        <div class="font-poppins text-[24px] font-semibold">Profile</div>
+        <div class="profile-container">
+          <div class="font-poppins text-[24px] font-semibold cursor-pointer flex items-center gap-1">
+            Profile 
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="ml-1">
+              <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+            </svg>
+          </div>
+          
+          <div class="profile-dropdown">
+            <div class="profile-dropdown-item">
+              View Profile
+            </div>
+            <div class="profile-dropdown-item">
+              Settings
+            </div>
+            <div class="profile-dropdown-item logout-item" onclick="location.href='../index.php'">
+              Logout
+            </div>
+          </div>
+        </div>
       </div>
 
       <iframe src="<?php echo htmlspecialchars($dashboardPage); ?>" class="w-full flex-1" frameborder="0"></iframe>
