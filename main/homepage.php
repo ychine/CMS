@@ -11,6 +11,19 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+if (isset($_SESSION['show_join_form'])) {
+    $showFacultyPopup = true;
+    $autoShowJoinForm = true;
+    unset($_SESSION['show_join_form']);
+} else {
+    $autoShowJoinForm = false;
+}
+
+if (isset($_SESSION['joined_faculty_success'])) {
+    unset($_SESSION['joined_faculty_success']);
+}
+
+
 $accountID = $_SESSION['AccountID'];
 
 $query = "SELECT Role, FacultyID FROM personnel WHERE AccountID = ?";
@@ -44,6 +57,8 @@ if ($row = $result->fetch_assoc()) {
             $dashboardPage = "dashboard/dn-dash.php";
         } elseif ($row['Role'] === 'PH') {
             $dashboardPage = "dashboard/ph-dash.php";
+        } elseif ($row['Role'] === 'FM') {
+            $dashboardPage = "dashboard/fm-dash.php";
         }
     }
 }
@@ -432,22 +447,56 @@ $conn->close();
             <!-- Join Faculty Form -->
             <div id="join-form" class="hidden flex flex-col space-y-4">
             <hr>
-            <form action="join_faculty.php" method="POST" class="space-y-4">
-                
-                <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
-                class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+    
+                <form action="join_faculty.php" method="POST" class="space-y-4">
+                    <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
+                    class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" 
+                    value="<?php echo isset($_POST['faculty_code']) ? htmlspecialchars($_POST['faculty_code']) : ''; ?>"/>
 
-                <button type="submit" class="btnlogin text-[14px] mt-4">
-                Join Faculty
-                </button>
-            </form>
+                    <button type="submit" class="btnlogin text-[14px] mt-4">
+                        Join Faculty
+                    </button>
+                </form>
             </div>
+
+            <?php if (isset($_SESSION['joined_faculty_success']) || isset($_SESSION['joined_faculty_error'])): ?>
+                <script>
+                    window.onload = function() {
+                        <?php if (isset($_SESSION['joined_faculty_success'])): ?>
+                            showToast("<?php echo addslashes($_SESSION['joined_faculty_success']); ?>", "success");
+                            <?php unset($_SESSION['joined_faculty_success']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['joined_faculty_error'])): ?>
+                            showToast("<?php echo addslashes($_SESSION['joined_faculty_error']); ?>", "error");
+                            <?php unset($_SESSION['joined_faculty_error']); ?>
+                        <?php endif; ?>
+                    };
+                </script>
+            <?php endif; ?>
 
         </div>
         </div>
 
 
         <script>
+
+            function showToast(message, type = 'error') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerText = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 3500);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                            <?php if ($autoShowJoinForm): ?>
+                                showJoinForm();
+                            <?php endif; ?>
+                        });
 
 
             function showMainMenu() {
@@ -534,6 +583,8 @@ $conn->close();
             sidebar.classList.toggle('collapsed');
             chevronIcon.classList.toggle('rotate-180');
         });
+
+        
     </script>
 </body>
 </html>
