@@ -1,31 +1,31 @@
 <?php
 session_start();
 
-// Redirect if user is not logged in
 if (!isset($_SESSION['Username'])) {
     header("Location: ../index.php");
     exit();
 }
 
-// Connect to database
 $conn = new mysqli("localhost", "root", "", "CMS");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Greeting setup
-$salutation = $_SESSION['Salutation'] ?? '';
-$lastName = $_SESSION['LastName'] ?? '';
-$greeting = "Good day";
-if (!empty($salutation) && !empty($lastName)) {
-    $greeting .= ", {$salutation} {$lastName}!";
+if (isset($_SESSION['show_join_form'])) {
+    $showFacultyPopup = true;
+    $autoShowJoinForm = true;
+    unset($_SESSION['show_join_form']);
 } else {
-    $greeting .= "!";
+    $autoShowJoinForm = false;
 }
+
+if (isset($_SESSION['joined_faculty_success'])) {
+    unset($_SESSION['joined_faculty_success']);
+}
+
 
 $accountID = $_SESSION['AccountID'];
 
-// Get user's role and faculty status
 $query = "SELECT Role, FacultyID FROM personnel WHERE AccountID = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $accountID);
@@ -34,10 +34,22 @@ $result = $stmt->get_result();
 
 $dashboardPage = "";
 $showFacultyPopup = false;
+$facultyName = '';
 
 if ($row = $result->fetch_assoc()) {
     if (empty($row['FacultyID'])) {
         $showFacultyPopup = true;
+    } else {
+       
+        $facultyQuery = "SELECT Faculty FROM faculties WHERE FacultyID = ?";
+        $facultyStmt = $conn->prepare($facultyQuery);
+        $facultyStmt->bind_param("i", $row['FacultyID']);
+        $facultyStmt->execute();
+        $facultyResult = $facultyStmt->get_result();
+        if ($facultyRow = $facultyResult->fetch_assoc()) {
+            $facultyName = strtoupper($facultyRow['Faculty']);
+        }
+        $facultyStmt->close();
     }
 
     if (!empty($row['Role'])) {
@@ -45,6 +57,8 @@ if ($row = $result->fetch_assoc()) {
             $dashboardPage = "dashboard/dn-dash.php";
         } elseif ($row['Role'] === 'PH') {
             $dashboardPage = "dashboard/ph-dash.php";
+        } elseif ($row['Role'] === 'FM') {
+            $dashboardPage = "dashboard/fm-dash.php";
         }
     }
 }
@@ -52,6 +66,8 @@ if ($row = $result->fetch_assoc()) {
 $stmt->close();
 $conn->close();
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,7 +75,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../src/tailwind/output.css" rel="stylesheet" />
     <link href="../src/styles.css" rel="stylesheet" />
-    <title>Home | Coursedock</title>
+    <title>Home | CourseDock</title>
     <link href="../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -70,7 +86,7 @@ $conn->close();
         /* Sidebar */
 
         #sidebar {
-            transition: width 0.3s;
+            transition: width 0.6s ease-in-out;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -79,7 +95,8 @@ $conn->close();
        
         .collapsed #logo, 
         .collapsed #logo-text {
-            visibility: hidden;  
+            visibility: hidden; 
+            transition: all 0s ease-in-out; 
         }
 
       
@@ -94,15 +111,19 @@ $conn->close();
         }
 
         #toggleSidebar {
-            transition: all 0.3s ease;
+            transition: all 0.5s ease-in-out;
         }
 
         .collapsed #toggleSidebar {
             position: absolute;
-            left: 3.5%; 
-            width: ;
-            background-color: #51D55A;
-            color: white; 
+        
+            width: 35px;
+            height: 35px;
+            background-color: #324f96;
+            color: white;
+            display: flex;            
+            align-items: center;      
+            justify-content: center; 
         }
 
         .collapsed .menu-item {
@@ -124,6 +145,7 @@ $conn->close();
         }
 
         .menu-item {
+            user-select: none;
             display: flex;
             align-items: center;
             padding: 10px;
@@ -145,7 +167,105 @@ $conn->close();
             transition: opacity 0.3s ease;
         }
 
+        
+        .profile-container {
+          position: relative;
+          display: inline-block;
+        }
+        
+        .profile-dropdown {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          min-width: 180px;
+          z-index: 100;
+          overflow: hidden;
+          display: none;
+        }
 
+        
+
+        
+        .profile-container:hover .profile-dropdown {
+          display: block;
+        }
+        
+        .profile-dropdown-item {
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          font-family: 'Inter', sans-serif;
+          font-size: 14px;
+          color: #333;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        
+        .profile-dropdown-item:hover {
+          background-color: #f5f5f5;
+        }
+        
+        .logout-item {
+          border-top: 1px solid #eaeaea;
+        }
+        
+        .logout-item:hover {
+          background-color: #fff0f0;
+          color: #e53e3e;
+        }
+
+        .back-button {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: transparent;
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        }
+
+        .back-button:hover {
+            transform: translateX(-2px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button:active {
+            transform: translateX(-2px) scale(0.95);
+        }
+
+        .back-button svg {
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover svg {
+            transform: scale(1.1);
+        }
+
+        .collapsed .create-text {
+            display: none;
+        }
+
+    
+        .collapsed #createButton {
+            justify-content: center;
+            gap: 0;
+            padding: 14px; 
+            border-radius: 30%;
+            transition: all 0.5s ease-in-out;
+            transition: all 1s ease-in-out;
+        }
+
+      
+        .collapsed .sidebar-footer {
+            display: none;
+            transition: all 1s ease-in-out;
+        }
+                
 
     </style>
 </head>
@@ -153,7 +273,7 @@ $conn->close();
 <body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
-    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-white shadow-lg">
+    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
 
         <!-- Sidebar -->
         <div id="sidebar" class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">
@@ -171,58 +291,309 @@ $conn->close();
             </div>
 
             <div class="p-2 flex flex-col gap-[8px]">
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="homepage.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Dashboard</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                </a>
+
+                <a href="tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Tasks</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                </a>
+
+                <a href="inbox.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/notification-icon.png" alt="Inbox" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Inbox</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                </a>
+
+                <a href="faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                </a>
+
+                <a href="curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curriculum Materials</span>
-                </div>
+                </a>
+
             </div>
 
 
-            <button class="mt-auto bg-green-600 hover:bg-green-800 text-white px-4 py-3 rounded-md text-lg font-bold transition">
-                + Create
+            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+                <span class="create-text">Create</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
             </button>
+
+            <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
+                <hr class="border-t border-[#314f9b] w-full mx-auto mb-2" />
+                © 2025 CourseDock. All rights reserved.
+                <span class="mt-1">
+                    <br>
+                    <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
+                    <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
+                </span>
+            </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col h-full">
-            <!-- Topbar -->
+        <div class="flex-1 flex flex-col h-full ">
+
             <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
-                <div class="font-onest text-[24px] font-normal" style="letter-spacing: -0.03em;">
-                    <?php echo htmlspecialchars($greeting); ?>
+                <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
+                    <?php echo htmlspecialchars($facultyName); ?>
                 </div>
-                <div class="font-poppins text-[24px] font-semibold">Profile</div>
+             
+                <div class="profile-container">
+                  <div class="font-poppins text-[24px] font-semibold cursor-pointer flex items-center gap-1">
+                    Profile 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="ml-1">
+                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                    </svg>
+                  </div>
+                  
+                  <div class="profile-dropdown">
+                    <div class="profile-dropdown-item">
+                      View Profile
+                    </div>
+                    <div class="profile-dropdown-item">
+                      Settings
+                    </div>
+                    <div class="profile-dropdown-item logout-item" onclick="location.href='../index.php'">
+                      Logout
+                    </div>
+                  </div>
+                </div>
             </div>
 
             <!-- Dynamic Content -->
-            <iframe src="<?php echo htmlspecialchars($dashboardPage); ?>" class="w-full flex-1" frameborder="0"></iframe>
+            <iframe id="contentIframe" src="<?php echo htmlspecialchars($dashboardPage); ?>" class="w-full flex-1 fade-in" frameborder="0"></iframe>
+
         </div>
     </div>
 
-    <script>
-        const toggleBtn = document.getElementById('toggleSidebar');
-        const sidebar = document.getElementById('sidebar');
-        const chevronIcon = document.getElementById('chevronIcon');
+    <!-- for new users lang na walang faculty-->
+  <?php if ($showFacultyPopup): ?>
+         <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm fade-in">
+        <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
 
-        toggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            chevronIcon.classList.toggle('rotate-180');
-        });
-    </script>
+            <!-- Welcome Section -->
+            <div id="welcome-section" class="flex flex-col items-center justify-center">
+            <h2 class="text-xl text-amber-50 font-onest font-thin mb-1">Welcome to</h2>
+            <img src="../img/COURSEDOCK.svg" class="w-[180px] mb-4" />
+            </div>
+
+            <!-- Create Faculty Title -->
+            <h3 id="create-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
+            ❇️ Creating a Faculty
+            </h3>
+
+            <!-- Join Faculty Title -->
+            <h3 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
+            Join with a Code
+            </h3>
+
+            <!-- Popup main menu buttons -->
+            <div id="popup-menu" class="flex flex-col space-y-4">
+            <p class="text-white font-normal font-onest text-[12px] mb-4">You are not currently part of any faculty.</p>
+
+            <button onclick="showCreateForm()" class="btnlogin text-[14px]">
+                Create a New Faculty
+            </button>
+
+            <div class="flex items-center justify-center mt-0 mb-2">
+                <hr class="flex-grow border-t-2 border-white mx-2">
+                <p class="text-white font-normal font-onest text-[12px]">or</p>
+                <hr class="flex-grow border-t-2 border-white mx-2">
+            </div>
+
+            <button onclick="showJoinForm()" class="btnlogin text-[14px]">
+                Join Faculty
+            </button>
+            </div>
+
+            <!-- Create Faculty Form -->
+            <div id="create-form" class="hidden flex flex-col space-y-4">
+                <hr>
+            <form action="../src/scripts/create_faculty.php" method="POST" class="space-y-4">
+
+                <p class="subtext">Create faculty name and generate faculty code.</p> 
+
+                <input type="text" name="faculty_name" placeholder="Faculty Name" required
+                class="w-full px-3 py-2 rounded-md shadow-inner text-[12px] bg-[#13275B] text-white border border-[#304374] font-onest text-center" />
+
+
+                <div class="flex flex-col items-start text-left w-full space-y-2">
+                <label class="text-white text-sm font-onest">Faculty Code:</label>
+
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                    <input type="text" name="faculty_code" id="generatedCode" readonly
+                        class="w-full px-3 py-2 pr-10 rounded-md text-[12px] shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
+
+                    <button type="button" onclick="copyCode()"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-green-600 hover:bg-green-800 text-white px-2 py-1 rounded">
+                        Copy
+                    </button>
+                    </div>
+
+
+                    <button type="button" onclick="generateCode()"
+                    class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-md text-sm">
+                    Generate
+                    </button>
+                </div>
+                     <p class="text-[10px] subtext ">Note: Faculty's code is permanent once created!</p> 
+                </div>
+
+                <button type="submit" class="btnlogin text-[14px] mt-2">
+                Create Faculty
+                </button>
+            </form>
+            </div>
+
+            <!-- Join Faculty Form -->
+            <div id="join-form" class="hidden flex flex-col space-y-4">
+            <hr>
+    
+                <form action="join_faculty.php" method="POST" class="space-y-4">
+                    <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
+                    class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" 
+                    value="<?php echo isset($_POST['faculty_code']) ? htmlspecialchars($_POST['faculty_code']) : ''; ?>"/>
+
+                    <button type="submit" class="btnlogin text-[14px] mt-4">
+                        Join Faculty
+                    </button>
+                </form>
+            </div>
+
+            <?php if (isset($_SESSION['joined_faculty_success']) || isset($_SESSION['joined_faculty_error'])): ?>
+                <script>
+                    window.onload = function() {
+                        <?php if (isset($_SESSION['joined_faculty_success'])): ?>
+                            showToast("<?php echo addslashes($_SESSION['joined_faculty_success']); ?>", "success");
+                            <?php unset($_SESSION['joined_faculty_success']); ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['joined_faculty_error'])): ?>
+                            showToast("<?php echo addslashes($_SESSION['joined_faculty_error']); ?>", "error");
+                            <?php unset($_SESSION['joined_faculty_error']); ?>
+                        <?php endif; ?>
+                    };
+                </script>
+            <?php endif; ?>
+
+        </div>
+        </div>
+
+
+        <script>
+           
+
+
+            function showToast(message, type = 'error') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerText = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 3500);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                            <?php if ($autoShowJoinForm): ?>
+                                showJoinForm();
+                            <?php endif; ?>
+                        });
+
+
+            function showMainMenu() {
+            document.getElementById('popup-menu').classList.remove('hidden');
+            document.getElementById('welcome-section').classList.remove('hidden');
+            document.getElementById('join-title').classList.add('hidden');
+            document.getElementById('create-title').classList.add('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+            document.getElementById('create-form').classList.add('hidden');
+
+                           
+            }
+            
+            function showCreateForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('create-title').classList.remove('hidden');
+            document.getElementById('join-title').classList.add('hidden');
+            document.getElementById('create-form').classList.remove('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+
+                const createTitle = document.getElementById('create-title');
+                if (!createTitle.querySelector('.back-button')) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                    backButton.onclick = showMainMenu;
+                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                    </svg>`;
+                    
+                    createTitle.prepend(backButton);
+                }
+            }
+
+            function showJoinForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('join-title').classList.remove('hidden');
+            document.getElementById('create-title').classList.add('hidden');
+            document.getElementById('join-form').classList.remove('hidden');
+            document.getElementById('create-form').classList.add('hidden');
+
+                const joinTitle = document.getElementById('join-title');
+                if (!joinTitle.querySelector('.back-button')) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                    backButton.onclick = showMainMenu;
+                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                    </svg>`;
+                    
+                    joinTitle.prepend(backButton);
+                }
+            }
+
+            function generateCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 5; i++) {
+                code += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            document.getElementById('generatedCode').value = code;
+            }
+
+            function copyCode() {
+            const codeInput = document.getElementById('generatedCode');
+            codeInput.select();
+            codeInput.setSelectionRange(0, 99999); 
+            document.execCommand('copy');
+            alert('Code copied!');
+            }
+        </script>
+   
+        <?php endif; ?>
+
+        <script>
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const chevronIcon = document.getElementById('chevronIcon');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                chevronIcon.classList.toggle('rotate-180');
+            });
+        </script>
 </body>
 </html>

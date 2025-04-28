@@ -1,0 +1,462 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['Username'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
+$conn = new mysqli("localhost", "root", "", "CMS");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if (isset($_SESSION['show_join_form'])) {
+    $showFacultyPopup = true;
+    $autoShowJoinForm = true;
+    unset($_SESSION['show_join_form']);
+} else {
+    $autoShowJoinForm = false;
+}
+
+if (isset($_SESSION['joined_faculty_success'])) {
+    unset($_SESSION['joined_faculty_success']);
+}
+
+
+$accountID = $_SESSION['AccountID'];
+
+$query = "SELECT Role, FacultyID FROM personnel WHERE AccountID = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $accountID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$dashboardPage = "";
+$showFacultyPopup = false;
+$facultyName = '';
+
+if ($row = $result->fetch_assoc()) {
+    if (empty($row['FacultyID'])) {
+        $showFacultyPopup = true;
+    } else {
+       
+        $facultyQuery = "SELECT Faculty FROM faculties WHERE FacultyID = ?";
+        $facultyStmt = $conn->prepare($facultyQuery);
+        $facultyStmt->bind_param("i", $row['FacultyID']);
+        $facultyStmt->execute();
+        $facultyResult = $facultyStmt->get_result();
+        if ($facultyRow = $facultyResult->fetch_assoc()) {
+            $facultyName = strtoupper($facultyRow['Faculty']);
+        }
+        $facultyStmt->close();
+    }
+
+    if (!empty($row['Role'])) {
+        if ($row['Role'] === 'DN') {
+            $dashboardPage = "dashboard/dn-dash.php";
+        } elseif ($row['Role'] === 'PH') {
+            $dashboardPage = "dashboard/ph-dash.php";
+        } elseif ($row['Role'] === 'FM') {
+            $dashboardPage = "dashboard/fm-dash.php";
+        }
+    }
+}
+
+$stmt->close();
+$conn->close();
+?>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../../src/tailwind/output.css" rel="stylesheet" />
+    <link href="../../src/styles.css" rel="stylesheet" />
+    <title>Faculty | CourseDock</title>
+    <link href="../../img/cdicon.svg" rel="icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-overpass { font-family: 'Overpass', sans-serif; }
+        .font-onest { font-family: 'Onest', sans-serif; }
+
+        /* Sidebar */
+
+        #sidebar {
+            transition: width 0.6s ease-in-out;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+       
+        .collapsed #logo, 
+        .collapsed #logo-text {
+            visibility: hidden; 
+            transition: all 0s ease-in-out; 
+        }
+
+      
+        .collapsed .link-text {
+            display: none;      
+        }
+
+       
+        .collapsed {
+            width: 80px;
+            align-items: center;
+        }
+
+        #toggleSidebar {
+            transition: all 0.5s ease-in-out;
+        }
+
+        .collapsed #toggleSidebar {
+            position: absolute;
+        
+            width: 35px;
+            height: 35px;
+            background-color: #324f96;
+            color: white;
+            display: flex;            
+            align-items: center;      
+            justify-content: center; 
+        }
+
+        .collapsed .menu-item {
+            width: 50px; 
+            height: 50px;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            padding: 0; 
+            border-radius: 20%; 
+         
+        }
+
+
+        .collapsed .menu-item img {
+            width: 24px;
+            height: 24px;
+            margin: 0;
+        }
+
+        .menu-item {
+            user-select: none;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #13275B;
+        }
+
+    
+        .link-text {
+            font-size: 16px;
+            color: #E3E3E3;
+            font-family: 'Onest', sans-serif;
+            font-weight: 400;
+            transition: opacity 0.3s ease;
+        }
+
+        
+        .profile-container {
+          position: relative;
+          display: inline-block;
+        }
+        
+        .profile-dropdown {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background-color: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          min-width: 180px;
+          z-index: 100;
+          overflow: hidden;
+          display: none;
+        }
+
+        
+
+        
+        .profile-container:hover .profile-dropdown {
+          display: block;
+        }
+        
+        .profile-dropdown-item {
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          font-family: 'Inter', sans-serif;
+          font-size: 14px;
+          color: #333;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        
+        .profile-dropdown-item:hover {
+          background-color: #f5f5f5;
+        }
+        
+        .logout-item {
+          border-top: 1px solid #eaeaea;
+        }
+        
+        .logout-item:hover {
+          background-color: #fff0f0;
+          color: #e53e3e;
+        }
+
+        .back-button {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: transparent;
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        }
+
+        .back-button:hover {
+            transform: translateX(-2px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button:active {
+            transform: translateX(-2px) scale(0.95);
+        }
+
+        .back-button svg {
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover svg {
+            transform: scale(1.1);
+        }
+
+        .collapsed .create-text {
+            display: none;
+        }
+
+    
+        .collapsed #createButton {
+            justify-content: center;
+            gap: 0;
+            padding: 14px; 
+            border-radius: 30%;
+            transition: all 0.5s ease-in-out;
+            transition: all 1s ease-in-out;
+        }
+
+      
+        .collapsed .sidebar-footer {
+            display: none;
+            transition: all 1s ease-in-out;
+        }
+                
+
+    </style>
+</head>
+
+<body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
+
+    <!-- Wrapper -->
+    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">
+            <div class="text-left leading-tight mb-4 ml-2 font-onest flex items-center justify-between">
+                <div class="flex flex-col items-start">
+                    <img src="../../img/COURSEDOCK.svg" class="w-[180px] transition-all duration-300" id="logo" />
+                    <p class="text-[10px] font-light transition-all duration-300" id="logo-text">Courseware Monitoring System</p>
+                </div>
+
+                <button id="toggleSidebar" class="ml-3 bg-[#1D387B] border-2 border-[#2A4484] w-[30px] h-[30px] rounded-full flex items-center justify-center shadow-md transition-transform">
+                    <svg id="chevronIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-2 flex flex-col gap-[8px]">
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('<?php echo htmlspecialchars($dashboardPage); ?>')">
+                    <img src="../../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Dashboard</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('tasks.php')">
+                    <img src="../../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Tasks</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('inbox.php')">
+                    <img src="../../img/notification-icon.png" alt="Inbox" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Inbox</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('faculty.php')">
+                    <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Faculty</span>
+                </div>
+                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('curriculum.php')">
+                    <img src="../../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Curriculum Materials</span>
+                </div>
+            </div>
+
+
+            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+                <span class="create-text">Create</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+            </button>
+
+            <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
+                <hr class="border-t border-[#314f9b] w-full mx-auto mb-2" />
+                © 2025 CourseDock. All rights reserved.
+                <span class="mt-1">
+                    <br>
+                    <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
+                    <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col h-full ">
+
+            <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
+                <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
+                    <?php echo htmlspecialchars($facultyName); ?>
+                </div>
+             
+                <div class="profile-container">
+                  <div class="font-poppins text-[24px] font-semibold cursor-pointer flex items-center gap-1">
+                    Profile 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="ml-1">
+                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                    </svg>
+                  </div>
+                  
+                  <div class="profile-dropdown">
+                    <div class="profile-dropdown-item">
+                      View Profile
+                    </div>
+                    <div class="profile-dropdown-item">
+                      Settings
+                    </div>
+                    <div class="profile-dropdown-item logout-item" onclick="location.href='../index.php'">
+                      Logout
+                    </div>
+                  </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Content -->
+            <iframe id="contentIframe" src="faculty_frame.php" class="w-full flex-1 fade-in" frameborder="0"></iframe>
+
+        </div>
+    </div>
+
+        <script>
+           
+
+
+            function showToast(message, type = 'error') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerText = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 3500);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                            <?php if ($autoShowJoinForm): ?>
+                                showJoinForm();
+                            <?php endif; ?>
+                        });
+
+
+            function showMainMenu() {
+            document.getElementById('popup-menu').classList.remove('hidden');
+            document.getElementById('welcome-section').classList.remove('hidden');
+            document.getElementById('join-title').classList.add('hidden');
+            document.getElementById('create-title').classList.add('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+            document.getElementById('create-form').classList.add('hidden');
+
+                           
+            }
+            
+            function showCreateForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('create-title').classList.remove('hidden');
+            document.getElementById('join-title').classList.add('hidden');
+            document.getElementById('create-form').classList.remove('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+
+                const createTitle = document.getElementById('create-title');
+                if (!createTitle.querySelector('.back-button')) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                    backButton.onclick = showMainMenu;
+                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                    </svg>`;
+                    
+                    createTitle.prepend(backButton);
+                }
+            }
+
+            function showJoinForm() {
+            document.getElementById('popup-menu').classList.add('hidden');
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('join-title').classList.remove('hidden');
+            document.getElementById('create-title').classList.add('hidden');
+            document.getElementById('join-form').classList.remove('hidden');
+            document.getElementById('create-form').classList.add('hidden');
+
+                const joinTitle = document.getElementById('join-title');
+                if (!joinTitle.querySelector('.back-button')) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                    backButton.onclick = showMainMenu;
+                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                    </svg>`;
+                    
+                    joinTitle.prepend(backButton);
+                }
+            }
+
+            
+        </script>
+
+        <script>
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const chevronIcon = document.getElementById('chevronIcon');
+
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                chevronIcon.classList.toggle('rotate-180');
+            });
+        </script>
+</body>
+</html>

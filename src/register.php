@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +28,8 @@
                     <div class="signinbox" id="signupStep1">
                     
                         
-                        <h3>Registration</h3>
+                    <h3>Registration</h3>
+
                         <p class="subtext">Create your username and password.</p>
 
                         <hr>
@@ -60,7 +62,14 @@
 
                     <div class="signinbox" id="signupStep2" style="display: none;">
 
-                        <h3>Personal Information</h3>
+                        <h3 class="registration-title">
+                        <a href="#" class="back-arrow" onclick="goBackStep1(event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </a>
+                        Personal Information
+                    </h3>
                         <p class="subtext">Create a profile and put information.</p>
                         <hr>
                         
@@ -153,7 +162,16 @@
     </div>
 
 
+    
+
+
     <script>
+
+        function goBackStep1(event) {
+            event.preventDefault();
+            document.getElementById('signupStep2').style.display = 'none';
+            document.getElementById('signupStep1').style.display = 'block';
+        }
        
         function showToast(message, type = 'error') {
             const toast = document.createElement('div');
@@ -296,7 +314,19 @@
                 
             }
 
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const success = urlParams.get('success');
 
+            if (error) {
+                showToast(error, 'error');
+            }
+
+            if (success) {
+                showToast(success, 'success');
+            }
+        });
         
     </script>
     
