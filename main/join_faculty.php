@@ -23,11 +23,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['faculty_code'])) {
     $result = $stmt->get_result();
     
     if ($result->num_rows > 0) {
-        // Faculty code is valid, get FacultyID
+   
         $row = $result->fetch_assoc();
         $facultyID = $row['FacultyID'];
         
-        // Update user's faculty ID and role to FM (Faculty Member)
+     
         $updateQuery = "UPDATE personnel SET FacultyID = ?, Role = 'FM' WHERE AccountID = ?";
         $updateStmt = $conn->prepare($updateQuery);
         $updateStmt->bind_param("ii", $facultyID, $accountID);
@@ -35,8 +35,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['faculty_code'])) {
         if ($updateStmt->execute()) {
             // Success, redirect to homepage with success message
             $_SESSION['joined_faculty_success'] = "Successfully joined faculty!";
-            header("Location: dashboard/fm-dash.php");
+            header("Location: homepage.php?joined=1");
             exit();
+
         } else {
             $_SESSION['joined_faculty_error'] = "Failed to update user information. Please try again.";
             $_SESSION['show_join_form'] = true; // Flag to show join form
