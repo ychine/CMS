@@ -199,6 +199,35 @@ $conn->close();
           color: #e53e3e;
         }
 
+        .back-button {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: transparent;
+        border: none;
+        padding: 4px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        }
+
+        .back-button:hover {
+            transform: translateX(-2px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .back-button:active {
+            transform: translateX(-2px) scale(0.95);
+        }
+
+        .back-button svg {
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover svg {
+            transform: scale(1.1);
+        }
+
         .collapsed .create-text {
             display: none;
         }
@@ -402,9 +431,9 @@ $conn->close();
 
             <!-- Join Faculty Form -->
             <div id="join-form" class="hidden flex flex-col space-y-4">
-              <hr>
+            <hr>
             <form action="join_faculty.php" method="POST" class="space-y-4">
-
+                
                 <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
                 class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
 
@@ -419,6 +448,19 @@ $conn->close();
 
 
         <script>
+
+
+            function showMainMenu() {
+            document.getElementById('popup-menu').classList.remove('hidden');
+            document.getElementById('welcome-section').classList.remove('hidden');
+            document.getElementById('join-title').classList.add('hidden');
+            document.getElementById('create-title').classList.add('hidden');
+            document.getElementById('join-form').classList.add('hidden');
+            document.getElementById('create-form').classList.add('hidden');
+
+                           
+            }
+            
             function showCreateForm() {
             document.getElementById('popup-menu').classList.add('hidden');
             document.getElementById('welcome-section').classList.add('hidden');
@@ -426,6 +468,19 @@ $conn->close();
             document.getElementById('join-title').classList.add('hidden');
             document.getElementById('create-form').classList.remove('hidden');
             document.getElementById('join-form').classList.add('hidden');
+
+                const createTitle = document.getElementById('create-title');
+                if (!createTitle.querySelector('.back-button')) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                    backButton.onclick = showMainMenu;
+                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                    </svg>`;
+                    
+                    createTitle.prepend(backButton);
+                }
             }
 
             function showJoinForm() {
@@ -435,6 +490,19 @@ $conn->close();
             document.getElementById('create-title').classList.add('hidden');
             document.getElementById('join-form').classList.remove('hidden');
             document.getElementById('create-form').classList.add('hidden');
+
+                const joinTitle = document.getElementById('join-title');
+                if (!joinTitle.querySelector('.back-button')) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                    backButton.onclick = showMainMenu;
+                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                    </svg>`;
+                    
+                    joinTitle.prepend(backButton);
+                }
             }
 
             function generateCode() {
