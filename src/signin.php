@@ -22,7 +22,6 @@
         </di>
 
         <div class="container">
-
         
         
                 <form action="src/scripts/sampledashboard.php" method="POST" >
@@ -102,7 +101,7 @@
         }
     });
 
-    // Display toast for login error (e.g., invalid login)
+   
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('error') === 'invalid') {
         const toast = document.createElement('div');
@@ -115,7 +114,6 @@
         }, 3000);
     }
 
-    // Remove red border as the user types (optional but helpful UX)
     usernameField.addEventListener('input', () => {
         if (usernameField.value.trim() !== '') {
             usernameField.classList.remove('error-border');

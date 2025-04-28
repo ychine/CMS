@@ -71,7 +71,7 @@ $conn->close();
         /* Sidebar */
 
         #sidebar {
-            transition: width 0.3s;
+            transition: width 0.6s ease-in-out;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -81,7 +81,7 @@ $conn->close();
         .collapsed #logo, 
         .collapsed #logo-text {
             visibility: hidden; 
-            transition: all 0s ease; 
+            transition: all 0s ease-in-out; 
         }
 
       
@@ -130,6 +130,7 @@ $conn->close();
         }
 
         .menu-item {
+            user-select: none;
             display: flex;
             align-items: center;
             padding: 10px;
@@ -198,6 +199,27 @@ $conn->close();
           color: #e53e3e;
         }
 
+        .collapsed .create-text {
+            display: none;
+        }
+
+    
+        .collapsed #createButton {
+            justify-content: center;
+            gap: 0;
+            padding: 14px; 
+            border-radius: 30%;
+            transition: all 0.5s ease-in-out;
+            transition: all 1s ease-in-out;
+        }
+
+      
+        .collapsed .sidebar-footer {
+            display: none;
+            transition: all 1s ease-in-out;
+        }
+                
+
     </style>
 </head>
 
@@ -245,13 +267,26 @@ $conn->close();
             </div>
 
 
-            <button class="mt-auto bg-green-600 hover:bg-green-800 text-white px-4 py-3 rounded-md text-lg font-bold transition">
-                + Create
+            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+                <span class="create-text">Create</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
             </button>
+
+            <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
+                <hr class="border-t border-[#314f9b] w-full mx-auto mb-2" />
+                © 2025 CourseDock. All rights reserved.
+                <span class="mt-1">
+                    <br>
+                    <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
+                    <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
+                </span>
+            </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col h-full">
+        <div class="flex-1 flex flex-col h-full fade-in">
 
             <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
                 <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
