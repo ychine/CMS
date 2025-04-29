@@ -287,6 +287,9 @@
   .mr-\[22px\] {
     margin-right: 22px;
   }
+  .mb-0 {
+    margin-bottom: calc(var(--spacing) * 0);
+  }
   .mb-1 {
     margin-bottom: calc(var(--spacing) * 1);
   }
@@ -599,6 +602,15 @@
   }
   .p-8 {
     padding: calc(var(--spacing) * 8);
+  }
+  .p-\[20px\] {
+    padding: 20px;
+  }
+  .p-\[25px\] {
+    padding: 25px;
+  }
+  .p-\[28px\] {
+    padding: 28px;
   }
   .p-\[30px\] {
     padding: 30px;

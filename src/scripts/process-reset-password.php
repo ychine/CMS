@@ -51,6 +51,6 @@ $stmt->bind_param("ss", $password_hash, $user["AccountID"]);
 
 $stmt->execute();
 
-header('Location: reset-password.php?success=passwordupdated');
+header('Location: ../../index.php?success=passwordupdated');
 exit();
 ?>

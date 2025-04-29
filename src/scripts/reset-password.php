@@ -92,6 +92,7 @@ if (strtotime($user["reset_token_expires_at"]) <= time()) {
             </div> 
         </form> 
 
+        <br>
 
         <div class="signinbox">
                 <div class="new-user-line">

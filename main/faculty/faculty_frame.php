@@ -73,7 +73,7 @@ $conn->close();
         <?php if (!empty($members)): ?>
             <?php foreach ($members as $member): ?>
                 <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center justify-between mb-0">
                         <h2 class="text-lg font-bold">
                             <?php 
                                 echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); 
