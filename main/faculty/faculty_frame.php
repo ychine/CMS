@@ -1,25 +1,21 @@
-<?php
-session_start();
-
-// Check if user is logged in
-if (!isset($_SESSION['Username'])) {
-    header("Location: ../index.php");
-    exit();
-}
+<?php 
+session_start(); 
+if (!isset($_SESSION['Username'])) { 
+    header("Location: ../index.php"); 
+    exit(); 
+} 
 
 $conn = new mysqli("localhost", "root", "", "cms");
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if ($conn->connect_error) { 
+    die("Connection failed: " . $conn->connect_error); 
 }
 
-$accountID = $_SESSION['AccountID'];
-$facultyName = "Faculty";
+$accountID = $_SESSION['AccountID']; 
+$facultyName = "Faculty"; 
 $members = [];
 
-$sql = "SELECT personnel.FacultyID, faculties.Faculty 
-        FROM personnel 
-        JOIN faculties ON personnel.FacultyID = faculties.FacultyID
-        WHERE personnel.AccountID = ?";
+
+$sql = "SELECT personnel.FacultyID, faculties.Faculty FROM personnel JOIN faculties ON personnel.FacultyID = faculties.FacultyID WHERE personnel.AccountID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $accountID);
 $stmt->execute();
@@ -30,7 +26,8 @@ if ($result && $result->num_rows > 0) {
     $facultyID = $row['FacultyID'];
     $facultyName = $row['Faculty'];
 
-    $memberQuery = "SELECT FirstName, LastName, Role FROM personnel WHERE FacultyID = ?";
+    
+    $memberQuery = "SELECT FirstName, LastName, Role, AccountID FROM personnel WHERE FacultyID = ?";
     $memberStmt = $conn->prepare($memberQuery);
     $memberStmt->bind_param("i", $facultyID);
     $memberStmt->execute();
@@ -39,13 +36,10 @@ if ($result && $result->num_rows > 0) {
     while ($memberRow = $memberResult->fetch_assoc()) {
         $members[] = $memberRow;
     }
-
     $memberStmt->close();
 } else {
-    // No faculty found
-    $facultyName = "No Faculty Assigned";
+    $facultyName = "No Faculty Assigned"; 
 }
-
 $stmt->close();
 $conn->close();
 ?>
@@ -53,43 +47,183 @@ $conn->close();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
+        
+        /* Custom style for dropdown */
+        .role-select {
+            background-color: #f3f4f6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            font-size: 14px;
+            font-weight: 500;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #4b5563;
+        }
+        .role-select:hover {
+            background-color: #e5e7eb; 
+            border-color: #4a84f1;
+        }
+
+        .role-select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        
+        .actions-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .delete-button {
+            background-color: #f3f4f6;
+            border-radius: 6px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #6b7280;
+        }
+        
+        .delete-button:hover {
+            background-color: #fee2e2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
     </style>
 </head>
 <body>
-
-<div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold"><?php echo htmlspecialchars($facultyName); ?> Members</h1> 
-    <hr class="border-gray-400">
-    <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view, delete, and change the roles of your faculty members.</p>
-    
-    <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
-        <?php if (!empty($members)): ?>
-            <?php foreach ($members as $member): ?>
-                <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
-                    <div class="flex items-center justify-between mb-0">
-                        <h2 class="text-lg font-bold">
-                            <?php 
-                                echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); 
-                            ?>
-                        </h2>
-                        <div class="text-sm text-blue-600">
-                            <?php echo htmlspecialchars($member['Role']); ?>
+    <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+        <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold"><?php echo htmlspecialchars($facultyName); ?> Members</h1>
+        <hr class="border-gray-400">
+        <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view, delete, and change the roles of your faculty members.</p>
+        <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
+            <?php if (!empty($members)): ?>
+                <?php foreach ($members as $member): ?>
+                    <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-bold"><?php echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); ?></h2>
+                            <div class="text-sm text-blue-600"><?php echo htmlspecialchars($member['Role']); ?></div>
+                        </div>
+                        <div class="actions-container">
+                            <select class="role-select role-change-dropdown" data-account-id="<?php echo $member['AccountID']; ?>">
+                            <option value="" disabled selected>Select a role</option>
+                                <option value="PH" <?php echo $member['Role'] === 'PH' ? 'selected' : ''; ?>>PROGRAM HEAD</option>
+                                <option value="DN" <?php echo $member['Role'] === 'DN' ? 'selected' : ''; ?>>DEAN</option>
+                            </select>
+                            <button class="delete-button" data-account-id="<?php echo $member['AccountID']; ?>" title="Remove Member">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 hover:text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+</button>
                         </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="text-gray-500">No members found in your faculty.</p>
-        <?php endif; ?>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-gray-500">No members found in your faculty.</p>
+            <?php endif; ?>
+        </div>
     </div>
-</div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.querySelectorAll('.role-change-dropdown').forEach(select => {
+    let previousValue = select.value;
+
+    select.addEventListener('mousedown', () => {
+        previousValue = select.value;
+    });
+
+    select.addEventListener('change', function () {
+        const accountId = this.getAttribute('data-account-id');
+        const newRole = this.value;
+
+        Swal.fire({
+            title: 'Change Role?',
+            text: "Are you sure you want to update this member's role?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#51D55A',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, change it!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('update_role.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ accountId, newRole }),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire('Success', 'Role updated successfully!', 'success').then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', 'Failed to update role.', 'error');
+                    }
+                });
+            } else {
+                select.value = previousValue;
+            }
+        });
+    });
+});
+
+document.querySelectorAll('.delete-button').forEach(el => {
+    el.addEventListener('click', function () {
+        const accountId = this.getAttribute('data-account-id');
+
+        Swal.fire({
+            title: 'Remove Member?',
+            text: 'Are you sure you want to remove this member from the faculty?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e3342f',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, remove',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('delete_member.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ accountId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.fire('Removed!', data.message, 'success').then(() => {
+                        location.reload();
+                    });
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'Failed to remove member: ' + error, 'error');
+                });
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>
