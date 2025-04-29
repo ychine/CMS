@@ -291,26 +291,30 @@ $conn->close();
             </div>
 
             <div class="p-2 flex flex-col gap-[8px]">
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('<?php echo htmlspecialchars($dashboardPage); ?>')">
+                <a href="../homepage.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Dashboard</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('tasks.php')">
+                </a>
+
+                <a href="../tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Tasks</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('inbox.php')">
+                </a>
+
+                <a href="../inbox.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/notification-icon.png" alt="Inbox" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Inbox</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('faculty.php')">
+                </a>
+
+                <a href="../faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
-                </div>
-                <div class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition" onclick="changeIframe('curriculum.php')">
+                </a>
+
+                <a href="../curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curriculum Materials</span>
-                </div>
+                </a>
             </div>
 
 
@@ -355,7 +359,7 @@ $conn->close();
                     <div class="profile-dropdown-item">
                       Settings
                     </div>
-                    <div class="profile-dropdown-item logout-item" onclick="location.href='../index.php'">
+                    <div class="profile-dropdown-item logout-item" onclick="location.href='../../index.php'">
                       Logout
                     </div>
                   </div>

@@ -65,7 +65,7 @@ $conn->close();
 <body>
 
 <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold"><?php echo htmlspecialchars($facultyName); ?> Members</h1> 
+    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Tasskss</h1> 
     <hr class="border-gray-400">
     <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view, delete, and change the roles of your faculty members.</p>
     
