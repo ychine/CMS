@@ -60,45 +60,131 @@ $conn->close();
         body { font-family: 'Inter', sans-serif; }
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
+
+        .task-dropdown {
+            max-height: 0; 
+            opacity: 0;
+            transform: translateX(20px); 
+            transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out, transform 0.5s ease-in-out;
+            overflow: hidden; 
+        }
+
+        .task-dropdown.show {
+            max-height: 300px; 
+            opacity: 1; 
+            transform: translateX(0); 
+        }
+
+
+        .task-button.open svg {
+            transform: rotate(45deg); 
+        }
     </style>
 </head>
 <body>
 
-<div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Tasks</h1> 
-    <hr class="border-gray-400">
-    <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.</p>
-    
-    <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
-        <?php if (!empty($members)): ?>
-            <?php foreach ($members as $member): ?>
-                <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-lg font-bold">
-                            <?php 
-                                echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); 
-                            ?>
-                        </h2>
-                        <div class="text-sm text-blue-600">
-                            <?php echo htmlspecialchars($member['Role']); ?>
+        <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+            <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Tasks</h1> 
+            <hr class="border-gray-400">
+            <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.</p>
+            
+            <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
+                <?php if (!empty($members)): ?>
+                    <?php foreach ($members as $member): ?>
+                        <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
+                            <div class="flex items-center justify-between mb-6">
+                                <h2 class="text-lg font-bold">
+                                    <?php 
+                                        echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); 
+                                    ?>
+                                </h2>
+                                <div class="text-sm text-blue-600">
+                                    <?php echo htmlspecialchars($member['Role']); ?>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="text-gray-500">No members found in your faculty.</p>
-        <?php endif; ?>
-    </div>
-</div>
-
-    
-        <a href="" 
-        class="fixed bottom-8 right-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
-        title="Add Task">
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-gray-500">No members found in your faculty.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- yung plus bttton -->
+        <!-- The floating button -->
+        <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 
+            class="task-button fixed bottom-8 right-10 w-13 h-13 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
+            title="Add Task">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
         </a>
 
+        <!-- Task Dropdown -->
+        <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-40 bg-[#51D55A] shadow-lg rounded-full hover:bg-green-800 transition-all duration-300">
+            <button onclick="openTaskModal()" class="w-full text-xl text-center text-white py-3 px-4"> 
+                Create Task
+            </button>
+        </div>
+
+        <!-- Task Modal -->
+        <div id="taskModal" class="hidden fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-[500px]">
+                <h2 class="text-xl font-bold mb-4">Create Task</h2>
+                <form method="POST" action="">
+                    <input type="text" name="title" placeholder="Task Title" required class="w-full mb-3 p-2 border rounded" />
+                    <textarea name="description" placeholder="Task Description" class="w-full mb-3 p-2 border rounded"></textarea>
+                    <input type="date" name="due_date" class="w-full mb-3 p-2 border rounded" required />
+
+                    <label class="block mb-1">Assign to:</label>
+                    <select name="assigned[]" multiple required class="w-full p-2 border rounded">
+                    
+                    </select>
+
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button type="button" onclick="closeTaskModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
+                        <button type="submit" name="create_task" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+    <script>
+        function toggleTaskDropdown() {
+            const dropdown = document.getElementById('task-dropdown');
+            const button = document.querySelector('a[title="Add Task"]');
+            
+            // Toggle the dropdown visibility
+            dropdown.classList.toggle('show');
+            button.classList.toggle('open'); // Rotate the plus sign
+        }
+
+        window.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('task-dropdown');
+            const button = document.querySelector('a[title="Add Task"]');
+
+            // Close the dropdown if clicked outside
+            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.remove('show');
+                button.classList.remove('open');
+            }
+        });
+
+        function openTaskModal() {
+            document.getElementById('taskModal').classList.remove('hidden');
+            const dropdown = document.getElementById('task-dropdown');
+            dropdown.classList.remove('show'); 
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.add('hidden');
+        }
+
+        window.addEventListener('keydown', function (e) {
+            if (e.key === "Escape") closeTaskModal();
+        });
+    </script>
 </body>
 </html>

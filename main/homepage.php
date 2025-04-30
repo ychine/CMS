@@ -301,10 +301,6 @@ $conn->close();
                     <span class="link-text">Tasks</span>
                 </a>
 
-                <a href="inbox.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Inbox</span>
-                </a>
 
                 <a href="faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
@@ -313,7 +309,12 @@ $conn->close();
 
                 <a href="curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Curriculum Materials</span>
+                    <span class="link-text">Curricula</span>
+                </a>
+
+                <a href="inbox.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Repository</span>
                 </a>
 
                 <a href="audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">

@@ -167,15 +167,18 @@ DROP TABLE IF EXISTS `submissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `submissions` (
-  `SubmissionID` int(11) NOT NULL,
-  `FacultyID` int(11) DEFAULT NULL,
-  `Printed` varchar(20) DEFAULT NULL,
-  `Esign` varchar(100) DEFAULT NULL,
-  `SchoolYear` varchar(20) DEFAULT NULL,
-  `Term` varchar(10) DEFAULT NULL,
+  `SubmissionID` INT(11) NOT NULL,
+  `FacultyID` INT(11) DEFAULT NULL,
+  `TaskID` INT(11) DEFAULT NULL,
+  `Printed` VARCHAR(20) DEFAULT NULL,
+  `Esign` VARCHAR(100) DEFAULT NULL,
+  `SchoolYear` VARCHAR(20) DEFAULT NULL,
+  `Term` VARCHAR(10) DEFAULT NULL,
   PRIMARY KEY (`SubmissionID`),
   KEY `FacultyID` (`FacultyID`),
-  CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
+  KEY `TaskID` (`TaskID`),
+  CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`),
+  CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -196,12 +199,15 @@ DROP TABLE IF EXISTS `task_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `task_assignments` (
-  `TaskID` int(11) NOT NULL,
-  `PersonnelID` int(11) NOT NULL,
-  PRIMARY KEY (`TaskID`,`PersonnelID`),
+  `TaskID` INT(11) NOT NULL,
+  `PersonnelID` INT(11) NOT NULL,
+  `CourseCode` VARCHAR(10) NOT NULL,
+  PRIMARY KEY (`TaskID`, `PersonnelID`, `CourseCode`),
   KEY `PersonnelID` (`PersonnelID`),
+  KEY `CourseCode` (`CourseCode`),
   CONSTRAINT `task_assignments_ibfk_1` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`),
-  CONSTRAINT `task_assignments_ibfk_2` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`)
+  CONSTRAINT `task_assignments_ibfk_2` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`),
+  CONSTRAINT `task_assignments_ibfk_3` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

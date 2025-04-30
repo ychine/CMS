@@ -33,7 +33,16 @@ if ($result && $result->num_rows > 0) {
 
     
     
-    $memberQuery = "SELECT FirstName, LastName, Role, AccountID FROM personnel WHERE FacultyID = ?";
+    $memberQuery = "SELECT FirstName, LastName, Role, AccountID 
+                FROM personnel 
+                WHERE FacultyID = ? 
+                ORDER BY 
+                    CASE Role 
+                        WHEN 'DN' THEN 1 
+                        WHEN 'PH' THEN 2 
+                        WHEN 'FM' THEN 3 
+                        ELSE 4 
+                    END";
     $memberStmt = $conn->prepare($memberQuery);
     $memberStmt->bind_param("i", $facultyID);
     $memberStmt->execute();
@@ -139,7 +148,7 @@ $conn->close();
         <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
             <?php if (!empty($members)): ?>
                 <?php foreach ($members as $member): ?>
-                    <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md flex justify-between items-center">
+                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-between items-center">
                         <div>
                             <h2 class="text-lg font-bold"><?php echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); ?></h2>
                             <?php
