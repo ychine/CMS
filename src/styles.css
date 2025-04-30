@@ -544,3 +544,7 @@ input.match-border {
     transform: translateX(-2px) scale(0.95);
 }
 
+
+#chevron-icon {
+    transition: transform 0.3s ease-in-out;
+}

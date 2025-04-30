@@ -73,10 +73,10 @@ $conn->close();
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="../src/tailwind/output.css" rel="stylesheet" />
-    <link href="../src/styles.css" rel="stylesheet" />
-    <title>Home | CourseDock</title>
-    <link href="../img/cdicon.svg" rel="icon">
+    <link href="../../src/tailwind/output.css" rel="stylesheet" />
+    <link href="../../src/styles.css" rel="stylesheet" />
+    <title>Tasks | CourseDock</title>
+    <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -265,12 +265,16 @@ $conn->close();
             display: none;
             transition: all 1s ease-in-out;
         }
+
+        #chevronIcon {
+            transition: transform 0.3s ease;
+        }
                 
 
     </style>
 </head>
 
-<body id="mainBody" class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
+<body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
     <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
@@ -279,7 +283,7 @@ $conn->close();
         <div id="sidebar" class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">
             <div class="text-left leading-tight mb-4 ml-2 font-onest flex items-center justify-between">
                 <div class="flex flex-col items-start">
-                    <img src="../img/COURSEDOCK.svg" class="w-[180px] transition-all duration-300" id="logo" />
+                    <img src="../../img/COURSEDOCK.svg" class="w-[180px] transition-all duration-300" id="logo" />
                     <p class="text-[10px] font-light transition-all duration-300" id="logo-text">Courseware Monitoring System</p>
                 </div>
 
@@ -291,33 +295,33 @@ $conn->close();
             </div>
 
             <div class="p-2 flex flex-col gap-[8px]">
-                <a href="homepage.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
+                <a href="../homepage.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Dashboard</span>
                 </a>
 
-                <a href="task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                <a href="../task/tasks.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Tasks</span>
                 </a>
 
-                <a href="inbox.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
+                <a href="../inbox.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Inbox</span>
                 </a>
 
-                <a href="faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
+                <a href="../faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
                 </a>
 
-                <a href="curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
+                <a href="../curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curriculum Materials</span>
                 </a>
 
-                <a href="audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
+                <a href="../auditlog/audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Audit Log</span>
                 </a>
 
@@ -331,15 +335,15 @@ $conn->close();
                 </svg>
             </button>
 
-            <div class=" sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px] px-2 text-gray-400 mt-2 my-0 py-2">
+            <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
                 <hr class="border-t border-[#314f9b] w-full mx-auto mb-2" />
                 © 2025 CourseDock. All rights reserved.
                 <span class="mt-1">
+                    <br>
                     <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
                     <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
                 </span>
             </div>
-
         </div>
 
         <!-- Main Content -->
@@ -365,7 +369,7 @@ $conn->close();
                     <div class="profile-dropdown-item">
                       Settings
                     </div>
-                    <div class="profile-dropdown-item logout-item" onclick="location.href='../index.php'">
+                    <div class="profile-dropdown-item logout-item" onclick="location.href='../../index.php'">
                       Logout
                     </div>
                   </div>
@@ -373,126 +377,10 @@ $conn->close();
             </div>
 
             <!-- Dynamic Content -->
-            <iframe id="contentIframe" src="<?php echo htmlspecialchars($dashboardPage); ?>" class="w-full flex-1 fade-in" frameborder="0"></iframe>
+            <iframe id="contentIframe" src="task_frame.php" class="w-full flex-1 fade-in" frameborder="0"></iframe>
 
         </div>
     </div>
-
-    <!-- for new users lang na walang faculty-->
-  <?php if ($showFacultyPopup): ?>
-         <div class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm fade-in">
-        <div class="signupbox2 signinbox bg-white p-8 rounded-xl shadow-md w-full max-w-md text-center relative bg-opacity-90">
-
-            <!-- Welcome Section -->
-            <div id="welcome-section" class="flex flex-col items-center justify-center">
-            <h2 class="text-xl text-amber-50 font-onest font-thin mb-1">Welcome to</h2>
-            <img src="../img/COURSEDOCK.svg" class="w-[180px] mb-4" />
-            </div>
-
-            <!-- Create Faculty Title -->
-            <h3 id="create-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
-            ❇️ Creating a Faculty
-            </h3>
-
-            <!-- Join Faculty Title -->
-            <h3 id="join-title" class="hidden text-2xl text-[#E3E3E3] font-overpass font-semibold justify-start tracking-wide mb-4">
-            Join with a Code
-            </h3>
-
-            <!-- Popup main menu buttons -->
-            <div id="popup-menu" class="flex flex-col space-y-4">
-            <p class="text-white font-normal font-onest text-[12px] mb-4">You are not currently part of any faculty.</p>
-
-            <button onclick="showCreateForm()" class="btnlogin text-[14px]">
-                Create a New Faculty
-            </button>
-
-            <div class="flex items-center justify-center mt-0 mb-2">
-                <hr class="flex-grow border-t-2 border-white mx-2">
-                <p class="text-white font-normal font-onest text-[12px]">or</p>
-                <hr class="flex-grow border-t-2 border-white mx-2">
-            </div>
-
-            <button onclick="showJoinForm()" class="btnlogin text-[14px]">
-                Join Faculty
-            </button>
-            </div>
-
-            <!-- Create Faculty Form -->
-            <div id="create-form" class="hidden flex flex-col space-y-4">
-                <hr>
-            <form action="../src/scripts/create_faculty.php" method="POST" class="space-y-4">
-
-                <p class="subtext">Create faculty name and generate faculty code.</p> 
-
-                <input type="text" name="faculty_name" placeholder="Faculty Name" required
-                class="w-full px-3 py-2 rounded-md shadow-inner text-[12px] bg-[#13275B] text-white border border-[#304374] font-onest text-center" />
-
-
-                <div class="flex flex-col items-start text-left w-full space-y-2">
-                <label class="text-white text-sm font-onest">Faculty Code:</label>
-
-                <div class="flex items-center gap-2">
-                    <div class="relative flex-1">
-                    <input type="text" name="faculty_code" id="generatedCode" readonly
-                        class="w-full px-3 py-2 pr-10 rounded-md text-[12px] shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" />
-
-                    <button type="button" onclick="copyCode()"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-green-600 hover:bg-green-800 text-white px-2 py-1 rounded">
-                        Copy
-                    </button>
-                    </div>
-
-
-                    <button type="button" onclick="generateCode()"
-                    class="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 rounded-md text-sm">
-                    Generate
-                    </button>
-                </div>
-                     <p class="text-[10px] subtext ">Note: Faculty's code is permanent once created!</p> 
-                </div>
-
-                <button type="submit" class="btnlogin text-[14px] mt-2">
-                Create Faculty
-                </button>
-            </form>
-            </div>
-
-            <!-- Join Faculty Form -->
-            <div id="join-form" class="hidden flex flex-col space-y-4">
-            <hr>
-    
-                <form action="join_faculty.php" method="POST" class="space-y-4">
-                    <p class="subtext">Enter the your faculty's code to join.</p> 
-                    <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
-                    class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" 
-                    value="<?php echo isset($_POST['faculty_code']) ? htmlspecialchars($_POST['faculty_code']) : ''; ?>"/>
-
-                    <button type="submit" class="btnlogin text-[14px] mt-4">
-                        Join Faculty
-                    </button>
-                </form>
-            </div>
-
-            <?php if (isset($_SESSION['joined_faculty_success']) || isset($_SESSION['joined_faculty_error'])): ?>
-                <script>
-                    window.onload = function() {
-                        <?php if (isset($_SESSION['joined_faculty_success'])): ?>
-                            showToast("<?php echo addslashes($_SESSION['joined_faculty_success']); ?>", "success");
-                            <?php unset($_SESSION['joined_faculty_success']); ?>
-                        <?php endif; ?>
-
-                        <?php if (isset($_SESSION['joined_faculty_error'])): ?>
-                            showToast("<?php echo addslashes($_SESSION['joined_faculty_error']); ?>", "error");
-                            <?php unset($_SESSION['joined_faculty_error']); ?>
-                        <?php endif; ?>
-                    };
-                </script>
-            <?php endif; ?>
-
-        </div>
-        </div>
-
 
         <script>
            
@@ -571,27 +459,8 @@ $conn->close();
                 }
             }
 
-            function generateCode() {
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let code = '';
-            for (let i = 0; i < 5; i++) {
-                code += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            document.getElementById('generatedCode').value = code;
-            }
-
-            function copyCode() {
-            const codeInput = document.getElementById('generatedCode');
-            codeInput.select();
-            codeInput.setSelectionRange(0, 99999); 
-            document.execCommand('copy');
-            alert('Code copied!');
-            }
-
             
         </script>
-   
-        <?php endif; ?>
 
         <script>
             const toggleBtn = document.getElementById('toggleSidebar');
@@ -602,11 +471,6 @@ $conn->close();
                 sidebar.classList.toggle('collapsed');
                 chevronIcon.classList.toggle('rotate-180');
             });
-
-            
-     
         </script>
-
-
 </body>
 </html>
