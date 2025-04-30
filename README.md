@@ -1,6 +1,6 @@
 ![CourseDock Logo](https://github.com/ychine/CMS/blob/main/img/COURSEDOCK.svg "a title")
 
-[Local Rep](http://localhost/CoursewareMS/)
+<center><a href="http://localhost/CoursewareMS/">Local Repository Link</a></center>
 
 ## **Courseware Monitoring System**
 
