@@ -29,5 +29,3 @@ palagay lang mga bakz
 
 npx @tailwindcss/cli -i ./src/tailwind/input.css -o ./src/tailwind/output.css --watch
 
-
-webhook check.
