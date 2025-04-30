@@ -270,7 +270,7 @@ $conn->close();
     </style>
 </head>
 
-<body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
+<body id="mainBody" class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
     <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
@@ -291,7 +291,7 @@ $conn->close();
             </div>
 
             <div class="p-2 flex flex-col gap-[8px]">
-                <a href="homepage.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="homepage.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Dashboard</span>
                 </a>
@@ -302,7 +302,7 @@ $conn->close();
                 </a>
 
                 <a href="inbox.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/notification-icon.png" alt="Inbox" class="w-[22px] mr-[22px]" />
+                    <img src="../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Inbox</span>
                 </a>
 
@@ -316,6 +316,11 @@ $conn->close();
                     <span class="link-text">Curriculum Materials</span>
                 </a>
 
+                <a href="audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Audit Log</span>
+                </a>
+
             </div>
 
 
@@ -326,15 +331,15 @@ $conn->close();
                 </svg>
             </button>
 
-            <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
+            <div class=" sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px] px-2 text-gray-400 mt-2 my-0 py-2">
                 <hr class="border-t border-[#314f9b] w-full mx-auto mb-2" />
                 © 2025 CourseDock. All rights reserved.
                 <span class="mt-1">
-                    <br>
                     <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
                     <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
                 </span>
             </div>
+
         </div>
 
         <!-- Main Content -->
@@ -458,6 +463,7 @@ $conn->close();
             <hr>
     
                 <form action="join_faculty.php" method="POST" class="space-y-4">
+                    <p class="subtext">Enter the your faculty's code to join.</p> 
                     <input type="text" name="faculty_code" placeholder="Enter Faculty Code" required
                     class="w-full px-3 py-2 rounded-md shadow-inner bg-[#13275B] text-white border border-[#304374] font-onest" 
                     value="<?php echo isset($_POST['faculty_code']) ? htmlspecialchars($_POST['faculty_code']) : ''; ?>"/>
@@ -581,6 +587,8 @@ $conn->close();
             document.execCommand('copy');
             alert('Code copied!');
             }
+
+            
         </script>
    
         <?php endif; ?>
@@ -594,6 +602,11 @@ $conn->close();
                 sidebar.classList.toggle('collapsed');
                 chevronIcon.classList.toggle('rotate-180');
             });
+
+            
+     
         </script>
+
+
 </body>
 </html>

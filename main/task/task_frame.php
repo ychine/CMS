@@ -42,7 +42,7 @@ if ($result && $result->num_rows > 0) {
 
     $memberStmt->close();
 } else {
-    // No faculty found
+  
     $facultyName = "No Faculty Assigned";
 }
 
@@ -67,7 +67,7 @@ $conn->close();
 <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Tasks</h1> 
     <hr class="border-gray-400">
-    <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view, delete, and change the roles of your faculty members.</p>
+    <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.</p>
     
     <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
         <?php if (!empty($members)): ?>
@@ -90,6 +90,15 @@ $conn->close();
         <?php endif; ?>
     </div>
 </div>
+
+    
+        <a href="" 
+        class="fixed bottom-8 right-10 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
+        title="Add Task">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+        </a>
 
 </body>
 </html>

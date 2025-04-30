@@ -15,7 +15,11 @@ $facultyName = "Faculty";
 $members = [];
 
 
-$sql = "SELECT personnel.FacultyID, faculties.Faculty FROM personnel JOIN faculties ON personnel.FacultyID = faculties.FacultyID WHERE personnel.AccountID = ?";
+$sql = "SELECT personnel.FacultyID, faculties.Faculty, faculties.JoinCode 
+        FROM personnel 
+        JOIN faculties ON personnel.FacultyID = faculties.FacultyID 
+        WHERE personnel.AccountID = ?";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $accountID);
 $stmt->execute();
@@ -25,7 +29,9 @@ if ($result && $result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $facultyID = $row['FacultyID'];
     $facultyName = $row['Faculty'];
+    $joinCode = $row['JoinCode'] ?? '';
 
+    
     
     $memberQuery = "SELECT FirstName, LastName, Role, AccountID FROM personnel WHERE FacultyID = ?";
     $memberStmt = $conn->prepare($memberQuery);
@@ -112,7 +118,22 @@ $conn->close();
 </head>
 <body>
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-        <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold"><?php echo htmlspecialchars($facultyName); ?> Members</h1>
+    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold flex items-center gap-4">
+            <?php echo htmlspecialchars($facultyName); ?> Members
+
+            <?php if (!empty($joinCode)): ?>
+                <?php if (!empty($joinCode)): ?>
+                    <div onclick="copyJoinCode()" class="flex items-center gap-2 bg-gray-100 text-gray-800 text-sm font-semibold px-3 py-1 rounded-md inline-flex cursor-pointer hover:bg-gray-400 transition">
+                        <span id="join-code"><?php echo htmlspecialchars($joinCode); ?></span>
+                        <!-- Copy icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 hover:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l4 4v8a2 2 0 01-2 2h-2M8 16v4a2 2 0 002 2h6" />
+                        </svg>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+
+        </h1>
         <hr class="border-gray-400">
         <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view, delete, and change the roles of your faculty members.</p>
         <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
@@ -121,13 +142,22 @@ $conn->close();
                     <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md flex justify-between items-center">
                         <div>
                             <h2 class="text-lg font-bold"><?php echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); ?></h2>
-                            <div class="text-sm text-blue-600"><?php echo htmlspecialchars($member['Role']); ?></div>
+                            <?php
+                                $roleMap = [
+                                    'FM' => 'Member',
+                                    'DN' => 'Dean',
+                                    'PH' => 'Program Head'
+                                ];
+                                $readableRole = $roleMap[$member['Role']] ?? $member['Role'];
+                            ?>
+                            <div class="text-sm text-gray-400"><?php echo htmlspecialchars($readableRole); ?></div>
                         </div>
                         <div class="actions-container">
                             <select class="role-select role-change-dropdown" data-account-id="<?php echo $member['AccountID']; ?>">
                             <option value="" disabled selected>Select a role</option>
-                                <option value="PH" <?php echo $member['Role'] === 'PH' ? 'selected' : ''; ?>>PROGRAM HEAD</option>
                                 <option value="DN" <?php echo $member['Role'] === 'DN' ? 'selected' : ''; ?>>DEAN</option>
+                                <option value="PH" <?php echo $member['Role'] === 'PH' ? 'selected' : ''; ?>>PROGRAM HEAD</option>
+                                <option value="FM" <?php echo $member['Role'] === 'FM' ? 'selected' : ''; ?>>MEMBER</option>
                             </select>
                             <button class="delete-button" data-account-id="<?php echo $member['AccountID']; ?>" title="Remove Member">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 hover:text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,84 +176,99 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-document.querySelectorAll('.role-change-dropdown').forEach(select => {
-    let previousValue = select.value;
+    document.querySelectorAll('.role-change-dropdown').forEach(select => {
+        let previousValue = select.value;
 
-    select.addEventListener('mousedown', () => {
-        previousValue = select.value;
+        select.addEventListener('mousedown', () => {
+            previousValue = select.value;
+        });
+
+        select.addEventListener('change', function () {
+            const accountId = this.getAttribute('data-account-id');
+            const newRole = this.value;
+
+            Swal.fire({
+                title: 'Change Role?',
+                text: "Are you sure you want to update this member's role?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#51D55A',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, change it!',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('update_role.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ accountId, newRole }),
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            Swal.fire('Success', 'Role updated successfully!', 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', 'Failed to update role.', 'error');
+                        }
+                    });
+                } else {
+                    select.value = previousValue;
+                }
+            });
+        });
     });
 
-    select.addEventListener('change', function () {
-        const accountId = this.getAttribute('data-account-id');
-        const newRole = this.value;
+    document.querySelectorAll('.delete-button').forEach(el => {
+        el.addEventListener('click', function () {
+            const accountId = this.getAttribute('data-account-id');
 
-        Swal.fire({
-            title: 'Change Role?',
-            text: "Are you sure you want to update this member's role?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#51D55A',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, change it!',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch('update_role.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ accountId, newRole }),
-                })
-                .then(response => {
-                    if (response.ok) {
-                        Swal.fire('Success', 'Role updated successfully!', 'success').then(() => {
+            Swal.fire({
+                title: 'Remove Member?',
+                text: 'Are you sure you want to remove this member from the faculty?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e3342f',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, remove',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('delete_member.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ accountId }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.fire('Removed!', data.message, 'success').then(() => {
                             location.reload();
                         });
-                    } else {
-                        Swal.fire('Error', 'Failed to update role.', 'error');
-                    }
-                });
-            } else {
-                select.value = previousValue;
-            }
-        });
-    });
-});
-
-document.querySelectorAll('.delete-button').forEach(el => {
-    el.addEventListener('click', function () {
-        const accountId = this.getAttribute('data-account-id');
-
-        Swal.fire({
-            title: 'Remove Member?',
-            text: 'Are you sure you want to remove this member from the faculty?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#e3342f',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Yes, remove',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch('delete_member.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ accountId }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.fire('Removed!', data.message, 'success').then(() => {
-                        location.reload();
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Failed to remove member: ' + error, 'error');
                     });
-                })
-                .catch(error => {
-                    Swal.fire('Error', 'Failed to remove member: ' + error, 'error');
-                });
-            }
+                }
+            });
         });
     });
-});
-</script>
+        function copyJoinCode() {
+        const code = document.getElementById('join-code').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            // Optional feedback
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Join code has been copied to clipboard.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    }
+    </script>
 </body>
 </html>
