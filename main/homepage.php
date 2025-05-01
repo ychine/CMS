@@ -72,6 +72,10 @@ if ($row = $result->fetch_assoc()) {
             $dashboardPage = "dashboard/fm-dash.php";
             $userRole = "Faculty Member";
         }
+        elseif ($row['Role'] === 'user') {
+            $dashboardPage = "dashboard/fm-dash.php";
+            $userRole = "New User";
+        }
     }
 }
 
@@ -225,15 +229,7 @@ $conn->close();
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
         }
-        
-        .logout-item {
-          border-top: 1px solid #eaeaea;
-        }
-        
-        .logout-item:hover {
-          background-color: #fff0f0;
-          color: #e53e3e;
-        }
+
 
         #userMenu {
             position: absolute;
@@ -395,60 +391,60 @@ $conn->close();
                 </div>
              
                 <div class="profile-container relative">
-  <div class="user-info flex items-center">
-    <div class="flex items-center cursor-pointer" onclick="toggleUserMenu(event)">
-      <!-- User Avatar -->
-      <div class="flex flex-col mr-2">
-        <span class="font-onest text-[14px] font-medium text-[#333]">
-          <?php echo htmlspecialchars($userInfo['FirstName'] . ' ' . $userInfo['LastName']); ?>
-        </span>
-        <span class="font-onest text-[12px] text-[#808080] -mt-[2px]">
-          <?php echo htmlspecialchars($userRole); ?>
-        </span>
-      </div>
+                    <div class="user-info flex items-center">
+                        <div class="flex items-center cursor-pointer" onclick="toggleUserMenu(event)">
+                        <!-- User Avatar -->
+                        <div class="flex flex-col mr-2">
+                            <span class="font-onest text-[14px] font-medium text-[#333]">
+                            <?php echo htmlspecialchars($userInfo['FirstName'] . ' ' . $userInfo['LastName']); ?>
+                            </span>
+                            <span class="font-onest text-[12px] text-[#808080] -mt-[2px]">
+                            <?php echo htmlspecialchars($userRole); ?>
+                            </span>
+                        </div>
 
-      <!-- User Avatar -->
-      <div class="w-8 h-8 rounded-full bg-[#1D387B] text-white flex items-center justify-center ml-2">
-        <?php 
-          $initials = substr($userInfo['FirstName'], 0, 1) . substr($userInfo['LastName'], 0, 1);
-          echo htmlspecialchars(strtoupper($initials)); 
-        ?>
-      </div>
-      
-      <!-- Dropdown Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 ml-2 transition-transform duration-300" id="dropdown-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-      </svg>
+                        <!-- User Avatar -->
+                        <div class="w-8 h-8 rounded-full bg-[#1D387B] text-white flex items-center justify-center ml-2">
+                            <?php 
+                            $initials = substr($userInfo['FirstName'], 0, 1) . substr($userInfo['LastName'], 0, 1);
+                            echo htmlspecialchars(strtoupper($initials)); 
+                            ?>
+                        </div>
+                        
+                        <!-- Dropdown Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 ml-2 transition-transform duration-300" id="dropdown-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
 
-    </div>
-  </div>
-    
-  <!-- Dropdown Menu (Hidden by Default) -->
-  <div id="userMenu" class="hidden">
-    <div class="py-1 border border-gray-200 rounded-md">
-      <a href="profile.php" class="profile-dropdown-item">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-        View Profile
-      </a>
-      <a href="settings.php" class="profile-dropdown-item">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        Settings
-      </a>
-      <hr class="my-1 border-gray-200" />
-      <a href="../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        Logout
-      </a>
-    </div>
-  </div>
-</div>
+                        </div>
+                    </div>
+                        
+                    <!-- Dropdown Menu (Hidden by Default) -->
+                    <div id="userMenu" class="hidden">
+                        <div class="py-1 border border-gray-200 rounded-md">
+                        <a href="profile.php" class="profile-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            View Profile
+                        </a>
+                        <a href="settings.php" class="profile-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Settings
+                        </a>
+                        <hr class="my-1 border-gray-200" />
+                        <a href="../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Logout
+                        </a>
+                        </div>
+                    </div>
+                    </div>
              </div>
 
             <!-- Dynamic Content -->
