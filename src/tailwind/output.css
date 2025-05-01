@@ -14,7 +14,11 @@
     --color-yellow-500: oklch(79.5% 0.184 86.047);
     --color-green-500: oklch(72.3% 0.219 149.579);
     --color-green-600: oklch(62.7% 0.194 149.214);
+    --color-green-700: oklch(52.7% 0.154 150.069);
     --color-green-800: oklch(44.8% 0.119 151.328);
+    --color-green-900: oklch(39.3% 0.095 152.535);
+    --color-blue-200: oklch(88.2% 0.059 254.128);
+    --color-blue-400: oklch(70.7% 0.165 254.624);
     --color-blue-600: oklch(54.6% 0.245 262.881);
     --color-blue-700: oklch(48.8% 0.243 264.376);
     --color-blue-800: oklch(42.4% 0.199 265.638);
@@ -418,6 +422,12 @@
   .h-screen {
     height: 100vh;
   }
+  .max-h-40 {
+    max-height: calc(var(--spacing) * 40);
+  }
+  .w-1\/2 {
+    width: calc(1/2 * 100%);
+  }
   .w-4 {
     width: calc(var(--spacing) * 4);
   }
@@ -627,6 +637,12 @@
   }
   .border-\[\#304374\] {
     border-color: #304374;
+  }
+  .border-blue-200 {
+    border-color: var(--color-blue-200);
+  }
+  .border-blue-400 {
+    border-color: var(--color-blue-400);
   }
   .border-gray-400 {
     border-color: var(--color-gray-400);
@@ -935,6 +951,10 @@
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
+  .duration-150 {
+    --tw-duration: 150ms;
+    transition-duration: 150ms;
+  }
   .duration-200 {
     --tw-duration: 200ms;
     transition-duration: 200ms;
@@ -942,6 +962,10 @@
   .duration-300 {
     --tw-duration: 300ms;
     transition-duration: 300ms;
+  }
+  .duration-500 {
+    --tw-duration: 500ms;
+    transition-duration: 500ms;
   }
   .ease-in-out {
     --tw-ease: var(--ease-in-out);
@@ -1006,6 +1030,13 @@
       }
     }
   }
+  .hover\:bg-green-700 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-green-700);
+      }
+    }
+  }
   .hover\:bg-green-800 {
     &:hover {
       @media (hover: hover) {
@@ -1044,6 +1075,11 @@
   .active\:border-\[\#51D55A\] {
     &:active {
       border-color: #51D55A;
+    }
+  }
+  .active\:bg-green-900 {
+    &:active {
+      background-color: var(--color-green-900);
     }
   }
 }

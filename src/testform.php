@@ -56,7 +56,7 @@ try {
 
     $conn->commit();
 
-    header("Location: register.php?success=Registration successful");
+    header("Location: ../index.php?success=Registration successful");
     exit();
 } catch (Exception $e) {
     $conn->rollback();

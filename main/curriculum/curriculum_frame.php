@@ -88,31 +88,11 @@ $conn->close();
 <body>
 
         <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-            <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Tasks</h1> 
+            <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1> 
             <hr class="border-gray-400">
             <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.</p>
             
-            <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
-                <?php if (!empty($members)): ?>
-                    <?php foreach ($members as $member): ?>
-                        <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
-                            <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-lg font-bold">
-                                    <?php 
-                                        echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); 
-                                    ?>
-                                </h2>
-                                <div class="text-sm text-blue-600">
-                                    <?php echo htmlspecialchars($member['Role']); ?>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p class="text-gray-500">No members found in your faculty.</p>
-                <?php endif; ?>
-            </div>
-        </div>
+          
         
         <!-- yung plus bttton -->
         <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 
@@ -127,49 +107,30 @@ $conn->close();
         <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-40 bg-[#51D55A] shadow-lg rounded-full hover:bg-green-800 transition-all duration-300">
             <button onclick="openTaskModal()" 
                 class="w-full text-xl text-center text-white py-3 px-4 active:bg-green-900 transition-colors duration-150"> 
-                Create Task
+                Add Courses
             </button>
         </div>
 
         <!-- Task Modal -->
         <div id="taskModal" class="hidden fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-blue">
-                <h2 class="text-2xl font-overpass font-bold mb-4">Create Task</h2>
-                <form method="POST" action="">
-                    <input type="text" name="title" placeholder="Task Title" required class="w-full mb-3 p-2 border rounded" />
-                    <textarea name="description" placeholder="Task Description" class="w-full mb-3 p-2 border rounded"></textarea>
-                    <input type="date" name="due_date" class="w-full mb-3 p-2 border rounded" required />
+            <h2 class="text-2xl font-overpass font-bold mb-4">Create Curriculum</h2>
+                <form method="POST" action="create_curriculum.php">
+                    <!-- Program -->
+                    <label class="block mb-1 font-semibold">Program (e.g., BSIT):</label>
+                    <input type="text" name="program" required class="w-full mb-3 p-2 border rounded" />
 
-                    <!-- School Year and Term -->
-                    <div class="flex gap-2 mb-3">
-                        <input type="text" name="school_year" placeholder="School Year (e.g. 2024-2025)" class="w-1/2 p-2 border rounded" />
-                        <select name="term" class="w-1/2 p-2 border rounded">
-                            <option value="">Select Term</option>
-                            <option value="1st">1st</option>
-                            <option value="2nd">2nd</option>
-                            <option value="Summer">Summer</option>
-                        </select>
-                    </div>
+                    <!-- Curriculum Year -->
+                    <label class="block mb-1 font-semibold">Curriculum Year (e.g., 2022):</label>
+                    <input type="number" name="curriculum_year" required class="w-full mb-3 p-2 border rounded" />
 
-                    <!-- Hidden CreatedBy -->
-                    <input type="hidden" name="created_by" value="<?php echo $_SESSION['personnel_id']; ?>" />
-
-                    <!-- Assign to multiple faculties and courses -->
-                    <label class="block mb-1">Assign to (Faculty + Course):</label>
-                    <div class="mb-3 max-h-40 overflow-y-auto border rounded p-2">
-                        <?php foreach ($facultyCoursePairs as $pair): ?>
-                            <div>
-                                <label>
-                                    <input type="checkbox" name="assigned[]" value="<?= $pair['FacultyID'] . '|' . $pair['CourseCode'] ?>" />
-                                    <?= $pair['FacultyName'] ?> - <?= $pair['CourseCode'] ?>
-                                </label>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                    <!-- AY Revisioned -->
+                    <label class="block mb-1 font-semibold">AY Revisioned (e.g., 2024-2025):</label>
+                    <input type="text" name="ay_revisioned" required class="w-full mb-3 p-2 border rounded" />
 
                     <div class="mt-4 flex justify-end gap-2">
                         <button type="button" onclick="closeTaskModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
-                        <button type="submit" name="create_task" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Create</button>
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Create</button>
                     </div>
                 </form>
             </div>

@@ -127,8 +127,8 @@ $conn->close();
 </head>
 <body>
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold flex items-center gap-4">
-            <?php echo htmlspecialchars($facultyName); ?> Members
+    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold flex items-center gap-4">Members of 
+            <?php echo htmlspecialchars($facultyName); ?> 
 
             <?php if (!empty($joinCode)): ?>
                 <?php if (!empty($joinCode)): ?>
@@ -177,7 +177,7 @@ $conn->close();
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p class="text-gray-500">No members found in your faculty.</p>
+                <p class="text-gray-500 text-center">No members found in your faculty.</p>
             <?php endif; ?>
         </div>
     </div>
