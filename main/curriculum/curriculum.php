@@ -26,6 +26,14 @@ if (isset($_SESSION['joined_faculty_success'])) {
 
 $accountID = $_SESSION['AccountID'];
 
+$userQuery = "SELECT FirstName, LastName FROM personnel WHERE AccountID = ?";
+$userStmt = $conn->prepare($userQuery);
+$userStmt->bind_param("i", $accountID);
+$userStmt->execute();
+$userResult = $userStmt->get_result();
+$userInfo = $userResult->fetch_assoc();
+$userStmt->close();
+
 $query = "SELECT Role, FacultyID FROM personnel WHERE AccountID = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $accountID);
@@ -53,12 +61,16 @@ if ($row = $result->fetch_assoc()) {
     }
 
     if (!empty($row['Role'])) {
+        // Set the role text based on the role code
         if ($row['Role'] === 'DN') {
             $dashboardPage = "dashboard/dn-dash.php";
+            $userRole = "College Dean";
         } elseif ($row['Role'] === 'PH') {
             $dashboardPage = "dashboard/ph-dash.php";
+            $userRole = "Program Head";
         } elseif ($row['Role'] === 'FM') {
             $dashboardPage = "dashboard/fm-dash.php";
+            $userRole = "Faculty Member";
         }
     }
 }
@@ -75,7 +87,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="../../src/styles.css" rel="stylesheet" />
-    <title>Curricula | CourseDock</title>
+    <title>Tasks | CourseDock</title>
     <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -167,6 +179,18 @@ $conn->close();
             transition: opacity 0.3s ease;
         }
 
+
+        .user-info {
+        text-align: right;
+        padding: 6px 8px;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+        }
+
+        .user-info:hover {
+        background-color: #f3f4f6;
+        }
+
         
         .profile-container {
           position: relative;
@@ -194,29 +218,53 @@ $conn->close();
         }
         
         .profile-dropdown-item {
-          padding: 12px 16px;
-          display: flex;
-          align-items: center;
-          font-family: 'Inter', sans-serif;
-          font-size: 14px;
-          color: #333;
-          cursor: pointer;
-          transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        font-size: 14px;
+        color: #4b5563;
+        transition: all 0.2s;
+        text-decoration: none;
+        }
+
+        .profile-dropdown-item:first-child {
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        }
+
+        .profile-dropdown-item:last-child {
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
         }
         
         .profile-dropdown-item:hover {
-          background-color: #f5f5f5;
+          background-color: #f9fafb;
         }
         
-        .logout-item {
-          border-top: 1px solid #eaeaea;
-        }
-        
-        .logout-item:hover {
-          background-color: #fff0f0;
-          color: #e53e3e;
+        #userMenu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            width: 200px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 50;
+            transform-origin: top right;
+            transition: opacity 0.2s, transform 0.2s;
         }
 
+        #userMenu.hidden {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+        pointer-events: none; /* Make sure it's not clickable when hidden */
+        }
+
+        #userMenu:not(.hidden) {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        }
         .back-button {
         cursor: pointer;
         transition: all 0.2s ease;
@@ -265,6 +313,8 @@ $conn->close();
             display: none;
             transition: all 1s ease-in-out;
         }
+
+        
                 
 
     </style>
@@ -301,7 +351,7 @@ $conn->close();
                     <span class="link-text">Tasks</span>
                 </a>
 
-                <a href="../faculty/faculty.php" class="  menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="../faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
                 </a>
@@ -320,6 +370,7 @@ $conn->close();
                     <img src="../../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Audit Log</span>
                 </a>
+
             </div>
 
 
@@ -349,27 +400,63 @@ $conn->close();
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
              
-                <div class="profile-container">
-                  <div class="font-poppins text-[24px] font-semibold cursor-pointer flex items-center gap-1">
-                    Profile 
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="ml-1">
-                      <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
-                    </svg>
-                  </div>
-                  
-                  <div class="profile-dropdown">
-                    <div class="profile-dropdown-item">
-                      View Profile
+                <div class="profile-container relative">
+                    <div class="user-info flex items-center">
+                        <div class="flex items-center cursor-pointer" onclick="toggleUserMenu(event)">
+                        <!-- User Avatar -->
+                        <div class="flex flex-col mr-2">
+                            <span class="font-onest text-[14px] font-medium text-[#333]">
+                            <?php echo htmlspecialchars($userInfo['FirstName'] . ' ' . $userInfo['LastName']); ?>
+                            </span>
+                            <span class="font-onest text-[12px] text-[#808080] -mt-[2px]">
+                            <?php echo htmlspecialchars($userRole); ?>
+                            </span>
+                        </div>
+
+                        <!-- User Avatar -->
+                        <div class="w-8 h-8 rounded-full bg-[#1D387B] text-white flex items-center justify-center ml-2">
+                            <?php 
+                            $initials = substr($userInfo['FirstName'], 0, 1) . substr($userInfo['LastName'], 0, 1);
+                            echo htmlspecialchars(strtoupper($initials)); 
+                            ?>
+                        </div>
+                        
+                        <!-- Dropdown Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 ml-2 transition-transform duration-300" id="dropdown-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+
+                        </div>
                     </div>
-                    <div class="profile-dropdown-item">
-                      Settings
+                        
+                    <!-- Dropdown Menu (Hidden by Default) -->
+                    <div id="userMenu" class="hidden">
+                        <div class="py-1 border border-gray-200 rounded-md">
+                        <a href="profile.php" class="profile-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            View Profile
+                        </a>
+                        <a href="settings.php" class="profile-dropdown-item">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Settings
+                        </a>
+                        <hr class="my-1 border-gray-200" />
+                        <a href="../../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Logout
+                        </a>
+                        </div>
                     </div>
-                    <div class="profile-dropdown-item logout-item" onclick="location.href='../../index.php'">
-                      Logout
                     </div>
-                  </div>
-                </div>
-            </div>
+             </div>
+            
 
             <!-- Dynamic Content -->
             <iframe id="contentIframe" src="curriculum_frame.php" class="w-full flex-1 fade-in" frameborder="0"></iframe>
@@ -467,5 +554,49 @@ $conn->close();
                 chevronIcon.classList.toggle('rotate-180');
             });
         </script>
+
+
+<script>
+// Place this at the end of your document, outside any conditional blocks
+document.addEventListener('DOMContentLoaded', function() {
+  // First make sure our functions are defined
+  window.toggleUserMenu = function(event) {
+    if (event) {
+      event.stopPropagation(); // Prevent the event from bubbling up to document
+    }
+    
+    const menu = document.getElementById('userMenu');
+    const icon = document.getElementById('dropdown-icon');
+    
+    if (!menu) return; // Safety check
+    
+    menu.classList.toggle('hidden');
+    
+    // Rotate icon when menu is open
+    if (icon) {
+      if (menu.classList.contains('hidden')) {
+        icon.classList.remove('rotate-180');
+      } else {
+        icon.classList.add('rotate-180');
+      }
+    }
+  };
+
+  // Close menu when clicking outside
+  document.addEventListener('click', function(event) {
+    const menu = document.getElementById('userMenu');
+    const profileContainer = document.querySelector('.profile-container');
+    
+    if (menu && profileContainer && !profileContainer.contains(event.target) && !menu.classList.contains('hidden')) {
+      menu.classList.add('hidden');
+      const icon = document.getElementById('dropdown-icon');
+      if (icon) {
+        icon.classList.remove('rotate-180');
+      }
+    }
+  });
+});
+
+  </script>
 </body>
 </html>
