@@ -258,7 +258,7 @@ $conn->close();
         #userMenu.hidden {
         opacity: 0;
         transform: translateY(-10px) scale(0.95);
-        pointer-events: none; /* Make sure it's not clickable when hidden */
+        pointer-events: none; 
         }
 
         #userMenu:not(.hidden) {
@@ -359,11 +359,6 @@ $conn->close();
                 <a href="../curriculum/curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curricula</span>
-                </a>
-
-                <a href="../repository/repository.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Repository</span>
                 </a>
 
                 <a href="../auditlog/audit_log.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">

@@ -75,6 +75,21 @@ $conn->close();
         .task-button.open svg {
             transform: rotate(45deg);
         }
+
+        .slide-in {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        .show .slide-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .show .slide-in.delay-150 {
+            transition-delay: 0.30s;
+        }
     </style>
 </head>
 <body>
@@ -166,14 +181,22 @@ $conn->close();
         </svg>
     </a>
     
+        
 
     <!-- Dropdown -->
-    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-45 bg-[#51D55A] shadow-lg rounded-full hover:bg-green-800 transition-all duration-300">
-        <button onclick="openTaskModal()" 
-            class="w-full text-xl text-center text-white py-3 px-4 active:bg-green-900 transition-colors duration-150"> 
-            Add Curriculum
-        </button>
-    </div>
+    <!-- Unified Dropdown with Styled Bubbles -->
+        <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-45 space-y-2 z-50">
+             <button onclick="openProgramModal()"
+                class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
+                Add Program
+            </button>
+            <button onclick="openTaskModal()"
+                class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+                Add Curriculum
+            </button>
+            
+        </div>
+
 
     <!-- Modal -->
     <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -193,6 +216,8 @@ $conn->close();
             </form>
         </div>
     </div>
+
+    
 </div>
 
 <script>
@@ -221,8 +246,20 @@ $conn->close();
         document.getElementById('taskModal').classList.add('hidden');
     }
 
+    function openProgramModal() {
+    document.getElementById('programModal').classList.remove('hidden');
+    document.getElementById('task-dropdown').classList.remove('show');
+    }
+
+    function closeProgramModal() {
+        document.getElementById('programModal').classList.add('hidden');
+    }
+
     window.addEventListener('keydown', function (e) {
-        if (e.key === "Escape") closeTaskModal();
+        if (e.key === "Escape") {
+            closeTaskModal();
+            closeProgramModal();
+        }
     });
 
     function toggleCollapse(id) {
