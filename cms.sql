@@ -187,7 +187,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (2,'COMP 101',NULL),(2,'COMP 102',NULL),(2,'COMP 103',NULL),(2,'COMP 104',NULL),(2,'COMP 105',NULL),(2,'CS 101',NULL),(2,'CS 102',NULL),(2,'CS 103',NULL),(2,'CS 104',NULL),(2,'CS 105',NULL),(2,'CS 106',NULL),(2,'CS 107',NULL),(2,'CS 108',NULL),(2,'CS 109',NULL),(2,'CS 110',NULL),(2,'CS 111',NULL),(2,'CS 112',NULL),(2,'CS 113',NULL),(2,'CS 114',NULL),(2,'CS 115',NULL),(2,'CS 116',NULL),(2,'CS 117',NULL),(2,'CS 201',NULL),(2,'CS 202',NULL),(2,'CS 203',NULL),(2,'CS 301',NULL),(2,'CS 401',NULL),(2,'CS 402',NULL),(2,'CS 403',NULL),(2,'CS 404',NULL),(2,'CS 405',NULL),(2,'CS 406',NULL),(1,'COMP 101',1),(1,'COMP 102',1),(1,'COMP 103',1),(1,'COMP 104',1),(1,'COMP 105',1),(1,'COMP 106',1),(1,'IT 101',1),(1,'IT 102',1),(1,'IT 103',1),(1,'IT 104',1),(1,'IT 105',1),(1,'IT 106',1),(1,'IT 107',1),(1,'IT 108',1),(1,'IT 109',1),(1,'IT 110',1),(1,'IT 111',1),(1,'IT 112',1),(1,'IT 113',1),(1,'IT 114',1),(1,'IT 115',1),(1,'IT 201',1),(1,'IT 202',1),(1,'IT 203',1),(1,'IT 204',1),(1,'IT 301',1),(1,'IT 302',1),(1,'IT 303',1),(1,'IT 304',1),(1,'IT 305',1),(1,'IT 306',1),(1,'IT103',1);
+INSERT INTO `program_courses` VALUES (1,'COMP 101',1),(1,'COMP 102',1),(1,'COMP 103',1),(1,'COMP 104',1),(1,'COMP 105',1),(1,'COMP 106',1),(1,'IT 101',1),(1,'IT 102',1),(1,'IT 103',1),(1,'IT 104',1),(1,'IT 105',1),(1,'IT 106',1),(1,'IT 107',1),(1,'IT 108',1),(1,'IT 109',1),(1,'IT 110',1),(1,'IT 111',1),(1,'IT 112',1),(1,'IT 113',1),(1,'IT 114',1),(1,'IT 115',1),(1,'IT 201',1),(1,'IT 202',1),(1,'IT 203',1),(1,'IT 204',1),(1,'IT 301',1),(1,'IT 302',1),(1,'IT 303',1),(1,'IT 304',1),(1,'IT 305',1),(1,'IT 306',1),(1,'IT103',1),(2,'COMP 101',3),(2,'COMP 102',3),(2,'COMP 103',3),(2,'COMP 104',3),(2,'COMP 105',3),(2,'CS 101',3),(2,'CS 102',3),(2,'CS 103',3),(2,'CS 104',3),(2,'CS 105',3),(2,'CS 106',3),(2,'CS 107',3),(2,'CS 108',3),(2,'CS 109',3),(2,'CS 110',3),(2,'CS 111',3),(2,'CS 112',3),(2,'CS 113',3),(2,'CS 114',3),(2,'CS 115',3),(2,'CS 116',3),(2,'CS 117',3),(2,'CS 201',3),(2,'CS 202',3),(2,'CS 203',3),(2,'CS 301',3),(2,'CS 401',3),(2,'CS 402',3),(2,'CS 403',3),(2,'CS 404',3),(2,'CS 405',3),(2,'CS 406',3);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -376,4 +376,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-03  0:23:20
+-- Dump completed on 2025-05-03  0:45:59
