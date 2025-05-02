@@ -86,7 +86,7 @@ $conn->close();
         Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.
     </p>
 
-    <div class="mt-6 space-y-2 font-onest">
+    <div class="w-[70%] space-y-2 font-onest">
         <?php
         $conn = new mysqli("localhost", "root", "", "cms");
         if ($conn->connect_error) {
@@ -131,18 +131,18 @@ $conn->close();
         function renderProgramTree($programs) {
             foreach ($programs as $programName => $curricula) {
                 $progId = 'prog_' . md5($programName);
-                echo "<div class='ml-2 mt-4'>";
-                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"text-xl text-blue-700 font-bold\">▶ $programName</button>";
-                echo "<div id=\"$progId\" class='ml-6 hidden'>";
+                echo "<div class='mt-4'>";
+                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">▶ $programName</button>";
+                echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
         
                 foreach ($curricula as $year => $courses) {
                     $yearId = 'year_' . md5($programName . $year);
                     echo "<div class='mt-2'>";
-                    echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"text-blue-700 font-medium\">▶ $year</button>";
-                    echo "<div id=\"$yearId\" class='ml-6 hidden'>";
-                    echo "<ul class='list-disc text-sm text-gray-700'>";
+                    echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">▶ $year</button>";
+                    echo "<div id=\"$yearId\" class='ml-4 mt-1 hidden'>";
+                    echo "<ul class='list-disc pl-5 text-sm text-gray-700 space-y-1'>";
                     foreach ($courses as $course) {
-                        echo "<li>📚 " . htmlspecialchars($course) . "</li>";
+                        echo "<li class='flex items-center gap-2'><span>📚</span><span>" . htmlspecialchars($course) . "</span></li>";
                     }
                     echo "</ul></div></div>";
                 }
@@ -167,7 +167,7 @@ $conn->close();
     </a>
 
     <!-- Dropdown -->
-    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-40 bg-[#51D55A] shadow-lg rounded-full hover:bg-green-800 transition-all duration-300">
+    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-45 bg-[#51D55A] shadow-lg rounded-full hover:bg-green-800 transition-all duration-300">
         <button onclick="openTaskModal()" 
             class="w-full text-xl text-center text-white py-3 px-4 active:bg-green-900 transition-colors duration-150"> 
             Add Curriculum
