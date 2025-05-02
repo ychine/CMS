@@ -361,7 +361,7 @@ $conn->close();
                     <span class="link-text">Curricula</span>
                 </a>
 
-                <a href="../auditlog/audit_log.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="../auditlog/audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Audit Log</span>
                 </a>
@@ -427,7 +427,7 @@ $conn->close();
                     <!-- Dropdown Menu (Hidden by Default) -->
                     <div id="userMenu" class="hidden">
                         <div class="py-1 border border-gray-200 rounded-md">
-                        <a href="../profile/profile.php" class="profile-dropdown-item">
+                        <a href="profile.php" class="profile-dropdown-item">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -454,7 +454,7 @@ $conn->close();
             
 
             <!-- Dynamic Content -->
-            <iframe id="contentIframe" src="audit_log_frame.php" class="w-full flex-1 fade-in" frameborder="0"></iframe>
+            <iframe id="contentIframe" src="profile_frame.php" class="w-full flex-1 fade-in" frameborder="0"></iframe>
 
         </div>
     </div>
