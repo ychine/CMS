@@ -34,7 +34,7 @@ CREATE TABLE `accounts` (
   UNIQUE KEY `Username` (`Username`),
   UNIQUE KEY `Email` (`Email`),
   UNIQUE KEY `reset_token_hash` (`reset_token_hash`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,6 +45,38 @@ LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
 INSERT INTO `accounts` VALUES (1,'edrianvm','$2y$10$JAigA/rQbL4rHzrzNOrnuOakeBSEvRLF9pe4nvRdZKTg2gYeb27O.','edrianmartinez400@gmail.com','2025-04-22 22:29:33',NULL,NULL),(2,'edrianvm2','$2y$10$qORCuh8zgQQoTfMjAjanB.4vuIHHydUJywafQEJzn5QL8aYQKwDOS','sample@gmail.com','2025-04-22 23:31:50','ae7f22022b5b394f895fd6fb681ec717f740ad027f0e50421a8f0386d4e80771','2025-04-27 11:43:56'),(4,'diesel','$2y$10$Hi5TLnAZY0Kxo4mo7hUN.uhz1WYPhc.5KqVGORQQ2nWOlWgvs/qae','test@gmail.com','2025-04-23 00:33:14',NULL,NULL),(5,'lyanah','$2y$10$ixo5LvN14knW4K1Wb4oM7OUH5Y7ouleo7mhFoU5BqJ6UlGR7RXk1e','lyana','2025-04-26 23:56:58',NULL,NULL),(6,'din','$2y$10$Py7K0jmFyNiA5d2eWH8F7.WA4ylgeroQ9199gWa6eH360WKuqB3.q','chan@gmail.com','2025-04-27 00:33:29',NULL,NULL),(7,'lyanahp','$2y$10$3Iu6Yuy9L8jNHrgHwAFVrOf9nQvS/v6iYQIyNYLWF3sWCwapdx./u','lyanah09paula@gmail.com','2025-04-27 18:54:14','4e613de655f171c32b284bdca084cbec4b28d1a18bf1b43aaa95cacb6d516d2e','2025-04-27 13:24:51'),(8,'richelle','$2y$10$K9br3XyD3EaocV/zirLX0.7rdlrPXQXOMc0Mwxf1QNWm1Psy4d8pq','richellebenitez03@gmail.com','2025-05-01 03:44:46',NULL,NULL),(9,'bal','$2y$10$M2A/UELW1qDbjJiLSzt7FuXVBEQit3FvzQF0Rf.BIS9.UuJc1KJ52','darling@gmail.com','2025-05-01 13:00:51',NULL,NULL),(10,'milan','$2y$10$AcKvARjHRpBBE3yCMjzCoOIKQ8BQ9uTnnmgallmuzaZ229X8oQtaK','milanfranco@gmail.com','2025-05-01 13:01:44',NULL,NULL),(11,'rexnavarro','$2y$10$TlCrToKxKGy6YrK26oz6AuOyCA71epIzEDU3L/xw3ZpabfloCG2He','rexnavarro@gmail.com','2025-05-01 13:02:39',NULL,NULL),(12,'redge','$2y$10$Sd34UJmMNoL4XBfsESSKXu7Y.eahVgNFtcW5oZgIAXQaK.viTBNbe','rtan@gmail.com','2025-05-01 23:35:52',NULL,NULL),(13,'cait','$2y$10$csygpE8TTCD9jvjiTe8IOe1yfIeOdynA2yDO3lKfDoJbmHjh2GZHi','csorbito@gmail.com','2025-05-01 23:37:20',NULL,NULL),(14,'jason','$2y$10$dov3bbwg7.zM3qR.95OaQe2nSWpq8971dBL2XS.J/SJP/BpHQ4YEG','jdaluyon@gmail.com','2025-05-01 23:40:23',NULL,NULL);
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `auditlog`
+--
+
+DROP TABLE IF EXISTS `auditlog`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `auditlog` (
+  `AuditLogID` int(11) NOT NULL AUTO_INCREMENT,
+  `FacultyID` int(11) DEFAULT NULL,
+  `PersonnelID` int(11) DEFAULT NULL,
+  `FullName` varchar(100) NOT NULL,
+  `Description` text NOT NULL,
+  `LogDateTime` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`AuditLogID`),
+  KEY `FacultyID` (`FacultyID`),
+  KEY `PersonnelID` (`PersonnelID`),
+  CONSTRAINT `fk_auditlog_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
+  CONSTRAINT `fk_auditlog_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `auditlog`
+--
+
+LOCK TABLES `auditlog` WRITE;
+/*!40000 ALTER TABLE `auditlog` DISABLE KEYS */;
+INSERT INTO `auditlog` VALUES (1,2,NULL,'Rhonalyn Cantorna','User joined faculty with ID: 2','2025-05-02 16:10:21'),(2,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:30:36'),(3,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:49:03'),(4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48');
+/*!40000 ALTER TABLE `auditlog` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -148,7 +180,7 @@ CREATE TABLE `personnel` (
   KEY `AccountID` (`AccountID`),
   CONSTRAINT `personnel_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`),
   CONSTRAINT `personnel_ibfk_2` FOREIGN KEY (`AccountID`) REFERENCES `accounts` (`AccountID`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -157,7 +189,7 @@ CREATE TABLE `personnel` (
 
 LOCK TABLES `personnel` WRITE;
 /*!40000 ALTER TABLE `personnel` DISABLE KEYS */;
-INSERT INTO `personnel` VALUES (1,'Edrian','Martinez','Male','user',NULL,1),(2,'ed','rian','Male','user',NULL,2),(4,'test','test','Male','user',NULL,4),(5,'lyanah','paula','Female','DN',1,5),(6,'din','chan','Male','user',NULL,6),(7,'Lyanah','Hernandez','Female','user',NULL,7),(8,'RICHELLE','BENITEZ','Female','PH',1,8),(9,'BACHING','CHING','Female','user',NULL,9),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'REDGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','PH',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14);
+INSERT INTO `personnel` VALUES (1,'Edrian','Martinez','Male','user',NULL,1),(2,'ed','rian','Male','user',NULL,2),(4,'test','test','Male','user',NULL,4),(5,'lyanah','paula','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'REDGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','PH',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14);
 /*!40000 ALTER TABLE `personnel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -187,7 +219,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (1,'COMP 101',1),(1,'COMP 102',1),(1,'COMP 103',1),(1,'COMP 104',1),(1,'COMP 105',1),(1,'COMP 106',1),(1,'IT 101',1),(1,'IT 102',1),(1,'IT 103',1),(1,'IT 104',1),(1,'IT 105',1),(1,'IT 106',1),(1,'IT 107',1),(1,'IT 108',1),(1,'IT 109',1),(1,'IT 110',1),(1,'IT 111',1),(1,'IT 112',1),(1,'IT 113',1),(1,'IT 114',1),(1,'IT 115',1),(1,'IT 201',1),(1,'IT 202',1),(1,'IT 203',1),(1,'IT 204',1),(1,'IT 301',1),(1,'IT 302',1),(1,'IT 303',1),(1,'IT 304',1),(1,'IT 305',1),(1,'IT 306',1),(1,'IT103',1),(2,'COMP 101',3),(2,'COMP 102',3),(2,'COMP 103',3),(2,'COMP 104',3),(2,'COMP 105',3),(2,'CS 101',3),(2,'CS 102',3),(2,'CS 103',3),(2,'CS 104',3),(2,'CS 105',3),(2,'CS 106',3),(2,'CS 107',3),(2,'CS 108',3),(2,'CS 109',3),(2,'CS 110',3),(2,'CS 111',3),(2,'CS 112',3),(2,'CS 113',3),(2,'CS 114',3),(2,'CS 115',3),(2,'CS 116',3),(2,'CS 117',3),(2,'CS 201',3),(2,'CS 202',3),(2,'CS 203',3),(2,'CS 301',3),(2,'CS 401',3),(2,'CS 402',3),(2,'CS 403',3),(2,'CS 404',3),(2,'CS 405',3),(2,'CS 406',3);
+INSERT INTO `program_courses` VALUES (1,'COMP 101',2),(1,'COMP 102',2),(1,'COMP 103',2),(1,'COMP 104',2),(1,'COMP 105',2),(1,'COMP 106',2),(1,'IT 101',2),(1,'IT 102',2),(1,'IT 103',2),(1,'IT 104',2),(1,'IT 105',2),(1,'IT 106',2),(1,'IT 107',2),(1,'IT 108',2),(1,'IT 109',2),(1,'IT 110',2),(1,'IT 111',2),(1,'IT 112',2),(1,'IT 113',2),(1,'IT 114',2),(1,'IT 115',2),(1,'IT 201',2),(1,'IT 202',2),(1,'IT 203',2),(1,'IT 204',2),(1,'IT 301',2),(1,'IT 302',2),(1,'IT 303',2),(1,'IT 304',2),(1,'IT 305',2),(1,'IT 306',2),(1,'IT103',2),(2,'COMP 101',3),(2,'COMP 102',3),(2,'COMP 103',3),(2,'COMP 104',3),(2,'COMP 105',3),(2,'CS 101',3),(2,'CS 102',3),(2,'CS 103',3),(2,'CS 104',3),(2,'CS 105',3),(2,'CS 106',3),(2,'CS 107',3),(2,'CS 108',3),(2,'CS 109',3),(2,'CS 110',3),(2,'CS 111',3),(2,'CS 112',3),(2,'CS 113',3),(2,'CS 114',3),(2,'CS 115',3),(2,'CS 116',3),(2,'CS 117',3),(2,'CS 201',3),(2,'CS 202',3),(2,'CS 203',3),(2,'CS 301',3),(2,'CS 401',3),(2,'CS 402',3),(2,'CS 403',3),(2,'CS 404',3),(2,'CS 405',3),(2,'CS 406',3);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -376,4 +408,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-03  0:45:59
+-- Dump completed on 2025-05-03  1:20:42
