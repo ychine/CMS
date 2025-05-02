@@ -55,8 +55,9 @@ if ($result && $result->num_rows > 0) {
                     CASE Role 
                         WHEN 'DN' THEN 1 
                         WHEN 'PH' THEN 2 
-                        WHEN 'FM' THEN 3 
-                        ELSE 4 
+                        WHEN 'COR' THEN 3
+                        WHEN 'FM' THEN 4
+                        ELSE 5
                     END";
     $memberStmt = $conn->prepare($memberQuery);
     $memberStmt->bind_param("i", $facultyID);
@@ -172,8 +173,8 @@ $conn->close();
                                 $roleMap = [
                                     'FM' => 'Member',
                                     'DN' => 'Dean',
-                                    'PH' => 'Program Head'
-                                ];
+                                    'PH' => 'Program Head',
+                                    'COR' => 'Courseware Coordinator'                                ];
                                 $readableRole = $roleMap[$member['Role']] ?? $member['Role'];
                             ?>
                             <div class="text-sm text-gray-400"><?php echo htmlspecialchars($readableRole); ?></div>
@@ -184,6 +185,7 @@ $conn->close();
             <option value="" disabled selected>Select a role</option>
             <option value="DN" <?php echo $member['Role'] === 'DN' ? 'selected' : ''; ?>>DEAN</option>
             <option value="PH" <?php echo $member['Role'] === 'PH' ? 'selected' : ''; ?>>PROGRAM HEAD</option>
+            <option value="COR" <?php echo $member['Role'] === 'COR' ? 'selected' : ''; ?>>COORDINATOR</option>
             <option value="FM" <?php echo $member['Role'] === 'FM' ? 'selected' : ''; ?>>MEMBER</option>
         </select>
         <button class="delete-button" data-account-id="<?php echo $member['AccountID']; ?>" title="Remove Member">
