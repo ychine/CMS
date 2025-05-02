@@ -105,8 +105,8 @@ $conn->close();
     Here you can track all activity records, monitor changes, and ensure accountability across tasks and users.
     </p>
 
-    <div class="w-screen overflow-auto bg-white shadow rounded-lg mt-4">
-    <table class="min-w-screen divide-y divide-gray-200">
+    <div class="w-full overflow-auto bg-white shadow rounded-lg mt-4">
+    <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-100">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Log ID</th>
