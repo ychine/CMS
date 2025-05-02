@@ -21,7 +21,7 @@
               <div class="faculty-info">
                 <div class="faculty-avatar"></div>
                 <div class="faculty-details">
-                  <p class="faculty-name">Catherine Sortillo</p>
+                  <p class="faculty-name">Catherine Sorbito</p>
                   <p class="faculty-role">Assistant Professor/Head</p>
                 </div>
               </div>
