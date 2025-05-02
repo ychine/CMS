@@ -14,47 +14,65 @@ if ($conn->connect_error) {
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['faculty_code'])) {
     $facultyCode = trim($_POST['faculty_code']);
     $accountID = $_SESSION['AccountID'];
-    
+
     // Check if faculty code exists
     $query = "SELECT FacultyID FROM faculties WHERE JoinCode = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $facultyCode);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows > 0) {
-   
         $row = $result->fetch_assoc();
         $facultyID = $row['FacultyID'];
-        
-     
+
+        // Update personnel record
         $updateQuery = "UPDATE personnel SET FacultyID = ?, Role = 'FM' WHERE AccountID = ?";
         $updateStmt = $conn->prepare($updateQuery);
         $updateStmt->bind_param("ii", $facultyID, $accountID);
-        
+
         if ($updateStmt->execute()) {
-            // Success, redirect to homepage with success message
+            // Fetch personnel info for audit logging
+            $userQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE AccountID = ?";
+            $userStmt = $conn->prepare($userQuery);
+            $userStmt->bind_param("i", $accountID);
+            $userStmt->execute();
+            $userResult = $userStmt->get_result();
+
+            if ($userResult->num_rows > 0) {
+                $user = $userResult->fetch_assoc();
+                $personnelID = $user['PersonnelID'];
+                $fullName = $user['FirstName'] . ' ' . $user['LastName'];
+                $description = "Joined the faculty";
+
+                // Insert into audit log
+                $logQuery = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description) VALUES (?, ?, ?, ?)";
+                $logStmt = $conn->prepare($logQuery);
+                $logStmt->bind_param("iiss", $facultyID, $personnelID, $fullName, $description);
+                $logStmt->execute();
+                $logStmt->close();
+            }
+
+            $userStmt->close();
+
             $_SESSION['joined_faculty_success'] = "Successfully joined faculty!";
             header("Location: homepage.php?joined=1");
             exit();
-
         } else {
             $_SESSION['joined_faculty_error'] = "Failed to update user information. Please try again.";
-            $_SESSION['show_join_form'] = true; // Flag to show join form
+            $_SESSION['show_join_form'] = true;
             header("Location: homepage.php");
             exit();
         }
-        
+
         $updateStmt->close();
     } else {
-        // Invalid faculty code
         $_SESSION['joined_faculty_error'] = "Invalid faculty code. Please try again.";
-        $_SESSION['show_join_form'] = true; // Flag to show join form
-        
+        $_SESSION['show_join_form'] = true;
         header("Location: homepage.php");
         exit();
     }
-    
+
     $stmt->close();
 }
 
