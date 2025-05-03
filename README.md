@@ -11,7 +11,9 @@
 >>
 >>Benitez, Richelle Dorothy  
 >>Martinez, John Edrian  
->>Santos, Milan Franco  
+>>Santos, Milan Franco
+>> Navarro, Rex
+>> Cantorna, Rhonalyn 
 
 
 Hello
