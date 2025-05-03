@@ -92,27 +92,7 @@ $conn->close();
             <hr class="border-gray-400">
             <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.</p>
             
-            <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
-                <?php if (!empty($members)): ?>
-                    <?php foreach ($members as $member): ?>
-                        <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
-                            <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-lg font-bold">
-                                    <?php 
-                                        echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); 
-                                    ?>
-                                </h2>
-                                <div class="text-sm text-blue-600">
-                                    <?php echo htmlspecialchars($member['Role']); ?>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p class="text-gray-500">No members found in your faculty.</p>
-                <?php endif; ?>
-            </div>
-        </div>
+        
         
         <!-- yung plus bttton -->
         <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 

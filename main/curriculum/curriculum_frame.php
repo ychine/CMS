@@ -149,22 +149,34 @@ $conn->close();
                 echo "<div class='mt-4'>";
                 echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">▶ $programName</button>";
                 echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
-        
+                
                 foreach ($curricula as $year => $courses) {
                     $yearId = 'year_' . md5($programName . $year);
                     echo "<div class='mt-2'>";
                     echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">▶ $year</button>";
                     echo "<div id=\"$yearId\" class='ml-4 mt-1 hidden'>";
-                    echo "<ul class='list-disc pl-5 text-sm text-gray-700 space-y-1'>";
+                    
+                    // Table header
+                    echo "<div class='overflow-x-auto'>";
+                    echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
+                    echo "<thead class='bg-gray-100 text-gray-900'>";
+                    echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th></tr>";
+                    echo "</thead><tbody>";
+        
                     foreach ($courses as $course) {
-                        echo "<li class='flex items-center gap-2'><span>📚</span><span>" . htmlspecialchars($course) . "</span></li>";
+                        echo "<tr class='hover:bg-gray-50'>";
+                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($course) . "</td>";
+                        echo "</tr>";
                     }
-                    echo "</ul></div></div>";
+        
+                    echo "</tbody></table></div>"; // Close table and scroll container
+                    echo "</div></div>"; // Close year div
                 }
         
-                echo "</div></div>";
+                echo "</div></div>"; // Close program div
             }
         }
+        
         
 
         renderProgramTree($programs);
@@ -217,7 +229,7 @@ $conn->close();
         </div>
     </div>
 
-    
+
 </div>
 
 <script>

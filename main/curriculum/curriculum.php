@@ -373,7 +373,7 @@ $conn->close();
             </div>
 
 
-            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+            <button id="createButton" class="mt-auto bg-[#13275B] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
                 <span class="create-text">Create</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -556,22 +556,21 @@ $conn->close();
 
 
 <script>
-// Place this at the end of your document, outside any conditional blocks
+
 document.addEventListener('DOMContentLoaded', function() {
-  // First make sure our functions are defined
+
   window.toggleUserMenu = function(event) {
     if (event) {
-      event.stopPropagation(); // Prevent the event from bubbling up to document
+      event.stopPropagation(); 
     }
     
     const menu = document.getElementById('userMenu');
     const icon = document.getElementById('dropdown-icon');
     
-    if (!menu) return; // Safety check
+    if (!menu) return; 
     
     menu.classList.toggle('hidden');
     
-    // Rotate icon when menu is open
     if (icon) {
       if (menu.classList.contains('hidden')) {
         icon.classList.remove('rotate-180');
@@ -581,7 +580,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  // Close menu when clicking outside
   document.addEventListener('click', function(event) {
     const menu = document.getElementById('userMenu');
     const profileContainer = document.querySelector('.profile-container');

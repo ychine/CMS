@@ -363,12 +363,14 @@ $conn->close();
             </div>
 
 
-            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
-                <span class="create-text">Create</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            <button id="createButton" class=" bg-[#1A294E] mt-auto hover:bg-[#13275B] rounded-[10px] text-white border-2 border-[#2A4484] px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+                <span class="create-text">Contact Support</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 ml-2" fill="currentColor" viewBox="0 0 24 24" stroke="none">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a9 9 0 00-9 9v3a3 3 0 003 3h1a1 1 0 001-1v-4a1 1 0 00-1-1H6v-1a6 6 0 1112 0v1h-1a1 1 0 00-1 1v4a1 1 0 001 1h1a3 3 0 003-3v-3a9 9 0 00-9-9z" />
                 </svg>
             </button>
+
+
 
             <div class=" sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px] px-2 text-gray-400 mt-2 my-0 py-2">
                 <hr class="border-t border-[#314f9b] w-full mx-auto mb-2" />
