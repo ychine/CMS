@@ -6,42 +6,67 @@ if (!isset($_SESSION['Username'])) {
     exit();
 }
 
+$accountID = $_SESSION['AccountID'];
+
 $conn = new mysqli("localhost", "root", "", "cms");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$accountID = $_SESSION['AccountID'];
-$facultyName = "Faculty";
-$members = [];
-
-$sql = "SELECT personnel.FacultyID, faculties.Faculty 
-        FROM personnel 
-        JOIN faculties ON personnel.FacultyID = faculties.FacultyID
-        WHERE personnel.AccountID = ?";
-$stmt = $conn->prepare($sql);
+// Get FacultyID from AccountID
+$facultyID = null;
+$stmt = $conn->prepare("SELECT FacultyID FROM personnel WHERE AccountID = ?");
 $stmt->bind_param("i", $accountID);
 $stmt->execute();
 $result = $stmt->get_result();
-
-if ($result && $result->num_rows > 0) {
-    $row = $result->fetch_assoc();
+if ($row = $result->fetch_assoc()) {
     $facultyID = $row['FacultyID'];
-    $facultyName = $row['Faculty'];
+}
+$stmt->close();
 
-    $memberQuery = "SELECT FirstName, LastName, Role FROM personnel WHERE FacultyID = ?";
-    $memberStmt = $conn->prepare($memberQuery);
-    $memberStmt->bind_param("i", $facultyID);
-    $memberStmt->execute();
-    $memberResult = $memberStmt->get_result();
+if (!$facultyID) {
+    echo "<p class='text-red-600'>Faculty not found.</p>";
+    $conn->close();
+    return;
+}
 
-    while ($memberRow = $memberResult->fetch_assoc()) {
-        $members[] = $memberRow;
+// Prepare and execute query filtered by FacultyID
+$programs = [];
+
+$sql = "
+    SELECT 
+        p.ProgramID, p.ProgramCode,
+        c.id AS CurriculumID, c.name AS CurriculumName,
+        co.CourseCode, co.Title
+    FROM programs p
+    LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
+    LEFT JOIN program_courses pc ON c.id = pc.CurriculumID
+    LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
+    WHERE pc.FacultyID = ?
+    ORDER BY p.ProgramCode, c.name, co.Title
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $facultyID);
+$stmt->execute();
+$res = $stmt->get_result();
+
+while ($row = $res->fetch_assoc()) {
+    $program = $row['ProgramCode'];
+    $curriculum = $row['CurriculumName'];
+    $course = $row['Title'];
+
+    if (!isset($programs[$program])) {
+        $programs[$program] = [];
     }
 
-    $memberStmt->close();
-} else {
-    $facultyName = "No Faculty Assigned";
+    if ($curriculum && !isset($programs[$program][$curriculum])) {
+        $programs[$program][$curriculum] = [];
+    }
+
+    if ($course) {
+        $programs[$program][$curriculum][] = $course;
+    }
 }
 
 $stmt->close();
@@ -103,46 +128,6 @@ $conn->close();
 
     <div class="w-[70%] space-y-2 font-onest">
         <?php
-        $conn = new mysqli("localhost", "root", "", "cms");
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
-        $programs = [];
-
-        $sql = "
-            SELECT 
-                p.ProgramID, p.ProgramCode,
-                c.id, c.name,
-                co.CourseCode, co.Title
-            FROM programs p
-            LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
-            LEFT JOIN program_courses pc ON c.id = pc.CurriculumID
-            LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
-            ORDER BY p.ProgramCode, c.name, co.Title
-        ";
-
-        $res = $conn->query($sql);
-        while ($row = $res->fetch_assoc()) {
-            $program = $row['ProgramCode'];
-            $year = $row['name'];
-            $course = $row['Title'];
-
-            if (!isset($programs[$program])) {
-                $programs[$program] = [];
-            }
-
-            if ($year && !isset($programs[$program][$year])) {
-                $programs[$program][$year] = [];
-            }
-
-            if ($course) {
-                $programs[$program][$year][] = $course;
-            }
-        }
-
-        $conn->close();
-
         function renderProgramTree($programs) {
             foreach ($programs as $programName => $curricula) {
                 $progId = 'prog_' . md5($programName);
@@ -176,11 +161,8 @@ $conn->close();
                 echo "</div></div>"; // Close program div
             }
         }
-        
-        
 
         renderProgramTree($programs);
-
         ?>
     </div>
 
@@ -192,23 +174,18 @@ $conn->close();
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
     </a>
-    
-        
 
     <!-- Dropdown -->
-    <!-- Unified Dropdown with Styled Bubbles -->
-        <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-45 space-y-2 z-50">
-             <button onclick="openProgramModal()"
-                class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
-                Add Program
-            </button>
-            <button onclick="openTaskModal()"
-                class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
-                Add Curriculum
-            </button>
-            
-        </div>
-
+    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-45 space-y-2 z-50">
+        <button onclick="openProgramModal()"
+            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
+            Add Program
+        </button>
+        <button onclick="openTaskModal()"
+            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+            Add Curriculum
+        </button>
+    </div>
 
     <!-- Modal -->
     <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -228,8 +205,6 @@ $conn->close();
             </form>
         </div>
     </div>
-
-
 </div>
 
 <script>
@@ -259,8 +234,8 @@ $conn->close();
     }
 
     function openProgramModal() {
-    document.getElementById('programModal').classList.remove('hidden');
-    document.getElementById('task-dropdown').classList.remove('show');
+        document.getElementById('programModal').classList.remove('hidden');
+        document.getElementById('task-dropdown').classList.remove('show');
     }
 
     function closeProgramModal() {
