@@ -368,12 +368,8 @@ $conn->close();
 
             </div>
 
-
-            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
-                <span class="create-text">Create</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
+            <button id="createButton" class=" mt-auto rounded-[10px] text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+              
             </button>
 
             <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
