@@ -179,6 +179,28 @@ $conn->close();
             width: 90%;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        .x-delete-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10%;
+        background-color: #f3f4f6;
+        color: #dc2626;
+        border: 1px solid #e5e7eb;
+        font-size: 25px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        margin-left: 8px;
+    }
+    
+    .x-delete-btn:hover {
+        background-color: #fee2e2;
+            border-color: #fecaca;
+            color: #dc2626;
+    }
     </style>
 </head>
 <body>
@@ -202,7 +224,7 @@ $conn->close();
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
                 echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">▶ $programName</button>";
-                echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"delete-btn ml-2\">Delete</button>";
+                echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
                 echo "</div>";
                 
                 echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
@@ -230,7 +252,7 @@ $conn->close();
                     echo "</div></div>"; // Close year div
                 }
         
-                echo "</div></div>"; // Close program div
+                echo "</div></div>"; // Close program   div
             }
         }
 
