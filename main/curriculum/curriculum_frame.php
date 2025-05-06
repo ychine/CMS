@@ -202,13 +202,13 @@
         </a>
 
         <!-- Dropdown -->
-        <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-45 space-y-2 z-50">
+        <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-48 space-y-2 z-50">
             <button onclick="openProgramModal()"
-                class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
-                Add Program and Curriculum
+                class="w-screen text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
+                Add Program or Curriculum
             </button>
             <button onclick="openCourseModal()"
-                class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+                class="w-screen text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
                 Add Course
             </button>
         </div>
