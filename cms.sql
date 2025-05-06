@@ -205,9 +205,10 @@ CREATE TABLE `program_courses` (
   `CourseCode` varchar(10) NOT NULL,
   `CurriculumID` int(11) DEFAULT NULL,
   `FacultyID` int(11) DEFAULT NULL,
-  PRIMARY KEY (`ProgramID`,`CourseCode`),
+  PRIMARY KEY (`ProgramID`, `CourseCode`),
   KEY `CourseCode` (`CourseCode`),
   KEY `fk_program_courses_curriculum` (`CurriculumID`),
+  UNIQUE KEY `unique_program_course_faculty` (`ProgramID`, `CourseCode`, `FacultyID`), 
   CONSTRAINT `fk_program_courses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE SET NULL,
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
@@ -319,16 +320,17 @@ DROP TABLE IF EXISTS `task_assignments`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `task_assignments` (
   `TaskID` int(11) NOT NULL,
-  `PersonnelID` int(11) NOT NULL,
+  `ProgramID` int(11) NOT NULL,
   `CourseCode` varchar(10) NOT NULL,
+  `FacultyID` int(11) NOT NULL,
   `Status` enum('Pending','Submitted') DEFAULT 'Pending',
   `ReviewStatus` enum('Not Reviewed','Approved','Rejected') DEFAULT 'Not Reviewed',
-  PRIMARY KEY (`TaskID`,`PersonnelID`,`CourseCode`),
-  KEY `PersonnelID` (`PersonnelID`),
-  KEY `CourseCode` (`CourseCode`),
-  CONSTRAINT `task_assignments_ibfk_1` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`),
-  CONSTRAINT `task_assignments_ibfk_2` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`),
-  CONSTRAINT `task_assignments_ibfk_3` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`)
+  PRIMARY KEY (`TaskID`, `ProgramID`, `CourseCode`, `FacultyID`),
+  KEY `fk_task_assignments_tasks` (`TaskID`),
+  KEY `fk_task_assignments_program_courses` (`ProgramID`, `CourseCode`, `FacultyID`),
+  CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_program_courses` FOREIGN KEY (`ProgramID`, `CourseCode`, `FacultyID`)
+    REFERENCES `program_courses` (`ProgramID`, `CourseCode`, `FacultyID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -180,11 +180,11 @@
                             echo "</tr>";
                         }
             
-                        echo "</tbody></table></div>"; // Close table and scroll container
-                        echo "</div></div>"; // Close year div
+                        echo "</tbody></table></div>"; 
+                        echo "</div></div>"; 
                     }
             
-                    echo "</div></div>"; // Close program div
+                    echo "</div></div>"; 
                 }
             }
 
