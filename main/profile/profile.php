@@ -71,8 +71,11 @@ if ($row = $result->fetch_assoc()) {
         } elseif ($row['Role'] === 'FM') {
             $dashboardPage = "dashboard/fm-dash.php";
             $userRole = "Faculty Member";
-        }
+        } elseif ($row['Role'] === 'COR') {
+            $dashboardPage = "dashboard/ph-dash.php";
+            $userRole = "Courseware Coordinator";
     }
+}
 }
 
 $stmt->close();

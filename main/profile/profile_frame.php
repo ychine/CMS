@@ -39,6 +39,7 @@ if ($result && $result->num_rows > 0) {
     $roleNames = [
         'DN' => 'Dean',
         'PH' => 'Program Head',
+        'COR' => 'Courseware Coordinator',
         'FM' => 'Faculty Member',
         'user' => 'User'
     ];
