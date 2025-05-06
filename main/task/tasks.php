@@ -364,10 +364,12 @@ $conn->close();
                     <span class="link-text">Curricula</span>
                 </a>
 
+                <?php if ($row['Role'] === 'DN'): ?>
                 <a href="../auditlog/audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Audit Log</span>
                 </a>
+                <?php endif; ?>
 
             </div>
 
