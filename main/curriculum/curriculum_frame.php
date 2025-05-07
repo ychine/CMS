@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -6,43 +7,110 @@ if (!isset($_SESSION['Username'])) {
     exit();
 }
 
+$accountID = $_SESSION['AccountID'];
+
 $conn = new mysqli("localhost", "root", "", "cms");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$accountID = $_SESSION['AccountID'];
-$facultyName = "Faculty";
-$members = [];
 
-$sql = "SELECT personnel.FacultyID, faculties.Faculty 
-        FROM personnel 
-        JOIN faculties ON personnel.FacultyID = faculties.FacultyID
-        WHERE personnel.AccountID = ?";
-$stmt = $conn->prepare($sql);
+$facultyID = null;
+$stmt = $conn->prepare("SELECT FacultyID FROM personnel WHERE AccountID = ?");
 $stmt->bind_param("i", $accountID);
 $stmt->execute();
 $result = $stmt->get_result();
-
-if ($result && $result->num_rows > 0) {
-    $row = $result->fetch_assoc();
+if ($row = $result->fetch_assoc()) {
     $facultyID = $row['FacultyID'];
-    $facultyName = $row['Faculty'];
+}
+$stmt->close();
 
-    $memberQuery = "SELECT FirstName, LastName, Role FROM personnel WHERE FacultyID = ?";
-    $memberStmt = $conn->prepare($memberQuery);
-    $memberStmt->bind_param("i", $facultyID);
-    $memberStmt->execute();
-    $memberResult = $memberStmt->get_result();
+if (!$facultyID) {
+    echo "<p class='text-red-600'>Faculty not found.</p>";
+    $conn->close();
+    return;
+}
 
-    while ($memberRow = $memberResult->fetch_assoc()) {
-        $members[] = $memberRow;
+$programs = [];
+
+$sql = "
+    SELECT 
+        p.ProgramID, p.ProgramCode,
+        c.id AS CurriculumID, c.name AS CurriculumName,
+        co.CourseCode, co.Title,
+        c.FacultyID
+    FROM programs p
+    LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
+    LEFT JOIN program_courses pc ON c.id = pc.CurriculumID
+    LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
+    WHERE c.FacultyID = ?
+    ORDER BY p.ProgramCode, c.name, co.Title
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $facultyID); 
+$stmt->execute();
+$res = $stmt->get_result();
+
+while ($row = $res->fetch_assoc()) {
+    $programId = $row['ProgramID'];
+    $program = $row['ProgramCode'];
+    $curriculum = $row['CurriculumName'];
+    $course = $row['Title'];
+    
+    if (!isset($programs[$programId])) {
+        $programs[$programId] = [
+            'code' => $program,
+            'curricula' => []
+        ];
     }
 
-    $memberStmt->close();
-} else {
-    $facultyName = "No Faculty Assigned";
+    if ($curriculum && !isset($programs[$programId]['curricula'][$curriculum])) {
+        $programs[$programId]['curricula'][$curriculum] = [];
+    }
+
+    if ($course) {
+        $programs[$programId]['curricula'][$curriculum][] = $course;
+    }
 }
+
+$personnelList = [];
+$personnelQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ?";
+$stmt = $conn->prepare($personnelQuery);
+$stmt->bind_param("i", $facultyID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $personnelList[] = [
+        'id' => $row['PersonnelID'],
+        'name' => $row['FirstName'] . ' ' . $row['LastName']
+    ];
+}
+$stmt->close();
+
+$existingPrograms = [];
+$programQuery = "
+    SELECT DISTINCT p.ProgramID, p.ProgramCode, p.ProgramName
+    FROM programs p
+    INNER JOIN curricula c ON p.ProgramID = c.ProgramID
+    INNER JOIN program_courses pc ON c.id = pc.CurriculumID
+    WHERE pc.FacultyID = ?
+";
+
+$stmt = $conn->prepare($programQuery);
+$stmt->bind_param("i", $facultyID);
+$stmt->execute();
+$res = $stmt->get_result();
+
+while ($row = $res->fetch_assoc()) {
+    $existingPrograms[] = [
+        'id' => $row['ProgramID'],
+        'code' => $row['ProgramCode'],
+        'name' => $row['ProgramName']
+    ];
+}
+
 
 $stmt->close();
 $conn->close();
@@ -75,6 +143,79 @@ $conn->close();
         .task-button.open svg {
             transform: rotate(45deg);
         }
+
+        .slide-in {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+
+        .show .slide-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .show .slide-in.delay-150 {
+            transition-delay: 0.30s;
+        }
+        
+        .delete-btn {
+            padding: 0.25rem 0.5rem;
+            background-color: #e53e3e;
+            color: white;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c53030;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .x-delete-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10%;
+        background-color: #f3f4f6;
+        color: #dc2626;
+        border: 1px solid #e5e7eb;
+        font-size: 25px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        margin-left: 8px;
+    }
+    
+    .x-delete-btn:hover {
+        background-color: #fee2e2;
+            border-color: #fecaca;
+            color: #dc2626;
+    }
     </style>
 </head>
 <body>
@@ -88,72 +229,69 @@ $conn->close();
 
     <div class="w-[70%] space-y-2 font-onest">
         <?php
-        $conn = new mysqli("localhost", "root", "", "cms");
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
-        $programs = [];
-
-        $sql = "
-            SELECT 
-                p.ProgramID, p.ProgramCode,
-                c.id, c.name,
-                co.CourseCode, co.Title
-            FROM programs p
-            LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
-            LEFT JOIN program_courses pc ON c.id = pc.CurriculumID
-            LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
-            ORDER BY p.ProgramCode, c.name, co.Title
-        ";
-
-        $res = $conn->query($sql);
-        while ($row = $res->fetch_assoc()) {
-            $program = $row['ProgramCode'];
-            $year = $row['name'];
-            $course = $row['Title'];
-
-            if (!isset($programs[$program])) {
-                $programs[$program] = [];
-            }
-
-            if ($year && !isset($programs[$program][$year])) {
-                $programs[$program][$year] = [];
-            }
-
-            if ($course) {
-                $programs[$program][$year][] = $course;
-            }
-        }
-
-        $conn->close();
-
+        
         function renderProgramTree($programs) {
-            foreach ($programs as $programName => $curricula) {
+            foreach ($programs as $programId => $programData) {
+                $programName = $programData['code'];
+                $curricula = $programData['curricula'];
+                
                 $progId = 'prog_' . md5($programName);
                 echo "<div class='mt-4'>";
+                echo "<div class='flex items-center justify-between'>";
                 echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">▶ $programName</button>";
+                echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
+                echo "</div>";
+                
                 echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
-        
+                
                 foreach ($curricula as $year => $courses) {
                     $yearId = 'year_' . md5($programName . $year);
                     echo "<div class='mt-2'>";
                     echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">▶ $year</button>";
                     echo "<div id=\"$yearId\" class='ml-4 mt-1 hidden'>";
-                    echo "<ul class='list-disc pl-5 text-sm text-gray-700 space-y-1'>";
+                    
+                
+                    echo "<div class='overflow-x-auto'>";
+                    echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
+                    echo "<thead class='bg-gray-100 text-gray-900'>";
+                    echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th>";
+                    echo "<th class='px-4 py-2 border-b text-left'>Assigned Prof.</th>";
+                    echo "<th class='px-4 py-2 border-b text-left'>Status</th>";
+                    echo "</tr>";
+                    echo "</thead><tbody>";
+        
                     foreach ($courses as $course) {
-                        echo "<li class='flex items-center gap-2'><span>📚</span><span>" . htmlspecialchars($course) . "</span></li>";
+                        echo "<tr class='hover:bg-gray-50'>";
+                    
+                        // Course Name Cell
+                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($course) . "</td>";
+                    
+                        echo "<td class='px-4 py-2 border-b'>";
+                        echo "<select class='w-full border border-gray-300 rounded px-2 py-1 text-sm assign-personnel-dropdown' 
+                            data-course-code='" . htmlspecialchars($course) . "' 
+                            data-curriculum='" . htmlspecialchars($year) . "' 
+                            data-program='" . htmlspecialchars($programId) . "'>";
+                        echo "<option value=''>-- Assign Personnel --</option>";
+                        foreach ($GLOBALS['personnelList'] as $person) {
+                            echo "<option value='" . $person['id'] . "'>" . htmlspecialchars($person['name']) . "</option>";
+                        }
+                        echo "</select>";
+                        echo "</td>";
+                    
+                      
+                        echo "</tr>";
                     }
-                    echo "</ul></div></div>";
+                    
+        
+                    echo "</tbody></table></div>"; // Close table and scroll container
+                    echo "</div></div>"; // Close year div
                 }
         
-                echo "</div></div>";
+                echo "</div></div>"; // Close program   div
             }
         }
-        
 
         renderProgramTree($programs);
-
         ?>
     </div>
 
@@ -167,34 +305,246 @@ $conn->close();
     </a>
 
     <!-- Dropdown -->
-    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-45 bg-[#51D55A] shadow-lg rounded-full hover:bg-green-800 transition-all duration-300">
-        <button onclick="openTaskModal()" 
-            class="w-full text-xl text-center text-white py-3 px-4 active:bg-green-900 transition-colors duration-150"> 
-            Add Curriculum
+    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-48 space-y-2 z-50">
+        <button onclick="openProgramModal()"
+            class="w-screen text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
+            Add Program or Curriculum
+        </button>
+        <button onclick="openCourseModal()"
+            class="w-screen text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+            Add Course
         </button>
     </div>
 
-    <!-- Modal -->
-    <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- Add Program Modal -->
+    <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-blue-500">
             <h2 class="text-2xl font-overpass font-bold mb-4">Create Curriculum</h2>
-            <form method="POST" action="create_curriculum.php">
-                <label class="block mb-1 font-semibold">Program (e.g., BSIT):</label>
-                <input type="text" name="program" required class="w-full mb-3 p-2 border rounded" />
+            <form method="POST" action="../curriculum/create_program.php">
+                
+                <label class="block mb-1 font-semibold">Select Program:</label>
+                <select id="existing_program" name="existing_program" class="w-full mb-3 p-2 border rounded" onchange="toggleProgramFields(); updateCurriculumPreview();">
+                    <option value="">-- Select Program --</option>
+                    <?php foreach ($existingPrograms as $program): ?>
+                        <option value="<?= $program['code'] ?>" data-name="<?= $program['name'] ?>">
+                            <?= $program['code'] ?> - <?= $program['name'] ?>
+                        </option>
+                    <?php endforeach; ?>
+                    <option value="other">Other (Add New Program)</option>
+                </select>
 
-                <label class="block mb-1 font-semibold">Curriculum Year (e.g., 2022):</label>
-                <input type="number" name="curriculum_year" required class="w-full mb-3 p-2 border rounded" />
+                <div id="new_program_fields" class="hidden">
+                    <label class="block mb-1 font-semibold">Program Code (e.g., BSIS):</label>
+                    <input type="text" id="program_code_input" name="program_code" class="w-full mb-3 p-2 border rounded" oninput="updateCurriculumPreview()" />
+
+                    <label class="block mb-1 font-semibold">Program Name:</label>
+                    <input type="text" id="program_name_input" name="program_name" class="w-full mb-3 p-2 border rounded" />
+                </div>
+
+                <label class="block mb-1 font-semibold">Curriculum Year:</label>
+                <input type="number" id="curriculum_year_input" name="curriculum_year" value="<?= date('Y') ?>" required class="w-full mb-3 p-2 border rounded" oninput="updateCurriculumPreview()" />
+
+                <p class="text-sm text-gray-600 mt-1 mb-3">
+                    <strong>Generated Curriculum Name:</strong>
+                    <span id="curriculum_preview" class="text-blue-700 font-semibold">—</span>
+                </p>
+
+                <input type="hidden" id="curriculum_name_input" name="curriculum_name" />
 
                 <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
+                    <button type="button" onclick="closeProgramModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
                     <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Create</button>
                 </div>
             </form>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
+        <p id="deleteMessage" class="mb-4">Are you sure you want to delete this program?</p>
+        <div class="flex justify-end gap-2">
+            <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
+            <button id="confirmDeleteBtn" class= "delete-btn ml-2 px-4 py-2"> Delete </button>
+        </div>
+    </div>
+</div>
+
 </div>
 
 <script>
+    
+    let programToDelete = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.assign-personnel-dropdown').forEach(dropdown => {
+            dropdown.addEventListener('change', function() {
+                const personnelId = this.value;
+                const courseTitle = this.dataset.courseCode;
+                const curriculumName = this.dataset.curriculum;
+                const programId = this.dataset.program;
+
+                if (!personnelId) return;
+
+                fetch('assign_personnel.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        personnel_id: personnelId,
+                        course_title: courseTitle,
+                        curriculum: curriculumName,
+                        program_id: programId
+                    })
+                })
+                .then(async res => {
+                    const text = await res.text();
+                    console.log("Raw response from assign_personnel.php:", text);
+                    try {
+                        const json = JSON.parse(text);
+                        console.log("Parsed JSON:", json);
+                    } catch (e) {
+                        console.error("Error parsing JSON:", e);
+                        alert("Raw error: " + text); // Show raw response
+                    }
+                })
+                .catch(err => {
+                    console.error("Network error:", err);
+                    alert("Network error");
+                });
+            });
+        });
+    });
+
+
+    function confirmDelete(programId, programName) {
+        programToDelete = programId;
+        document.getElementById('deleteMessage').textContent = `Are you sure you want to delete the program "${programName}"? This will delete all associated curricula and courses.`;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (programToDelete) {
+            deleteProgram(programToDelete);
+        }
+    });
+
+    function deleteProgram(programId) {
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = confirmBtn.textContent;
+    confirmBtn.textContent = 'Deleting...';
+    confirmBtn.disabled = true;
+    
+    // Close the modal
+    closeDeleteModal();
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('program_id', programId);
+    formData.append('ajax', 'true');
+
+    
+    fetch('../curriculum/remove_program.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success === true) {
+            // Show success message with SweetAlert2
+            Swal.fire({
+                title: 'Deleted!',
+                text: 'Program deleted successfully',
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                // Reload the page after the user clicks OK
+                location.reload();
+            });
+        } else {
+            // Show error message with SweetAlert2
+            Swal.fire({
+                title: 'Error!',
+                text: data.message || 'Failed to delete program',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            // Reset button
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Show error message with SweetAlert2
+        Swal.fire({
+            title: 'Error!',
+            text: 'An error occurred while deleting the program',
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+        });
+        // Reset button
+        confirmBtn.textContent = originalText;
+        confirmBtn.disabled = false;
+    });
+}
+
+    function toggleProgramFields() {
+        const dropdown = document.getElementById("existing_program");
+        const otherFields = document.getElementById("new_program_fields");
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
+
+        if (dropdown.value === "other") {
+            otherFields.classList.remove("hidden");
+            document.getElementById("program_code_input").required = true;
+            document.getElementById("program_name_input").required = true;
+        } else {
+            otherFields.classList.add("hidden");
+            document.getElementById("program_code_input").required = false;
+            document.getElementById("program_name_input").required = false;
+        }
+
+        updateCurriculumPreview();
+    }
+
+    function updateCurriculumPreview() {
+        const dropdown = document.getElementById("existing_program");
+        const codeInput = document.getElementById("program_code_input");
+        const yearInput = document.getElementById("curriculum_year_input");
+        const preview = document.getElementById("curriculum_preview");
+        const hiddenInput = document.getElementById("curriculum_name_input");
+
+        let code = "";
+
+        if (dropdown.value === "other") {
+            code = codeInput.value.trim();
+        } else if (dropdown.value !== "") {
+            code = dropdown.value;
+        }
+
+        const year = yearInput.value.trim();
+
+        if (code && year) {
+            const generated = `${code} Curriculum ${year}`;
+            preview.textContent = generated;
+            hiddenInput.value = generated;
+        } else {
+            preview.textContent = "—";
+            hiddenInput.value = "";
+        }
+    }
+    
     function toggleTaskDropdown() {
         const dropdown = document.getElementById('task-dropdown');
         const button = document.querySelector('a[title="Add Task"]');
@@ -211,23 +561,37 @@ $conn->close();
         }
     });
 
-    function openTaskModal() {
-        document.getElementById('taskModal').classList.remove('hidden');
+    function openProgramModal() {
+        document.getElementById('programModal').classList.remove('hidden');
         document.getElementById('task-dropdown').classList.remove('show');
     }
 
-    function closeTaskModal() {
-        document.getElementById('taskModal').classList.add('hidden');
+    function closeProgramModal() {
+        document.getElementById('programModal').classList.add('hidden');
+    }
+
+    function openCourseModal() {
+        // This function seems to be missing but is referenced in your HTML
+        alert("Course modal functionality not yet implemented");
     }
 
     window.addEventListener('keydown', function (e) {
-        if (e.key === "Escape") closeTaskModal();
+        if (e.key === "Escape") {
+            closeTaskModal();
+            closeProgramModal();
+            closeDeleteModal();
+        }
     });
+
+    function closeTaskModal() {
+        // This function is called in the event listener but doesn't seem to exist
+        // Adding an empty implementation to prevent errors
+    }
 
     function toggleCollapse(id) {
         const el = document.getElementById(id);
         el.classList.toggle("hidden");
-        const btn = el.previousElementSibling;
+        const btn = document.querySelector(`button[onclick="toggleCollapse('${id}')"]`);
         if (btn && btn.textContent.trim().startsWith("▶")) {
             btn.textContent = btn.textContent.replace("▶", "▼");
         } else if (btn && btn.textContent.trim().startsWith("▼")) {

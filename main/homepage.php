@@ -72,6 +72,10 @@ if ($row = $result->fetch_assoc()) {
             $dashboardPage = "dashboard/fm-dash.php";
             $userRole = "Faculty Member";
         }
+        elseif ($row['Role'] === 'COR') {
+            $dashboardPage = "dashboard/ph-dash.php";
+            $userRole = "Courseware Coordinator";
+        }
         elseif ($row['Role'] === 'user') {
             $dashboardPage = "dashboard/fm-dash.php";
             $userRole = "New User";
@@ -248,7 +252,7 @@ $conn->close();
         #userMenu.hidden {
         opacity: 0;
         transform: translateY(-10px) scale(0.95);
-        pointer-events: none; /* Make sure it's not clickable when hidden */
+        pointer-events: none;
         }
 
         #userMenu:not(.hidden) {
@@ -350,31 +354,27 @@ $conn->close();
                     <img src="../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curricula</span>
                 </a>
-
-                <a href="repository/repository.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Repository</span>
-                </a>
-
+                
+                <?php if ($row['Role'] === 'DN'): ?>
                 <a href="auditlog/audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Audit Log</span>
                 </a>
-
+                <?php endif; ?>
             </div>
 
 
-            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
-                <span class="create-text">Create</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
+            <button id="createButton" class=" mt-auto rounded-[10px] text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+              
             </button>
 
-            <div class=" sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px] px-2 text-gray-400 mt-2 my-0 py-2">
+
+
+            <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
                 <hr class="border-t border-[#314f9b] w-full mx-auto mb-2" />
                 © 2025 CourseDock. All rights reserved.
                 <span class="mt-1">
+                    <br>
                     <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
                     <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
                 </span>
@@ -422,7 +422,7 @@ $conn->close();
                     <!-- Dropdown Menu (Hidden by Default) -->
                     <div id="userMenu" class="hidden">
                         <div class="py-1 border border-gray-200 rounded-md">
-                        <a href="profile.php" class="profile-dropdown-item">
+                        <a href="profile/profile.php" class="profile-dropdown-item">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>

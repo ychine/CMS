@@ -71,6 +71,9 @@ if ($row = $result->fetch_assoc()) {
         } elseif ($row['Role'] === 'FM') {
             $dashboardPage = "dashboard/fm-dash.php";
             $userRole = "Faculty Member";
+        } elseif ($row['Role'] === 'COR') {
+            $dashboardPage = "dashboard/[ph-dash.php";
+            $userRole = "Courseware Coordinator";
         }
     }
 }
@@ -87,7 +90,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="../../src/styles.css" rel="stylesheet" />
-    <title>Tasks | CourseDock</title>
+    <title>Faculty | CourseDock</title>
     <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -361,24 +364,17 @@ $conn->close();
                     <span class="link-text">Curricula</span>
                 </a>
 
-                <a href="../repository/repository.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../../img/Inbox.png" alt="Inbox" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Repository</span>
-                </a>
-
+                <?php if ($row['Role'] === 'DN'): ?>
                 <a href="../auditlog/audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Audit Log</span>
                 </a>
+                <?php endif; ?>
 
             </div>
 
-
-            <button id="createButton" class="mt-auto bg-[#51D55A] hover:bg-green-800 text-black px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
-                <span class="create-text">Create</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="create-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
+            <button id="createButton" class=" mt-auto rounded-[10px] text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+              
             </button>
 
             <div class="sidebar-footer relative rounded-md m-0 w-full text-center font-overpass font-light text-[10px]  px-2 text-gray-400 mt-2 my-0 py-2">
@@ -432,7 +428,7 @@ $conn->close();
                     <!-- Dropdown Menu (Hidden by Default) -->
                     <div id="userMenu" class="hidden">
                         <div class="py-1 border border-gray-200 rounded-md">
-                        <a href="profile.php" class="profile-dropdown-item">
+                        <a href="../profile/profile.php" class="profile-dropdown-item">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
