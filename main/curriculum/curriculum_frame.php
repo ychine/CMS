@@ -333,6 +333,40 @@ $conn->close();
         </button>
     </div>
 
+    <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-green-500">
+        <h2 class="text-2xl font-overpass font-bold mb-4">Add New Course</h2>
+        <form id="addCourseForm" method="POST" action="../curriculum/add_course.php">
+            
+            <label class="block mb-1 font-semibold">Select Program:</label>
+            <select id="course_program" name="program_id" class="w-full mb-3 p-2 border rounded" required onchange="loadCurricula(this.value)">
+                <option value="">-- Select Program --</option>
+                <?php foreach ($existingPrograms as $program): ?>
+                    <option value="<?= $program['id'] ?>">
+                        <?= $program['code'] ?> - <?= $program['name'] ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <label class="block mb-1 font-semibold">Select Curriculum:</label>
+            <select id="course_curriculum" name="curriculum_id" class="w-full mb-3 p-2 border rounded" required>
+                <option value="">-- Select Program First --</option>
+            </select>
+
+            <label class="block mb-1 font-semibold">Course Code:</label>
+            <input type="text" id="course_code" name="course_code" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., COMP101" />
+
+            <label class="block mb-1 font-semibold">Course Title:</label>
+            <input type="text" id="course_title" name="course_title" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., Introduction to Programming" />
+
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="button" onclick="closeCourseModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Add Course</button>
+            </div>
+        </form>
+    </div>
+</div>
+
     <!-- Add Program Modal -->
     <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-blue-500">
@@ -588,8 +622,14 @@ $conn->close();
     }
 
     function openCourseModal() {
-        // This function seems to be missing but is referenced in your HTML
-        alert("Course modal functionality not yet implemented");
+        document.getElementById('courseModal').classList.remove('hidden');
+    document.getElementById('task-dropdown').classList.remove('show');
+    
+    // Reset form fields
+    document.getElementById('course_program').value = '';
+    document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
+    document.getElementById('course_code').value = '';
+    document.getElementById('course_title').value = '';
     }
 
     window.addEventListener('keydown', function (e) {
@@ -599,6 +639,99 @@ $conn->close();
             closeDeleteModal();
         }
     });
+
+
+    function closeCourseModal() {
+    document.getElementById('courseModal').classList.add('hidden');
+}
+
+function loadCurricula(programId) {
+    if (!programId) {
+        document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
+        return;
+    }
+    
+    // Show loading state
+    document.getElementById('course_curriculum').innerHTML = '<option value="">Loading curricula...</option>';
+    
+    // Fetch curricula for the selected program
+    fetch(`../curriculum/get_curricula.php?program_id=${programId}`)
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('course_curriculum');
+            
+            if (data.success) {
+                if (data.curricula.length > 0) {
+                    select.innerHTML = '<option value="">-- Select Curriculum --</option>';
+                    data.curricula.forEach(curriculum => {
+                        select.innerHTML += `<option value="${curriculum.id}">${curriculum.name}</option>`;
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No curricula available</option>';
+                }
+            } else {
+                select.innerHTML = '<option value="">Error loading curricula</option>';
+                console.error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('course_curriculum').innerHTML = '<option value="">Error loading curricula</option>';
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addCourseForm = document.getElementById('addCourseForm');
+    if (addCourseForm) {
+        addCourseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            // Submit form via AJAX
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Close modal and reload page
+                        closeCourseModal();
+                        location.reload();
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message,
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while adding the course',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+    }
+});
 
     function closeTaskModal() {
         // This function is called in the event listener but doesn't seem to exist
