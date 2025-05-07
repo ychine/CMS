@@ -78,9 +78,8 @@ $existingPrograms = [];
 $programQuery = "
     SELECT DISTINCT p.ProgramID, p.ProgramCode, p.ProgramName
     FROM programs p
-    INNER JOIN curricula c ON p.ProgramID = c.ProgramID
-    INNER JOIN program_courses pc ON c.id = pc.CurriculumID
-    WHERE pc.FacultyID = ?
+    LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
+    WHERE c.FacultyID = ? OR c.FacultyID IS NULL
 ";
 
 $stmt = $conn->prepare($programQuery);
@@ -282,7 +281,7 @@ $conn->close();
     </div>
 
     <!-- Add Program Modal -->
-    <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="programModal" class="hidden fixed inset-0 bg-transparent bg-opacity-25 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-blue-500">
             <h2 class="text-2xl font-overpass font-bold mb-4">Create Curriculum</h2>
             <form method="POST" action="../curriculum/create_program.php">
@@ -325,7 +324,7 @@ $conn->close();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Delete Confirmation Modal -->
+    
     <div id="deleteModal" class="modal">
     <div class="modal-content">
         <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
@@ -340,7 +339,7 @@ $conn->close();
 </div>
 
 <script>
-    // Program ID for deletion
+  
     let programToDelete = null;
 
     function confirmDelete(programId, programName) {
@@ -360,16 +359,14 @@ $conn->close();
     });
 
     function deleteProgram(programId) {
-    // Show loading state
+  
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     const originalText = confirmBtn.textContent;
     confirmBtn.textContent = 'Deleting...';
     confirmBtn.disabled = true;
     
-    // Close the modal
     closeDeleteModal();
-    
-    // Create form data
+   
     const formData = new FormData();
     formData.append('program_id', programId);
     formData.append('ajax', 'true');
@@ -382,7 +379,7 @@ $conn->close();
     .then(response => response.json())
     .then(data => {
         if (data.success === true) {
-            // Show success message with SweetAlert2
+          
             Swal.fire({
                 title: 'Deleted!',
                 text: 'Program deleted successfully',
@@ -390,11 +387,11 @@ $conn->close();
                 confirmButtonColor: '#3085d6',
                 confirmButtonText: 'OK'
             }).then((result) => {
-                // Reload the page after the user clicks OK
+               
                 location.reload();
             });
         } else {
-            // Show error message with SweetAlert2
+            
             Swal.fire({
                 title: 'Error!',
                 text: data.message || 'Failed to delete program',
@@ -402,14 +399,14 @@ $conn->close();
                 confirmButtonColor: '#3085d6',
                 confirmButtonText: 'OK'
             });
-            // Reset button
+      
             confirmBtn.textContent = originalText;
             confirmBtn.disabled = false;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        // Show error message with SweetAlert2
+        
         Swal.fire({
             title: 'Error!',
             text: 'An error occurred while deleting the program',
@@ -417,7 +414,7 @@ $conn->close();
             confirmButtonColor: '#3085d6',
             confirmButtonText: 'OK'
         });
-        // Reset button
+      
         confirmBtn.textContent = originalText;
         confirmBtn.disabled = false;
     });
@@ -494,7 +491,7 @@ $conn->close();
     }
 
     function openCourseModal() {
-        // This function seems to be missing but is referenced in your HTML
+     
         alert("Course modal functionality not yet implemented");
     }
 
@@ -507,8 +504,7 @@ $conn->close();
     });
 
     function closeTaskModal() {
-        // This function is called in the event listener but doesn't seem to exist
-        // Adding an empty implementation to prevent errors
+    
     }
 
     function toggleCollapse(id) {

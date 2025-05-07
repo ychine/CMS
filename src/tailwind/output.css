@@ -450,6 +450,9 @@
   .w-45 {
     width: calc(var(--spacing) * 45);
   }
+  .w-48 {
+    width: calc(var(--spacing) * 48);
+  }
   .w-\[22px\] {
     width: 22px;
   }
@@ -473,6 +476,9 @@
   }
   .w-full {
     width: 100%;
+  }
+  .w-screen {
+    width: 100vw;
   }
   .max-w-md {
     max-width: var(--container-md);
@@ -672,9 +678,6 @@
   }
   .border-white {
     border-color: var(--color-white);
-  }
-  .bg-\[\#1A294E\] {
-    background-color: #1A294E;
   }
   .bg-\[\#1D387B\] {
     background-color: #1D387B;
