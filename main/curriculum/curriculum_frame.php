@@ -1,5 +1,6 @@
 
 <?php
+// curriculum_frame.php
 session_start();
 
 if (!isset($_SESSION['Username'])) {
@@ -14,6 +15,17 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Fetch user role
+$userRole = "";
+$userRoleQuery = "SELECT Role FROM personnel WHERE AccountID = ?";
+$roleStmt = $conn->prepare($userRoleQuery);
+$roleStmt->bind_param("i", $accountID);
+$roleStmt->execute();
+$roleResult = $roleStmt->get_result();
+if ($roleResult && $roleResult->num_rows > 0) {
+    $userRole = $roleResult->fetch_assoc()['Role'];
+}
+$roleStmt->close();
 
 $facultyID = null;
 $stmt = $conn->prepare("SELECT FacultyID FROM personnel WHERE AccountID = ?");
@@ -87,8 +99,6 @@ while ($row = $res->fetch_assoc()) {
     }
 }
 
-
-
 $personnelList = [];
 $personnelQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ?";
 $stmt = $conn->prepare($personnelQuery);
@@ -125,7 +135,6 @@ while ($row = $res->fetch_assoc()) {
         'name' => $row['ProgramName']
     ];
 }
-
 
 $stmt->close();
 $conn->close();
@@ -231,6 +240,36 @@ $conn->close();
             border-color: #fecaca;
             color: #dc2626;
     }
+
+    /* Personnel dropdown styling similar to faculty_frame.php */
+    .assign-personnel-dropdown {
+        background-color: #f3f4f6;
+        border-radius: 6px;
+        padding: 8px 12px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        font-weight: 500;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1em;
+        padding-right: 2.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #4b5563;
+    }
+    
+    .assign-personnel-dropdown:hover {
+        background-color: #e5e7eb; 
+        border-color: #4a84f1;
+    }
+
+    .assign-personnel-dropdown:focus {
+        outline: none;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
     </style>
 </head>
 <body>
@@ -245,7 +284,7 @@ $conn->close();
     <div class="w-[70%] space-y-2 font-onest">
         <?php
         
-        function renderProgramTree($programs) {
+        function renderProgramTree($programs, $userRole) {
             foreach ($programs as $programId => $programData) {
                 $programName = $programData['code'];
                 $curricula = $programData['curricula'];
@@ -254,7 +293,12 @@ $conn->close();
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
                 echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">▶ $programName</button>";
-                echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
+                
+                
+                if ($userRole === 'DN') {
+                    echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
+                }
+                
                 echo "</div>";
                 
                 echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
@@ -283,36 +327,45 @@ $conn->close();
                         echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($courseTitle) . "</td>";
                     
                         echo "<td class='px-4 py-2 border-b'>";
-                        echo "<select class='w-full border border-gray-300 rounded px-2 py-1 text-sm assign-personnel-dropdown' 
-                            data-course-code='" . htmlspecialchars($courseTitle) . "' 
-                            data-curriculum='" . htmlspecialchars($year) . "' 
-                            data-program='" . htmlspecialchars($programId) . "'>";
-                        echo "<option value=''>-- Assign Personnel --</option>";
-                    
-                        foreach ($GLOBALS['personnelList'] as $person) {
-                            $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
-                            echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
+                        
+                        
+                        if ($userRole === 'DN') {
+                            echo "<select class='w-full assign-personnel-dropdown' 
+                                data-course-code='" . htmlspecialchars($courseTitle) . "' 
+                                data-curriculum='" . htmlspecialchars($year) . "' 
+                                data-program='" . htmlspecialchars($programId) . "'>";
+                            echo "<option value=''>-- Assign Personnel --</option>";
+                        
+                            foreach ($GLOBALS['personnelList'] as $person) {
+                                $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
+                                echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
+                            }
+                        
+                            echo "</select>";
+                        } else {
+                            
+                            echo htmlspecialchars($assignedTo ?: 'Not assigned');
                         }
-                    
-                        echo "</select>";
+                        
                         echo "</td>";
                         echo "</tr>";
                     }
                     
         
-                    echo "</tbody></table></div>"; // Close table and scroll container
-                    echo "</div></div>"; // Close year div
+                    echo "</tbody></table></div>"; 
+                    echo "</div></div>"; 
                 }
         
-                echo "</div></div>"; // Close program   div
+                echo "</div></div>"; 
             }
         }
 
-        renderProgramTree($programs);
+        renderProgramTree($programs, $userRole);
         ?>
     </div>
 
     <!-- Floating Add Button -->
+    <?php if ($userRole === 'DN'): ?>
     <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 
         class="task-button fixed bottom-8 right-10 w-13 h-13 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
         title="Add Task">
@@ -332,6 +385,7 @@ $conn->close();
             Add Course
         </button>
     </div>
+    <?php endif; ?>
 
     <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-green-500">
@@ -426,7 +480,8 @@ $conn->close();
 </div>
 
 <script>
-    
+    // Store user role in JavaScript for use in functions
+    const userRole = "<?php echo $userRole; ?>";
     let programToDelete = null;
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -606,7 +661,7 @@ $conn->close();
     window.addEventListener('click', function (event) {
         const dropdown = document.getElementById('task-dropdown');
         const button = document.querySelector('a[title="Add Task"]');
-        if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+        if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
             dropdown.classList.remove('show');
             button.classList.remove('open');
         }
