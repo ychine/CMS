@@ -187,11 +187,41 @@ CREATE TABLE `personnel` (
 -- Dumping data for table `personnel`
 --
 
-LOCK TABLES `personnel` WRITE;
-/*!40000 ALTER TABLE `personnel` DISABLE KEYS */;
-INSERT INTO `personnel` VALUES (1,'Edrian','Martinez','Male','user',NULL,1),(2,'ed','rian','Male','user',NULL,2),(4,'test','test','Male','user',NULL,4),(5,'lyanah','paula','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'RIEGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','COR',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14),(16,'','',NULL,'user',NULL,NULL),(17,'Laura','Altea','Female','FM',2,17),(18,'Rebecca ','Fajardo','Female','FM',2,18),(19,'Noreen','Perez','Female','FM',2,19),(20,'Federico','Nueva','Male','FM',2,20),(21,'Ruby Jane','Diosa','Female','FM',2,21),(22,'Racquel','Cortez','Female','FM',2,22),(23,'Rodolfo','Mirabel','Male','FM',2,23),(24,'Juanito','Alvarez','Male','FM',2,24),(25,'Greta','Rosario','Female','FM',2,25),(26,'Randy','Otero','Male','FM',2,26),(27,'Berilnne','Bobis','Female','FM',2,27),(28,'Martha Andrea ','Daluyon','Female','FM',2,28),(29,'Joseph Wilfred ','dela Cruz','Male','FM',2,29),(30,'Alexen','Elacio','Male','FM',2,30),(31,'Norman','Espiritu','Male','FM',2,31),(32,'Michael','Fernandez','Male','FM',2,32),(33,'Ramil','Madriaga','Male','FM',2,33),(34,'Dawn Bernadette ','Menor','Female','FM',2,34),(35,'Samantha','Siao','Female','FM',2,35);
-/*!40000 ALTER TABLE `personnel` ENABLE KEYS */;
+LOCK TABLES `PERSONNEL` WRITE;
+/*!40000 ALTER TABLE `PERSONNEL` DISABLE KEYS */;
+INSERT INTO `PERSONNEL` VALUES 
+(1,'EDRIAN','MARTINEZ','MALE','USER',NULL,1),
+(2,'ED','RIAN','MALE','USER',NULL,2),
+(4,'TEST','TEST','MALE','USER',NULL,4),
+(5,'LYANAH','PAULA','FEMALE','DN',1,5),
+(10,'MILAN FRANCO','SANTOS','MALE','DN',3,10),
+(11,'REX','NAVARRO JR.','MALE','FM',1,11),
+(12,'RIEGIE','TAN','MALE','DN',2,12),
+(13,'CATHERINE','SORBITO','FEMALE','COR',2,13),
+(14,'JAYSON','DALUYON','MALE','FM',2,14),
+(16,'','',NULL,'USER',NULL,NULL),
+(17,'LAURA','ALTEA','FEMALE','FM',2,17),
+(18,'REBECCA','FAJARDO','FEMALE','FM',2,18),
+(19,'NOREEN','PEREZ','FEMALE','FM',2,19),
+(20,'FEDERICO','NUEVA','MALE','FM',2,20),
+(21,'RUBY JANE','DIOSA','FEMALE','FM',2,21),
+(22,'RACQUEL','CORTEZ','FEMALE','FM',2,22),
+(23,'RODOLFO','MIRABEL','MALE','FM',2,23),
+(24,'JUANITO','ALVAREZ','MALE','FM',2,24),
+(25,'GRETA','ROSARIO','FEMALE','FM',2,25),
+(26,'RANDY','OTERO','MALE','FM',2,26),
+(27,'BERILNNE','BOBIS','FEMALE','FM',2,27),
+(28,'MARTHA ANDREA','DALUYON','FEMALE','FM',2,28),
+(29,'JOSEPH WILFRED','DELA CRUZ','MALE','FM',2,29),
+(30,'ALEXEN','ELACIO','MALE','FM',2,30),
+(31,'NORMAN','ESPIRITU','MALE','FM',2,31),
+(32,'MICHAEL','FERNANDEZ','MALE','FM',2,32),
+(33,'RAMIL','MADRIAGA','MALE','FM',2,33),
+(34,'DAWN BERNADETTE','MENOR','FEMALE','FM',2,34),
+(35,'SAMANTHA','SIAO','FEMALE','FM',2,35);
+/*!40000 ALTER TABLE `PERSONNEL` ENABLE KEYS */;
 UNLOCK TABLES;
+
 
 --
 -- Table structure for table `program_courses`
