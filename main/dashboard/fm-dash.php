@@ -1,70 +1,126 @@
 <?php
+
 session_start();
 
-// Display toast if a success message exists
-if (isset($_SESSION['joined_faculty_success'])): ?>
-    <script>
-        window.onload = function() {
-            showToast("<?php echo addslashes($_SESSION['joined_faculty_success']); ?>", "success");
-        };
-    </script>
-    <?php unset($_SESSION['joined_faculty_success']); ?>
-<?php endif; ?>
+if (!isset($_SESSION['Username'])) {
+    // Redirect to login if not logged in
+    header('Location: ../index.php');
+    exit;
+}
 
+$conn = new mysqli("localhost", "root", "", "CMS");
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Get the account ID from the session
+$accountID = $_SESSION['AccountID'];
+
+// Get the personnel information and faculty for the logged-in user
+$query = "SELECT p.PersonnelID, p.FirstName, p.LastName, p.Role, f.FacultyID, f.Faculty
+          FROM personnel p
+          INNER JOIN faculties f ON p.FacultyID = f.FacultyID
+          WHERE p.AccountID = ?";
+
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $accountID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $userData = $result->fetch_assoc();
+    $personnelId = $userData['PersonnelID'];
+    $facultyId = $userData['FacultyID'];
+    $facultyName = $userData['Faculty'];
+} else {
+    // Handle error - user not found or not associated with any faculty
+    $personnelId = 0;
+    $facultyId = 0;
+    $facultyName = "Unknown Faculty";
+}
+
+// Get counts of faculty members grouped by role
+$roleCounts = [];
+$roleLabels = [
+    'DN' => 'Dean',
+    'COR' => 'Coordinator',
+    'PH' => 'Program Head',
+    'FM' => 'Faculty Member'
+];
+
+$roleQuery = "SELECT Role, COUNT(*) as count 
+              FROM personnel 
+              WHERE FacultyID = ? 
+              GROUP BY Role";
+
+$roleStmt = $conn->prepare($roleQuery);
+$roleStmt->bind_param("i", $facultyId);
+$roleStmt->execute();
+$roleResult = $roleStmt->get_result();
+
+$roleCounts = [
+    'DN' => 0,
+    'COR' => 0,
+    'PH' => 0,
+    'FM' => 0
+];
+
+while ($row = $roleResult->fetch_assoc()) {
+    $roleCounts[$row['Role']] = $row['count'];
+}
+
+// Get total faculty count
+$totalQuery = "SELECT COUNT(*) as total FROM personnel WHERE FacultyID = ?";
+$totalStmt = $conn->prepare($totalQuery);
+$totalStmt->bind_param("i", $facultyId);
+$totalStmt->execute();
+$totalResult = $totalStmt->get_result();
+$totalRow = $totalResult->fetch_assoc();
+$totalFaculty = $totalRow['total'];
+
+// Define colors for each role for the visual presentation
+$roleColors = [
+    'DN' => '#4F46E5',  // Blue
+    'COR' => '#10B981', // Green
+    'PH' => '#F59E0B',  // Amber
+    'FM' => '#EF4444'   // Red
+];
+
+// Format the data for JavaScript
+$formattedRoleData = [];
+foreach ($roleLabels as $code => $label) {
+    $formattedRoleData[] = [
+        'name' => $label,
+        'value' => $roleCounts[$code] ?? 0,
+        'color' => $roleColors[$code]
+    ];
+}
+$roleDataJSON = json_encode($formattedRoleData);
+
+// Close the database connections
+$stmt->close();
+$roleStmt->close();
+$totalStmt->close();
+$conn->close();
+?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 25px;
-            color: #fff;
-            border-radius: 10px;
-            font-family: 'Onest', sans-serif;
-            font-size: 14px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            z-index: 1000;
-            animation: fadein 0.5s, fadeout 0.5s 3s;
-        }
-
-        .toast.success {
-            background-color: #28a745;
-        }
-
-        .toast.error {
-            background-color: #dc3545;
-        }
-
-        .toast.success {
-            background-color: #4CAF50; /* Green */
-            color: white;
-        }
-
-        @keyframes fadein {
-            from { opacity: 0; bottom: 20px; }
-            to { opacity: 1; bottom: 30px; }
-        }
-
-        @keyframes fadeout {
-            from { opacity: 1; bottom: 30px; }
-            to { opacity: 0; bottom: 20px; }
-        }
     </style>
 </head>
 <body>
     
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-        <h1 class="py-[10px] text-[35px] font-overpass font-bold">Dashboard FM</h1>
+     <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
+
         <div class="grid grid-cols-2 gap-5">
         <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
   <div class="flex items-center justify-between mb-6">
@@ -143,31 +199,78 @@ if (isset($_SESSION['joined_faculty_success'])): ?>
   </div>
 </div>
           <div class="bg-white p-[30px] rounded-lg shadow-md">
-            <div>Faculty</div>
-            <div class="faculty-grid mt-2"></div>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-bold font-overpass">Faculty</h2>
+              <a href="../faculty/faculty_frame.php" class="text-sm text-blue-600 hover:underline">
+                  Total: <?php echo $totalFaculty; ?> members
+              </a>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div class="faculty-chart-container" style="position: relative; height: 200px;">
+                <canvas id="facultyDonutChart"></canvas>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-2">
+                <?php foreach($roleLabels as $code => $label): ?>
+                <div class="bg-gray-100 p-3 rounded-lg">
+                  <div class="flex items-center mb-1">
+                    <div class="w-3 h-3 rounded-full mr-2" style="background-color: <?php echo $roleColors[$code]; ?>"></div>
+                    <div class="text-sm font-medium"><?php echo $label; ?></div>
+                  </div>
+                  <div class="text-2xl font-bold"><?php echo $roleCounts[$code] ?? 0; ?></div>
+                </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
           </div>
           <div class="bg-white p-[30px] rounded-lg shadow-md">Pending Reviews</div>
           <div class="bg-white p-[30px] rounded-lg shadow-md">Pinboard</div>
         </div>
       </div>
 
-
-      <script>
-    function showToast(message, type) {
-        var toast = document.createElement("div");
-        toast.classList.add("toast", type); // Add the type for styling
-        toast.innerText = message;
-        document.body.appendChild(toast);
-
-        // Automatically hide the toast after 3 seconds
-        setTimeout(function() {
-            toast.classList.add("fade-out");
-            setTimeout(function() {
-                toast.remove();
-            }, 500);
-        }, 3000);
-    }
-</script>
-
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Parse the PHP data
+      const roleData = <?php echo $roleDataJSON; ?>;
+      
+      // Setup the chart colors and labels
+      const colors = roleData.map(item => item.color);
+      const labels = roleData.map(item => item.name);
+      const values = roleData.map(item => item.value);
+      
+      // Create the chart
+      const ctx = document.getElementById('facultyDonutChart').getContext('2d');
+      const facultyChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: colors,
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.raw} members`;
+                }
+              }
+            }
+          }
+        }
+      });
+    });
+    </script>
 </body>
 </html>

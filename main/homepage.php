@@ -76,7 +76,7 @@ if ($row = $result->fetch_assoc()) {
             $dashboardPage = "dashboard/ph-dash.php";
             $userRole = "Courseware Coordinator";
         }
-        elseif ($row['Role'] === 'user') {
+        elseif ($row['Role'] === 'USER') {
             $dashboardPage = "dashboard/fm-dash.php";
             $userRole = "New User";
         }
