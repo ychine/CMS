@@ -66,7 +66,7 @@ CREATE TABLE `auditlog` (
   KEY `PersonnelID` (`PersonnelID`),
   CONSTRAINT `fk_auditlog_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
   CONSTRAINT `fk_auditlog_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,7 +75,7 @@ CREATE TABLE `auditlog` (
 
 LOCK TABLES `auditlog` WRITE;
 /*!40000 ALTER TABLE `auditlog` DISABLE KEYS */;
-INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,17,'Laura Altea','Joined the faculty','2025-05-07 20:29:06'),(12,2,18,'Rebecca  Fajardo','Joined the faculty','2025-05-07 20:29:44'),(13,2,19,'Noreen Perez','Joined the faculty','2025-05-07 20:30:08'),(14,2,20,'Federico Nueva','Joined the faculty','2025-05-07 20:31:16'),(15,2,21,'Ruby Jane Diosa','Joined the faculty','2025-05-07 20:31:36'),(16,2,22,'Racquel Cortez','Joined the faculty','2025-05-07 20:31:58'),(17,2,23,'Rodolfo Mirabel','Joined the faculty','2025-05-07 20:33:39'),(18,2,24,'Juanito Alvarez','Joined the faculty','2025-05-07 20:34:31'),(19,2,25,'Greta Rosario','Joined the faculty','2025-05-07 20:34:51'),(20,2,26,'Randy Otero','Joined the faculty','2025-05-07 20:35:14'),(21,2,27,'Berilnne Bobis','Joined the faculty','2025-05-07 20:36:22'),(22,2,28,'Martha Andrea  Daluyon','Joined the faculty','2025-05-07 20:36:48'),(23,2,29,'Joseph Wilfred  dela Cruz','Joined the faculty','2025-05-07 20:37:16'),(24,2,30,'Alexen Elacio','Joined the faculty','2025-05-07 20:37:41'),(25,2,31,'Norman Espiritu','Joined the faculty','2025-05-07 20:38:34'),(26,2,32,'Michael Fernandez','Joined the faculty','2025-05-07 20:38:53'),(27,2,33,'Ramil Madriaga','Joined the faculty','2025-05-07 20:39:18'),(28,2,34,'Dawn Bernadette  Menor','Joined the faculty','2025-05-07 20:39:33'),(29,2,35,'Samantha Siao','Joined the faculty','2025-05-07 20:39:57');
+INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57');
 /*!40000 ALTER TABLE `auditlog` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -210,11 +210,11 @@ CREATE TABLE `program_courses` (
   UNIQUE KEY `unique_program_course_faculty` (`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `CourseCode` (`CourseCode`),
   KEY `fk_program_courses_curriculum` (`CurriculumID`),
-  KEY `PersonnelID` (`PersonnelID`),
+  KEY `fk_program_courses_personnel` (`PersonnelID`),
   CONSTRAINT `fk_program_courses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
-  CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE,
-  CONSTRAINT `program_courses_ibfk_3` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`FacultyID`)
+  CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -224,7 +224,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (1,'COMP 101',2,2,NULL),(1,'COMP 102',2,2,NULL),(1,'COMP 103',2,2,NULL),(1,'COMP 104',2,2,NULL),(1,'COMP 105',2,2,NULL),(1,'COMP 106',2,2,NULL),(1,'IT 101',2,2,NULL),(1,'IT 102',2,2,NULL),(1,'IT 103',2,2,NULL),(1,'IT 104',2,2,NULL),(1,'IT 105',2,2,NULL),(1,'IT 106',2,2,NULL),(1,'IT 107',2,2,NULL),(1,'IT 108',2,2,NULL),(1,'IT 109',2,2,NULL),(1,'IT 110',2,2,NULL),(1,'IT 111',2,2,NULL),(1,'IT 112',2,2,NULL),(1,'IT 113',2,2,NULL),(1,'IT 114',2,2,NULL),(1,'IT 115',2,2,NULL),(1,'IT 201',2,2,NULL),(1,'IT 202',2,2,NULL),(1,'IT 203',2,2,NULL),(1,'IT 204',2,2,NULL),(1,'IT 301',2,2,NULL),(1,'IT 302',2,2,NULL),(1,'IT 303',2,2,NULL),(1,'IT 304',2,2,NULL),(1,'IT 305',2,2,NULL),(1,'IT 306',2,2,NULL),(2,'COMP 101',3,2,NULL),(2,'COMP 102',3,2,NULL),(2,'COMP 103',3,2,NULL),(2,'COMP 104',3,2,NULL),(2,'COMP 105',3,2,NULL),(2,'CS 101',3,2,NULL),(2,'CS 102',3,2,NULL),(2,'CS 103',3,2,NULL),(2,'CS 104',3,2,NULL),(2,'CS 105',3,2,NULL),(2,'CS 106',3,2,NULL),(2,'CS 107',3,2,NULL),(2,'CS 108',3,2,NULL),(2,'CS 109',3,2,NULL),(2,'CS 110',3,2,NULL),(2,'CS 111',3,2,NULL),(2,'CS 112',3,2,NULL),(2,'CS 113',3,2,NULL),(2,'CS 114',3,2,NULL),(2,'CS 115',3,2,NULL),(2,'CS 116',3,2,NULL),(2,'CS 117',3,2,NULL),(2,'CS 201',3,2,NULL),(2,'CS 202',3,2,NULL),(2,'CS 203',3,2,NULL),(2,'CS 301',3,2,NULL),(2,'CS 401',3,2,NULL),(2,'CS 402',3,2,NULL),(2,'CS 403',3,2,NULL),(2,'CS 404',3,2,NULL),(2,'CS 405',3,2,NULL),(2,'CS 406',3,2,NULL);
+INSERT INTO `program_courses` VALUES (1,'COMP 101',2,2,NULL),(1,'COMP 102',2,2,NULL),(1,'COMP 103',2,2,NULL),(1,'COMP 104',2,2,NULL),(1,'COMP 105',2,2,NULL),(1,'COMP 106',2,2,NULL),(1,'IT 101',2,2,NULL),(1,'IT 102',2,2,NULL),(1,'IT 103',2,2,NULL),(1,'IT 104',2,2,14),(1,'IT 105',2,2,NULL),(1,'IT 106',2,2,NULL),(1,'IT 107',2,2,NULL),(1,'IT 108',2,2,NULL),(1,'IT 109',2,2,NULL),(1,'IT 110',2,2,NULL),(1,'IT 111',2,2,NULL),(1,'IT 112',2,2,NULL),(1,'IT 113',2,2,NULL),(1,'IT 114',2,2,NULL),(1,'IT 115',2,2,NULL),(1,'IT 201',2,2,NULL),(1,'IT 202',2,2,NULL),(1,'IT 203',2,2,NULL),(1,'IT 204',2,2,NULL),(1,'IT 301',2,2,NULL),(1,'IT 302',2,2,NULL),(1,'IT 303',2,2,NULL),(1,'IT 304',2,2,NULL),(1,'IT 305',2,2,NULL),(1,'IT 306',2,2,NULL),(2,'COMP 101',3,2,NULL),(2,'COMP 102',3,2,NULL),(2,'COMP 103',3,2,NULL),(2,'COMP 104',3,2,NULL),(2,'COMP 105',3,2,NULL),(2,'CS 101',3,2,NULL),(2,'CS 102',3,2,NULL),(2,'CS 103',3,2,NULL),(2,'CS 104',3,2,NULL),(2,'CS 105',3,2,NULL),(2,'CS 106',3,2,NULL),(2,'CS 107',3,2,NULL),(2,'CS 108',3,2,NULL),(2,'CS 109',3,2,NULL),(2,'CS 110',3,2,NULL),(2,'CS 111',3,2,NULL),(2,'CS 112',3,2,NULL),(2,'CS 113',3,2,NULL),(2,'CS 114',3,2,NULL),(2,'CS 115',3,2,NULL),(2,'CS 116',3,2,NULL),(2,'CS 117',3,2,NULL),(2,'CS 201',3,2,NULL),(2,'CS 202',3,2,NULL),(2,'CS 203',3,2,NULL),(2,'CS 301',3,2,NULL),(2,'CS 401',3,2,NULL),(2,'CS 402',3,2,NULL),(2,'CS 403',3,2,NULL),(2,'CS 404',3,2,NULL),(2,'CS 405',3,2,NULL),(2,'CS 406',3,2,NULL);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -416,4 +416,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-07 20:40:26
+-- Dump completed on 2025-05-07 20:47:32
