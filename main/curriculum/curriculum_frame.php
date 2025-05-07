@@ -38,11 +38,13 @@ $sql = "
         p.ProgramID, p.ProgramCode,
         c.id AS CurriculumID, c.name AS CurriculumName,
         co.CourseCode, co.Title,
-        c.FacultyID
+        pc.PersonnelID,
+        per.FirstName, per.LastName
     FROM programs p
     LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
     LEFT JOIN program_courses pc ON c.id = pc.CurriculumID
     LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
+    LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
     WHERE c.FacultyID = ?
     ORDER BY p.ProgramCode, c.name, co.Title
 ";
@@ -56,8 +58,14 @@ while ($row = $res->fetch_assoc()) {
     $programId = $row['ProgramID'];
     $program = $row['ProgramCode'];
     $curriculum = $row['CurriculumName'];
-    $course = $row['Title'];
-    
+    $courseTitle = $row['Title'];
+
+    // Combine personnel name
+    $assignedPersonnel = ($row['FirstName'] && $row['LastName']) 
+        ? $row['FirstName'] . ' ' . $row['LastName'] 
+        : null;
+
+    // Init program entry if not set
     if (!isset($programs[$programId])) {
         $programs[$programId] = [
             'code' => $program,
@@ -65,14 +73,21 @@ while ($row = $res->fetch_assoc()) {
         ];
     }
 
+    // Init curriculum entry if not set
     if ($curriculum && !isset($programs[$programId]['curricula'][$curriculum])) {
         $programs[$programId]['curricula'][$curriculum] = [];
     }
 
-    if ($course) {
-        $programs[$programId]['curricula'][$curriculum][] = $course;
+    // Add course with assigned personnel
+    if ($courseTitle) {
+        $programs[$programId]['curricula'][$curriculum][] = [
+            'title' => $courseTitle,
+            'assigned_to' => $assignedPersonnel
+        ];
     }
 }
+
+
 
 $personnelList = [];
 $personnelQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ?";
@@ -260,25 +275,27 @@ $conn->close();
                     echo "</tr>";
                     echo "</thead><tbody>";
         
-                    foreach ($courses as $course) {
-                        echo "<tr class='hover:bg-gray-50'>";
+                    foreach ($courses as $courseData) {
+                        $courseTitle = $courseData['title'];
+                        $assignedTo = $courseData['assigned_to'] ?? '';
                     
-                        // Course Name Cell
-                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($course) . "</td>";
+                        echo "<tr class='hover:bg-gray-50'>";
+                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($courseTitle) . "</td>";
                     
                         echo "<td class='px-4 py-2 border-b'>";
                         echo "<select class='w-full border border-gray-300 rounded px-2 py-1 text-sm assign-personnel-dropdown' 
-                            data-course-code='" . htmlspecialchars($course) . "' 
+                            data-course-code='" . htmlspecialchars($courseTitle) . "' 
                             data-curriculum='" . htmlspecialchars($year) . "' 
                             data-program='" . htmlspecialchars($programId) . "'>";
                         echo "<option value=''>-- Assign Personnel --</option>";
+                    
                         foreach ($GLOBALS['personnelList'] as $person) {
-                            echo "<option value='" . $person['id'] . "'>" . htmlspecialchars($person['name']) . "</option>";
+                            $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
+                            echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
                         }
+                    
                         echo "</select>";
                         echo "</td>";
-                    
-                      
                         echo "</tr>";
                     }
                     
