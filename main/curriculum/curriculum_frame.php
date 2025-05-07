@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -30,7 +31,6 @@ if (!$facultyID) {
     return;
 }
 
-// Prepare and execute query filtered by FacultyID
 $programs = [];
 
 $sql = "
@@ -73,6 +73,21 @@ while ($row = $res->fetch_assoc()) {
         $programs[$programId]['curricula'][$curriculum][] = $course;
     }
 }
+
+$personnelList = [];
+$personnelQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ?";
+$stmt = $conn->prepare($personnelQuery);
+$stmt->bind_param("i", $facultyID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $personnelList[] = [
+        'id' => $row['PersonnelID'],
+        'name' => $row['FirstName'] . ' ' . $row['LastName']
+    ];
+}
+$stmt->close();
 
 $existingPrograms = [];
 $programQuery = "
@@ -238,14 +253,31 @@ $conn->close();
                     echo "<div class='overflow-x-auto'>";
                     echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
                     echo "<thead class='bg-gray-100 text-gray-900'>";
-                    echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th></tr>";
+                    echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th>";
+                    echo "<th class='px-4 py-2 border-b text-left'>Assigned Prof.</th>";
+                    echo "<th class='px-4 py-2 border-b text-left'>Status</th>";
+                    echo "</tr>";
                     echo "</thead><tbody>";
         
                     foreach ($courses as $course) {
                         echo "<tr class='hover:bg-gray-50'>";
+                    
+                        // Course Name Cell
                         echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($course) . "</td>";
+                    
+                        echo "<td class='px-4 py-2 border-b'>";
+                        echo "<select class='w-full border border-gray-300 rounded px-2 py-1 text-sm'>";
+                        echo "<option value=''>-- Assign Personnel --</option>";
+                        foreach ($GLOBALS['personnelList'] as $person) {
+                            echo "<option value='" . $person['id'] . "'>" . htmlspecialchars($person['name']) . "</option>";
+                        }
+                        echo "</select>";
+                        echo "</td>";
+                    
+                      
                         echo "</tr>";
                     }
+                    
         
                     echo "</tbody></table></div>"; // Close table and scroll container
                     echo "</div></div>"; // Close year div

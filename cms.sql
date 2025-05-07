@@ -121,7 +121,7 @@ CREATE TABLE `curricula` (
   KEY `fk_curricula_program` (`ProgramID`),
   CONSTRAINT `fk_curricula_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE CASCADE,
   CONSTRAINT `fk_curricula_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -130,7 +130,7 @@ CREATE TABLE `curricula` (
 
 LOCK TABLES `curricula` WRITE;
 /*!40000 ALTER TABLE `curricula` DISABLE KEYS */;
-INSERT INTO `curricula` VALUES (1,'BSIT Curriculum 2022','2025-05-01 13:03:51',2,1),(2,'BSIT Curriculum 2020','2025-05-02 16:15:04',2,1),(3,'BSCS Curriculum 2020','2025-05-02 16:15:04',2,2),(5,'BSIS Curriculum 2025','2025-05-04 17:39:20',2,11),(6,'BSA Curriculum 2025','2025-05-04 17:53:51',3,12);
+INSERT INTO `curricula` VALUES (1,'BSIT Curriculum 2022','2025-05-01 13:03:51',2,1),(2,'BSIT Curriculum 2020','2025-05-02 16:15:04',2,1),(3,'BSCS Curriculum 2020','2025-05-02 16:15:04',2,2),(6,'BSA Curriculum 2025','2025-05-04 17:53:51',3,12);
 /*!40000 ALTER TABLE `curricula` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -205,13 +205,16 @@ CREATE TABLE `program_courses` (
   `CourseCode` varchar(10) NOT NULL,
   `CurriculumID` int(11) DEFAULT NULL,
   `FacultyID` int(11) DEFAULT NULL,
-  PRIMARY KEY (`ProgramID`, `CourseCode`),
+  `PersonnelID` int(11) DEFAULT NULL,
+  PRIMARY KEY (`ProgramID`,`CourseCode`),
+  UNIQUE KEY `unique_program_course_faculty` (`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `CourseCode` (`CourseCode`),
   KEY `fk_program_courses_curriculum` (`CurriculumID`),
-  UNIQUE KEY `unique_program_course_faculty` (`ProgramID`, `CourseCode`, `FacultyID`), 
+  KEY `PersonnelID` (`PersonnelID`),
   CONSTRAINT `fk_program_courses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE SET NULL,
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
-  CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
+  CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE,
+  CONSTRAINT `program_courses_ibfk_3` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`FacultyID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -221,7 +224,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (1,'COMP 101',2,2),(1,'COMP 102',2,2),(1,'COMP 103',2,2),(1,'COMP 104',2,2),(1,'COMP 105',2,2),(1,'COMP 106',2,2),(1,'IT 101',2,2),(1,'IT 102',2,2),(1,'IT 103',2,2),(1,'IT 104',2,2),(1,'IT 105',2,2),(1,'IT 106',2,2),(1,'IT 107',2,2),(1,'IT 108',2,2),(1,'IT 109',2,2),(1,'IT 110',2,2),(1,'IT 111',2,2),(1,'IT 112',2,2),(1,'IT 113',2,2),(1,'IT 114',2,2),(1,'IT 115',2,2),(1,'IT 201',2,2),(1,'IT 202',2,2),(1,'IT 203',2,2),(1,'IT 204',2,2),(1,'IT 301',2,2),(1,'IT 302',2,2),(1,'IT 303',2,2),(1,'IT 304',2,2),(1,'IT 305',2,2),(1,'IT 306',2,2),(2,'COMP 101',3,2),(2,'COMP 102',3,2),(2,'COMP 103',3,2),(2,'COMP 104',3,2),(2,'COMP 105',3,2),(2,'CS 101',3,2),(2,'CS 102',3,2),(2,'CS 103',3,2),(2,'CS 104',3,2),(2,'CS 105',3,2),(2,'CS 106',3,2),(2,'CS 107',3,2),(2,'CS 108',3,2),(2,'CS 109',3,2),(2,'CS 110',3,2),(2,'CS 111',3,2),(2,'CS 112',3,2),(2,'CS 113',3,2),(2,'CS 114',3,2),(2,'CS 115',3,2),(2,'CS 116',3,2),(2,'CS 117',3,2),(2,'CS 201',3,2),(2,'CS 202',3,2),(2,'CS 203',3,2),(2,'CS 301',3,2),(2,'CS 401',3,2),(2,'CS 402',3,2),(2,'CS 403',3,2),(2,'CS 404',3,2),(2,'CS 405',3,2),(2,'CS 406',3,2);
+INSERT INTO `program_courses` VALUES (1,'COMP 101',2,2,NULL),(1,'COMP 102',2,2,NULL),(1,'COMP 103',2,2,NULL),(1,'COMP 104',2,2,NULL),(1,'COMP 105',2,2,NULL),(1,'COMP 106',2,2,NULL),(1,'IT 101',2,2,NULL),(1,'IT 102',2,2,NULL),(1,'IT 103',2,2,NULL),(1,'IT 104',2,2,NULL),(1,'IT 105',2,2,NULL),(1,'IT 106',2,2,NULL),(1,'IT 107',2,2,NULL),(1,'IT 108',2,2,NULL),(1,'IT 109',2,2,NULL),(1,'IT 110',2,2,NULL),(1,'IT 111',2,2,NULL),(1,'IT 112',2,2,NULL),(1,'IT 113',2,2,NULL),(1,'IT 114',2,2,NULL),(1,'IT 115',2,2,NULL),(1,'IT 201',2,2,NULL),(1,'IT 202',2,2,NULL),(1,'IT 203',2,2,NULL),(1,'IT 204',2,2,NULL),(1,'IT 301',2,2,NULL),(1,'IT 302',2,2,NULL),(1,'IT 303',2,2,NULL),(1,'IT 304',2,2,NULL),(1,'IT 305',2,2,NULL),(1,'IT 306',2,2,NULL),(2,'COMP 101',3,2,NULL),(2,'COMP 102',3,2,NULL),(2,'COMP 103',3,2,NULL),(2,'COMP 104',3,2,NULL),(2,'COMP 105',3,2,NULL),(2,'CS 101',3,2,NULL),(2,'CS 102',3,2,NULL),(2,'CS 103',3,2,NULL),(2,'CS 104',3,2,NULL),(2,'CS 105',3,2,NULL),(2,'CS 106',3,2,NULL),(2,'CS 107',3,2,NULL),(2,'CS 108',3,2,NULL),(2,'CS 109',3,2,NULL),(2,'CS 110',3,2,NULL),(2,'CS 111',3,2,NULL),(2,'CS 112',3,2,NULL),(2,'CS 113',3,2,NULL),(2,'CS 114',3,2,NULL),(2,'CS 115',3,2,NULL),(2,'CS 116',3,2,NULL),(2,'CS 117',3,2,NULL),(2,'CS 201',3,2,NULL),(2,'CS 202',3,2,NULL),(2,'CS 203',3,2,NULL),(2,'CS 301',3,2,NULL),(2,'CS 401',3,2,NULL),(2,'CS 402',3,2,NULL),(2,'CS 403',3,2,NULL),(2,'CS 404',3,2,NULL),(2,'CS 405',3,2,NULL),(2,'CS 406',3,2,NULL);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -237,7 +240,7 @@ CREATE TABLE `programs` (
   `ProgramCode` varchar(10) NOT NULL,
   `ProgramName` varchar(100) NOT NULL,
   PRIMARY KEY (`ProgramID`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -246,7 +249,7 @@ CREATE TABLE `programs` (
 
 LOCK TABLES `programs` WRITE;
 /*!40000 ALTER TABLE `programs` DISABLE KEYS */;
-INSERT INTO `programs` VALUES (1,'BSIT','Bachelor of Science in Information Technology'),(2,'BSCS','Bachelor of Science in Computer Science'),(11,'BSIS','Bachelor of Science in Information Systems'),(12,'BSA','Bachelor of Science in Accountancy');
+INSERT INTO `programs` VALUES (1,'BSIT','Bachelor of Science in Information Technology'),(2,'BSCS','Bachelor of Science in Computer Science'),(12,'BSA','Bachelor of Science in Accountancy');
 /*!40000 ALTER TABLE `programs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -261,9 +264,12 @@ CREATE TABLE `submissioncourses` (
   `SubmissionID` int(11) NOT NULL,
   `CourseCode` varchar(10) NOT NULL,
   `LeadID` int(11) DEFAULT NULL,
+  `CurriculumID` int(11) DEFAULT NULL,
   PRIMARY KEY (`SubmissionID`,`CourseCode`),
   KEY `CourseCode` (`CourseCode`),
   KEY `LeadID` (`LeadID`),
+  KEY `fk_submissioncourses_curriculum` (`CurriculumID`),
+  CONSTRAINT `fk_submissioncourses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE CASCADE,
   CONSTRAINT `submissioncourses_ibfk_1` FOREIGN KEY (`SubmissionID`) REFERENCES `submissions` (`SubmissionID`),
   CONSTRAINT `submissioncourses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`),
   CONSTRAINT `submissioncourses_ibfk_3` FOREIGN KEY (`LeadID`) REFERENCES `personnel` (`PersonnelID`)
@@ -325,12 +331,11 @@ CREATE TABLE `task_assignments` (
   `FacultyID` int(11) NOT NULL,
   `Status` enum('Pending','Submitted') DEFAULT 'Pending',
   `ReviewStatus` enum('Not Reviewed','Approved','Rejected') DEFAULT 'Not Reviewed',
-  PRIMARY KEY (`TaskID`, `ProgramID`, `CourseCode`, `FacultyID`),
+  PRIMARY KEY (`TaskID`,`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `fk_task_assignments_tasks` (`TaskID`),
-  KEY `fk_task_assignments_program_courses` (`ProgramID`, `CourseCode`, `FacultyID`),
-  CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE,
-  CONSTRAINT `fk_task_assignments_program_courses` FOREIGN KEY (`ProgramID`, `CourseCode`, `FacultyID`)
-    REFERENCES `program_courses` (`ProgramID`, `CourseCode`, `FacultyID`) ON DELETE CASCADE
+  KEY `fk_task_assignments_program_courses` (`ProgramID`,`CourseCode`,`FacultyID`),
+  CONSTRAINT `fk_task_assignments_program_courses` FOREIGN KEY (`ProgramID`, `CourseCode`, `FacultyID`) REFERENCES `program_courses` (`ProgramID`, `CourseCode`, `FacultyID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -411,4 +416,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-05  1:55:06
+-- Dump completed on 2025-05-07 15:03:14
