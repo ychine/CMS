@@ -267,7 +267,10 @@ $conn->close();
                         echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($course) . "</td>";
                     
                         echo "<td class='px-4 py-2 border-b'>";
-                        echo "<select class='w-full border border-gray-300 rounded px-2 py-1 text-sm'>";
+                        echo "<select class='w-full border border-gray-300 rounded px-2 py-1 text-sm assign-personnel-dropdown' 
+                            data-course-code='" . htmlspecialchars($course) . "' 
+                            data-curriculum='" . htmlspecialchars($year) . "' 
+                            data-program='" . htmlspecialchars($programId) . "'>";
                         echo "<option value=''>-- Assign Personnel --</option>";
                         foreach ($GLOBALS['personnelList'] as $person) {
                             echo "<option value='" . $person['id'] . "'>" . htmlspecialchars($person['name']) . "</option>";
@@ -372,8 +375,50 @@ $conn->close();
 </div>
 
 <script>
-    // Program ID for deletion
+    
     let programToDelete = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.assign-personnel-dropdown').forEach(dropdown => {
+            dropdown.addEventListener('change', function() {
+                const personnelId = this.value;
+                const courseTitle = this.dataset.courseCode;
+                const curriculumName = this.dataset.curriculum;
+                const programId = this.dataset.program;
+
+                if (!personnelId) return;
+
+                fetch('assign_personnel.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        personnel_id: personnelId,
+                        course_title: courseTitle,
+                        curriculum: curriculumName,
+                        program_id: programId
+                    })
+                })
+                .then(async res => {
+                    const text = await res.text();
+                    console.log("Raw response from assign_personnel.php:", text);
+                    try {
+                        const json = JSON.parse(text);
+                        console.log("Parsed JSON:", json);
+                    } catch (e) {
+                        console.error("Error parsing JSON:", e);
+                        alert("Raw error: " + text); // Show raw response
+                    }
+                })
+                .catch(err => {
+                    console.error("Network error:", err);
+                    alert("Network error");
+                });
+            });
+        });
+    });
+
 
     function confirmDelete(programId, programName) {
         programToDelete = programId;
