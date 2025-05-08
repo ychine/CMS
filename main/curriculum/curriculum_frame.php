@@ -366,10 +366,20 @@ $conn->close();
                         // Collapsible row for approved files
                         echo "<tr id='$rowId' class='hidden'>";
                         echo "<td colspan='2' class='bg-gray-50 px-6 py-3 border-b'>";
-                        // Fetch approved files for this course, current year/term
-                        $fileSql = "SELECT ta.SubmissionPath, ta.SubmissionDate, per.FirstName, per.LastName FROM task_assignments ta JOIN tasks t ON ta.TaskID = t.TaskID LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID WHERE ta.CourseCode = ? AND ta.Status = 'Completed' AND t.FacultyID = ? AND t.SchoolYear = ? AND t.Term = ? AND ta.SubmissionPath IS NOT NULL";
+                        // Fetch all submissions for this course, current year/term
+                        $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
+                                    FROM submissions s
+                                    LEFT JOIN personnel per ON s.SubmittedBy = per.PersonnelID
+                                    WHERE s.TaskID IN (
+                                        SELECT t.TaskID FROM tasks t
+                                        WHERE t.FacultyID = ? AND t.SchoolYear = ? AND t.Term = ?
+                                    )
+                                    AND s.SubmissionPath IS NOT NULL
+                                    AND s.SubmissionPath != ''
+                                    AND s.CourseCode = ?
+                                    ORDER BY s.SubmissionDate DESC";
                         $fileStmt = $conn->prepare($fileSql);
-                        $fileStmt->bind_param("siss", $courseCode, $facultyID, $currentSchoolYear, $currentTerm);
+                        $fileStmt->bind_param("isss", $facultyID, $currentSchoolYear, $currentTerm, $courseCode);
                         $fileStmt->execute();
                         $fileResult = $fileStmt->get_result();
                         if ($fileResult->num_rows > 0) {

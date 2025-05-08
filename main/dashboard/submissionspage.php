@@ -55,20 +55,39 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
     
     // Upload file
     if(move_uploaded_file($_FILES["task_file"]["tmp_name"], $targetFilePath)) {
-        // Update task_assignments table with the relative path
         $relativePath = "uploads/tasks/{$taskID}/" . $fileName;
-        $updateSql = "UPDATE task_assignments 
-                      SET SubmissionPath = ?, SubmissionDate = NOW(), Status = 'Submitted' 
-                      WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?";
-        $updateStmt = $conn->prepare($updateSql);
-        $updateStmt->bind_param("sisi", $relativePath, $taskID, $courseCode, $programID);
-        
-        if($updateStmt->execute()) {
+        // Get school year and term from the task
+        $taskInfoSql = "SELECT SchoolYear, Term FROM tasks WHERE TaskID = ?";
+        $taskInfoStmt = $conn->prepare($taskInfoSql);
+        $taskInfoStmt->bind_param("i", $taskID);
+        $taskInfoStmt->execute();
+        $taskInfoResult = $taskInfoStmt->get_result();
+        $taskInfo = $taskInfoResult->fetch_assoc();
+        $schoolYear = $taskInfo['SchoolYear'];
+        $term = $taskInfo['Term'];
+        $taskInfoStmt->close();
+        // Insert a new submission record
+        $insertSql = "INSERT INTO submissions (FacultyID, TaskID, CourseCode, ProgramID, SubmissionPath, SubmittedBy, SubmissionDate, SchoolYear, Term) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
+        $insertStmt = $conn->prepare($insertSql);
+        $insertStmt->bind_param("iisssiss", $facultyID, $taskID, $courseCode, $programID, $relativePath, $personnelID, $schoolYear, $term);
+        if($insertStmt->execute()) {
             $message = "File uploaded successfully.";
         } else {
-            $message = "Error updating database: " . $updateStmt->error;
+            $message = "Error inserting submission: " . $insertStmt->error;
         }
+        $insertStmt->close();
+        // Optionally, update task_assignments status for workflow
+        $updateSql = "UPDATE task_assignments SET Status = 'Submitted', SubmissionDate = NOW(), SubmissionPath = ? WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?";
+        $updateStmt = $conn->prepare($updateSql);
+        $updateStmt->bind_param("sisi", $relativePath, $taskID, $courseCode, $programID);
+        $updateStmt->execute();
         $updateStmt->close();
+        // Also update the parent task's status to 'Submitted'
+        $updateTaskSql = "UPDATE tasks SET Status = 'Submitted' WHERE TaskID = ?";
+        $updateTaskStmt = $conn->prepare($updateTaskSql);
+        $updateTaskStmt->bind_param("i", $taskID);
+        $updateTaskStmt->execute();
+        $updateTaskStmt->close();
     } else {
         $message = "Error uploading file.";
     }
