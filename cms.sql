@@ -226,7 +226,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL),(2,1,'COMP 102',2,2,NULL),(3,1,'COMP 103',2,2,NULL),(4,1,'COMP 104',2,2,NULL),(5,1,'COMP 105',2,2,NULL),(6,1,'COMP 106',2,2,22),(7,1,'IT 101',2,2,NULL),(8,1,'IT 102',2,2,NULL),(9,1,'IT 103',2,2,18),(10,1,'IT 104',2,2,14),(11,1,'IT 105',2,2,NULL),(12,1,'IT 106',2,2,NULL),(13,1,'IT 107',2,2,NULL),(14,1,'IT 108',2,2,NULL),(15,1,'IT 109',2,2,NULL),(16,1,'IT 110',2,2,NULL),(17,1,'IT 111',2,2,NULL),(18,1,'IT 112',2,2,NULL),(19,1,'IT 113',2,2,NULL),(20,1,'IT 114',2,2,NULL),(21,1,'IT 115',2,2,NULL),(22,1,'IT 201',2,2,NULL),(23,1,'IT 202',2,2,NULL),(24,1,'IT 203',2,2,NULL),(25,1,'IT 204',2,2,NULL),(26,1,'IT 301',2,2,NULL),(27,1,'IT 302',2,2,NULL),(28,1,'IT 303',2,2,NULL),(29,1,'IT 304',2,2,NULL),(30,1,'IT 305',2,2,NULL),(31,1,'IT 306',2,2,NULL),(32,2,'COMP 101',3,2,NULL),(33,2,'COMP 102',3,2,NULL),(34,2,'COMP 103',3,2,NULL),(35,2,'COMP 104',3,2,NULL),(36,2,'COMP 105',3,2,NULL),(37,2,'CS 101',3,2,NULL),(38,2,'CS 102',3,2,NULL),(39,2,'CS 103',3,2,NULL),(40,2,'CS 104',3,2,NULL),(41,2,'CS 105',3,2,NULL),(42,2,'CS 106',3,2,NULL),(43,2,'CS 107',3,2,NULL),(44,2,'CS 108',3,2,NULL),(45,2,'CS 109',3,2,NULL),(46,2,'CS 110',3,2,NULL),(47,2,'CS 111',3,2,NULL),(48,2,'CS 112',3,2,NULL),(49,2,'CS 113',3,2,NULL),(50,2,'CS 114',3,2,NULL),(51,2,'CS 115',3,2,NULL),(52,2,'CS 116',3,2,NULL),(53,2,'CS 117',3,2,NULL),(54,2,'CS 201',3,2,NULL),(55,2,'CS 202',3,2,NULL),(56,2,'CS 203',3,2,NULL),(57,2,'CS 301',3,2,NULL),(58,2,'CS 401',3,2,NULL),(59,2,'CS 402',3,2,NULL),(60,2,'CS 403',3,2,NULL),(61,2,'CS 404',3,2,NULL),(62,2,'CS 405',3,2,NULL),(63,2,'CS 406',3,2,NULL);
+INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL),(2,1,'COMP 102',2,2,NULL),(3,1,'COMP 103',2,2,NULL),(4,1,'COMP 104',2,2,17),(5,1,'COMP 105',2,2,NULL),(6,1,'COMP 106',2,2,22),(7,1,'IT 101',2,2,17),(8,1,'IT 102',2,2,NULL),(9,1,'IT 103',2,2,18),(10,1,'IT 104',2,2,14),(11,1,'IT 105',2,2,NULL),(12,1,'IT 106',2,2,NULL),(13,1,'IT 107',2,2,NULL),(14,1,'IT 108',2,2,NULL),(15,1,'IT 109',2,2,NULL),(16,1,'IT 110',2,2,NULL),(17,1,'IT 111',2,2,NULL),(18,1,'IT 112',2,2,NULL),(19,1,'IT 113',2,2,NULL),(20,1,'IT 114',2,2,NULL),(21,1,'IT 115',2,2,NULL),(22,1,'IT 201',2,2,NULL),(23,1,'IT 202',2,2,NULL),(24,1,'IT 203',2,2,NULL),(25,1,'IT 204',2,2,NULL),(26,1,'IT 301',2,2,NULL),(27,1,'IT 302',2,2,NULL),(28,1,'IT 303',2,2,NULL),(29,1,'IT 304',2,2,NULL),(30,1,'IT 305',2,2,NULL),(31,1,'IT 306',2,2,NULL),(32,2,'COMP 101',3,2,NULL),(33,2,'COMP 102',3,2,NULL),(34,2,'COMP 103',3,2,NULL),(35,2,'COMP 104',3,2,NULL),(36,2,'COMP 105',3,2,NULL),(37,2,'CS 101',3,2,NULL),(38,2,'CS 102',3,2,NULL),(39,2,'CS 103',3,2,NULL),(40,2,'CS 104',3,2,NULL),(41,2,'CS 105',3,2,NULL),(42,2,'CS 106',3,2,NULL),(43,2,'CS 107',3,2,NULL),(44,2,'CS 108',3,2,NULL),(45,2,'CS 109',3,2,NULL),(46,2,'CS 110',3,2,NULL),(47,2,'CS 111',3,2,NULL),(48,2,'CS 112',3,2,NULL),(49,2,'CS 113',3,2,NULL),(50,2,'CS 114',3,2,NULL),(51,2,'CS 115',3,2,NULL),(52,2,'CS 116',3,2,NULL),(53,2,'CS 117',3,2,NULL),(54,2,'CS 201',3,2,NULL),(55,2,'CS 202',3,2,NULL),(56,2,'CS 203',3,2,NULL),(57,2,'CS 301',3,2,NULL),(58,2,'CS 401',3,2,NULL),(59,2,'CS 402',3,2,NULL),(60,2,'CS 403',3,2,NULL),(61,2,'CS 404',3,2,NULL),(62,2,'CS 405',3,2,NULL),(63,2,'CS 406',3,2,NULL);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -302,12 +302,21 @@ CREATE TABLE `submissions` (
   `Esign` varchar(100) DEFAULT NULL,
   `SchoolYear` varchar(20) DEFAULT NULL,
   `Term` varchar(10) DEFAULT NULL,
+  `SubmissionPath` varchar(255) DEFAULT NULL,
+  `SubmittedBy` int(11) DEFAULT NULL,
+  `SubmissionDate` datetime DEFAULT NULL,
+  `CourseCode` varchar(10) DEFAULT NULL,
+  `ProgramID` int(11) DEFAULT NULL,
   PRIMARY KEY (`SubmissionID`),
   KEY `FacultyID` (`FacultyID`),
   KEY `TaskID` (`TaskID`),
+  KEY `fk_submissions_coursecode` (`CourseCode`),
+  KEY `fk_submissions_programid` (`ProgramID`),
+  CONSTRAINT `fk_submissions_coursecode` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_submissions_programid` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`),
   CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -316,6 +325,7 @@ CREATE TABLE `submissions` (
 
 LOCK TABLES `submissions` WRITE;
 /*!40000 ALTER TABLE `submissions` DISABLE KEYS */;
+INSERT INTO `submissions` VALUES (1,2,1,NULL,NULL,'2024-2025','1st','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf',22,'2025-05-09 00:34:30','COMP 106',1),(2,2,2,NULL,NULL,'2024-2025','2nd','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf',14,'2025-05-09 01:16:38','IT 104',1),(9,2,5,NULL,NULL,'2024-2025','1st','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf',18,'2025-05-09 03:04:24','IT 103',1),(10,2,6,NULL,NULL,'2024-2025','2nd','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf',17,'2025-05-09 03:16:02','COMP 104',1);
 /*!40000 ALTER TABLE `submissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -347,7 +357,7 @@ CREATE TABLE `task_assignments` (
   CONSTRAINT `fk_task_assignments_approver` FOREIGN KEY (`ApprovedBy`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
   CONSTRAINT `fk_task_assignments_program_courses` FOREIGN KEY (`ProgramID`, `CourseCode`, `FacultyID`) REFERENCES `program_courses` (`ProgramID`, `CourseCode`, `FacultyID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -356,7 +366,7 @@ CREATE TABLE `task_assignments` (
 
 LOCK TABLES `task_assignments` WRITE;
 /*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
-INSERT INTO `task_assignments` VALUES (1,1,1,'COMP 106',2,'Completed','Approved','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf','2025-05-09 00:34:30',12,'2025-05-09 00:34:43','E DI KA MARUNONG MAAM'),(2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL);
+INSERT INTO `task_assignments` VALUES (1,1,1,'COMP 106',2,'Completed','Approved','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf','2025-05-09 00:34:30',12,'2025-05-09 00:34:43','E DI KA MARUNONG MAAM'),(2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL),(5,5,1,'IT 103',2,'Completed','Approved','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 03:04:24',12,'2025-05-09 03:04:58',NULL),(6,6,1,'COMP 104',2,'Completed','Approved','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf','2025-05-09 03:16:02',12,'2025-05-09 03:16:39',NULL);
 /*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -383,7 +393,7 @@ CREATE TABLE `tasks` (
   KEY `FacultyID` (`FacultyID`),
   CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -392,7 +402,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-11','Completed','2024-2025','1st','2025-05-08 14:59:11'),(2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53');
+INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-11','Completed','2024-2025','1st','2025-05-08 14:59:11'),(2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53'),(5,'sample 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-10','Completed','2024-2025','1st','2025-05-09 02:57:14'),(6,'FOR MAAM LAU','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-12','Completed','2024-2025','2nd','2025-05-09 03:14:27');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -431,4 +441,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-09  1:42:38
+-- Dump completed on 2025-05-09  3:19:16
