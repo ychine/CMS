@@ -1,4 +1,3 @@
-
 <?php
 // curriculum_frame.php
 session_start();
@@ -90,10 +89,11 @@ while ($row = $res->fetch_assoc()) {
         $programs[$programId]['curricula'][$curriculum] = [];
     }
 
-    // Add course with assigned personnel
+    // Add course with assigned personnel and course code
     if ($courseTitle) {
         $programs[$programId]['curricula'][$curriculum][] = [
             'title' => $courseTitle,
+            'code' => $row['CourseCode'],
             'assigned_to' => $assignedPersonnel
         ];
     }
@@ -137,6 +137,21 @@ while ($row = $res->fetch_assoc()) {
 }
 
 $stmt->close();
+
+// 1. Get current school year and term from the latest task in this faculty
+$currentSchoolYear = '';
+$currentTerm = '';
+$taskSql = "SELECT SchoolYear, Term FROM tasks WHERE FacultyID = ? ORDER BY CreatedAt DESC LIMIT 1";
+$taskStmt = $conn->prepare($taskSql);
+$taskStmt->bind_param("i", $facultyID);
+$taskStmt->execute();
+$taskResult = $taskStmt->get_result();
+if ($row = $taskResult->fetch_assoc()) {
+    $currentSchoolYear = $row['SchoolYear'];
+    $currentTerm = $row['Term'];
+}
+$taskStmt->close();
+
 $conn->close();
 ?>
 
@@ -284,11 +299,11 @@ $conn->close();
     <div class="w-[70%] space-y-2 font-onest">
         <?php
         
-        function renderProgramTree($programs, $userRole) {
+        function renderProgramTree($programs, $userRole, $facultyID, $currentSchoolYear, $currentTerm) {
+            $conn = new mysqli("localhost", "root", "", "cms");
             foreach ($programs as $programId => $programData) {
                 $programName = $programData['code'];
                 $curricula = $programData['curricula'];
-                
                 $progId = 'prog_' . md5($programName);
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
@@ -315,15 +330,15 @@ $conn->close();
                     echo "<thead class='bg-gray-100 text-gray-900'>";
                     echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th>";
                     echo "<th class='px-4 py-2 border-b text-left'>Assigned Prof.</th>";
-                    echo "<th class='px-4 py-2 border-b text-left'>Status</th>";
                     echo "</tr>";
                     echo "</thead><tbody>";
         
-                    foreach ($courses as $courseData) {
+                    foreach ($courses as $idx => $courseData) {
                         $courseTitle = $courseData['title'];
                         $assignedTo = $courseData['assigned_to'] ?? '';
-                    
-                        echo "<tr class='hover:bg-gray-50'>";
+                        $courseCode = $courseData['code'] ?? $courseTitle; // fallback for legacy, but should use 'code'
+                        $rowId = 'files_' . md5($programName . $year . $courseTitle . $idx);
+                        echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
                         echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($courseTitle) . "</td>";
                     
                         echo "<td class='px-4 py-2 border-b'>";
@@ -348,7 +363,37 @@ $conn->close();
                         }
                         
                         echo "</td>";
-                        echo "</tr>";
+                        // Collapsible row for approved files
+                        echo "<tr id='$rowId' class='hidden'>";
+                        echo "<td colspan='2' class='bg-gray-50 px-6 py-3 border-b'>";
+                        // Fetch approved files for this course, current year/term
+                        $fileSql = "SELECT ta.SubmissionPath, ta.SubmissionDate, per.FirstName, per.LastName FROM task_assignments ta JOIN tasks t ON ta.TaskID = t.TaskID LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID WHERE ta.CourseCode = ? AND ta.Status = 'Completed' AND t.FacultyID = ? AND t.SchoolYear = ? AND t.Term = ? AND ta.SubmissionPath IS NOT NULL";
+                        $fileStmt = $conn->prepare($fileSql);
+                        $fileStmt->bind_param("siss", $courseCode, $facultyID, $currentSchoolYear, $currentTerm);
+                        $fileStmt->execute();
+                        $fileResult = $fileStmt->get_result();
+                        if ($fileResult->num_rows > 0) {
+                            echo "<ul class='list-disc pl-4'>";
+                            while ($fileRow = $fileResult->fetch_assoc()) {
+                                $filePath = $fileRow['SubmissionPath'];
+                                $submitter = trim($fileRow['FirstName'] . ' ' . $fileRow['LastName']);
+                                $date = $fileRow['SubmissionDate'] ? date('M j, Y g:i A', strtotime($fileRow['SubmissionDate'])) : '';
+                                $fileName = basename($filePath);
+                                $fileUrl = '../../' . htmlspecialchars($filePath);
+                                echo "<li class='mb-1'>";
+                                echo "<a href='javascript:void(0);' onclick=\"openFilePreviewModal('$fileUrl')\" class='text-blue-600 hover:underline'>Preview</a> | ";
+                                echo "<a href='$fileUrl' download class='text-green-600 hover:underline'>Download</a> ";
+                                echo "<span class='text-gray-700 ml-2'>($fileName)</span>";
+                                if ($submitter) echo "<span class='text-gray-500 ml-2'>by $submitter</span>";
+                                if ($date) echo "<span class='text-gray-400 ml-2'>$date</span>";
+                                echo "</li>";
+                            }
+                            echo "</ul>";
+                        } else {
+                            echo "<span class='text-gray-400 italic'>No approved files</span>";
+                        }
+                        $fileStmt->close();
+                        echo "</td></tr>";
                     }
                     
         
@@ -358,9 +403,10 @@ $conn->close();
         
                 echo "</div></div>"; 
             }
+            $conn->close();
         }
 
-        renderProgramTree($programs, $userRole);
+        renderProgramTree($programs, $userRole, $facultyID, $currentSchoolYear, $currentTerm);
         ?>
     </div>
 
@@ -477,6 +523,16 @@ $conn->close();
     </div>
 </div>
 
+</div>
+
+<div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ml-[320px]">
+  <div class="bg-white p-6 pr-12 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative">
+    <button onclick="closeFilePreviewModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
+    <div class="flex justify-center items-center mb-4" style="position:relative;">
+      <h2 class="text-2xl font-bold w-full text-center">File Preview</h2>
+    </div>
+    <div class="flex-1 overflow-hidden" id="filePreviewContent"></div>
+  </div>
 </div>
 
 <script>
@@ -795,14 +851,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function toggleCollapse(id) {
         const el = document.getElementById(id);
-        el.classList.toggle("hidden");
-        const btn = document.querySelector(`button[onclick="toggleCollapse('${id}')"]`);
-        if (btn && btn.textContent.trim().startsWith("▶")) {
-            btn.textContent = btn.textContent.replace("▶", "▼");
-        } else if (btn && btn.textContent.trim().startsWith("▼")) {
-            btn.textContent = btn.textContent.replace("▼", "▶");
-        }
+        if (el) el.classList.toggle('hidden');
     }
+
+    function openFilePreviewModal(fileUrl) {
+        const modal = document.getElementById('filePreviewModal');
+        const content = document.getElementById('filePreviewContent');
+        // Determine file type
+        const ext = fileUrl.split('.').pop().toLowerCase();
+        if (["pdf"].includes(ext)) {
+            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" style="width:100vw;height:85vh;">`;
+        } else if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
+            content.innerHTML = `<img src="${fileUrl}" style="max-width:100vw;max-height:85vh;display:block;margin:auto;">`;
+        } else {
+            content.innerHTML = `<div class='text-center text-gray-500'>Preview not available for this file type.</div>`;
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closeFilePreviewModal() {
+        document.getElementById('filePreviewModal').classList.add('hidden');
+        document.getElementById('filePreviewContent').innerHTML = '';
+    }
+
+    window.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") closeFilePreviewModal();
+    });
 </script>
 </body>
 </html>

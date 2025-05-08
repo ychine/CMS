@@ -327,18 +327,27 @@ DROP TABLE IF EXISTS `task_assignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `task_assignments` (
+  `TaskAssignmentID` int(11) NOT NULL AUTO_INCREMENT,
   `TaskID` int(11) NOT NULL,
   `ProgramID` int(11) NOT NULL,
   `CourseCode` varchar(10) NOT NULL,
   `FacultyID` int(11) NOT NULL,
-  `Status` enum('Pending','Submitted') DEFAULT 'Pending',
+  `Status` enum('Pending','Submitted','Completed') DEFAULT 'Pending',
   `ReviewStatus` enum('Not Reviewed','Approved','Rejected') DEFAULT 'Not Reviewed',
-  PRIMARY KEY (`TaskID`,`ProgramID`,`CourseCode`,`FacultyID`),
+  `SubmissionPath` varchar(255) DEFAULT NULL,
+  `SubmissionDate` datetime DEFAULT NULL,
+  `ApprovedBy` int(11) DEFAULT NULL,
+  `ApprovalDate` datetime DEFAULT NULL,
+  `RevisionReason` text DEFAULT NULL,
+  PRIMARY KEY (`TaskAssignmentID`),
+  UNIQUE KEY `task_assignment_unique` (`TaskID`,`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `fk_task_assignments_tasks` (`TaskID`),
   KEY `fk_task_assignments_program_courses` (`ProgramID`,`CourseCode`,`FacultyID`),
+  KEY `fk_task_assignments_approver` (`ApprovedBy`),
+  CONSTRAINT `fk_task_assignments_approver` FOREIGN KEY (`ApprovedBy`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
   CONSTRAINT `fk_task_assignments_program_courses` FOREIGN KEY (`ProgramID`, `CourseCode`, `FacultyID`) REFERENCES `program_courses` (`ProgramID`, `CourseCode`, `FacultyID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -347,7 +356,7 @@ CREATE TABLE `task_assignments` (
 
 LOCK TABLES `task_assignments` WRITE;
 /*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
-INSERT INTO `task_assignments` VALUES (1,1,'COMP 106',2,'Pending','Not Reviewed');
+INSERT INTO `task_assignments` VALUES (1,1,1,'COMP 106',2,'Completed','Approved','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf','2025-05-09 00:34:30',12,'2025-05-09 00:34:43','E DI KA MARUNONG MAAM'),(2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL);
 /*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -374,7 +383,7 @@ CREATE TABLE `tasks` (
   KEY `FacultyID` (`FacultyID`),
   CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -383,7 +392,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-08','Pending','2024-2025','1st','2025-05-08 14:59:11');
+INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-11','Completed','2024-2025','1st','2025-05-08 14:59:11'),(2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -422,4 +431,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-08 15:38:46
+-- Dump completed on 2025-05-09  1:42:38
