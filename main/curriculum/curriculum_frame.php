@@ -274,7 +274,7 @@ $conn->close();
 </head>
 <body>
 
-<div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+<div class="flex-1 flex flex-col px-[50px] pt-[15px] pb-[50px] overflow-y-auto">
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1>
     <hr class="border-gray-400">
     <p class="text-gray-500 mt-3 mb-5 font-onest">

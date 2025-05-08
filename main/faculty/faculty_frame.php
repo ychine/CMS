@@ -142,7 +142,7 @@ $conn->close();
     </style>
 </head>
 <body>
-    <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+    <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto pb-[50px]">
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold flex items-center gap-4">Members of 
             <?php echo htmlspecialchars($facultyName); ?> 
 
@@ -167,6 +167,7 @@ $conn->close();
             <div class="mb-5 w-[60%]">
                 <input type="text" id="searchInput" placeholder="Search members..." class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 font-onest" />
             </div>
+
         <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
             <?php if (!empty($members)): ?>
                 <?php foreach ($members as $member): ?>
