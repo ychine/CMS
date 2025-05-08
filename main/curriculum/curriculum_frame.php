@@ -370,16 +370,13 @@ $conn->close();
                         $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
                                     FROM submissions s
                                     LEFT JOIN personnel per ON s.SubmittedBy = per.PersonnelID
-                                    WHERE s.TaskID IN (
-                                        SELECT t.TaskID FROM tasks t
-                                        WHERE t.FacultyID = ? AND t.SchoolYear = ? AND t.Term = ?
-                                    )
+                                    WHERE s.FacultyID = ?
                                     AND s.SubmissionPath IS NOT NULL
                                     AND s.SubmissionPath != ''
                                     AND s.CourseCode = ?
                                     ORDER BY s.SubmissionDate DESC";
                         $fileStmt = $conn->prepare($fileSql);
-                        $fileStmt->bind_param("isss", $facultyID, $currentSchoolYear, $currentTerm, $courseCode);
+                        $fileStmt->bind_param("is", $facultyID, $courseCode);
                         $fileStmt->execute();
                         $fileResult = $fileStmt->get_result();
                         if ($fileResult->num_rows > 0) {
