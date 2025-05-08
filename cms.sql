@@ -66,7 +66,7 @@ CREATE TABLE `auditlog` (
   KEY `PersonnelID` (`PersonnelID`),
   CONSTRAINT `fk_auditlog_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
   CONSTRAINT `fk_auditlog_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,7 +75,7 @@ CREATE TABLE `auditlog` (
 
 LOCK TABLES `auditlog` WRITE;
 /*!40000 ALTER TABLE `auditlog` DISABLE KEYS */;
-INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32');
+INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32'),(13,2,12,'RIEGIE TAN','Assigned new role \'PH\' to REBECCA FAJARDO','2025-05-08 02:56:03'),(14,2,2,'ED RIAN','Joined the faculty','2025-05-08 03:03:36'),(15,2,12,'RIEGIE TAN','Removed ED RIAN from faculty','2025-05-08 03:12:45');
 /*!40000 ALTER TABLE `auditlog` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -189,7 +189,7 @@ CREATE TABLE `personnel` (
 
 LOCK TABLES `personnel` WRITE;
 /*!40000 ALTER TABLE `personnel` DISABLE KEYS */;
-INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'ED','RIAN','Male','USER',NULL,2),(4,'TEST','TEST','Male','USER',NULL,4),(5,'LYANAH','PAULA','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'RIEGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','COR',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14),(16,'','',NULL,'USER',NULL,NULL),(17,'LAURA','ALTEA','Female','FM',2,17),(18,'REBECCA','FAJARDO','Female','FM',2,18),(19,'NOREEN','PEREZ','Female','FM',2,19),(20,'FEDERICO','NUEVA','Male','FM',2,20),(21,'RUBY JANE','DIOSA','Female','FM',2,21),(22,'RACQUEL','CORTEZ','Female','FM',2,22),(23,'RODOLFO','MIRABEL','Male','FM',2,23),(24,'JUANITO','ALVAREZ','Male','FM',2,24),(25,'GRETA','ROSARIO','Female','FM',2,25),(26,'RANDY','OTERO','Male','FM',2,26),(27,'BERILNNE','BOBIS','Female','FM',2,27),(28,'MARTHA ANDREA','DALUYON','Female','FM',2,28),(29,'JOSEPH WILFRED','DELA CRUZ','Male','FM',2,29),(30,'ALEXEN','ELACIO','Male','FM',2,30),(31,'NORMAN','ESPIRITU','Male','FM',2,31),(32,'MICHAEL','FERNANDEZ','Male','FM',2,32),(33,'RAMIL','MADRIAGA','Male','FM',2,33),(34,'DAWN BERNADETTE','MENOR','Female','FM',2,34),(35,'SAMANTHA','SIAO','Female','FM',2,35);
+INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'ED','RIAN','Male','FM',NULL,2),(4,'TEST','TEST','Male','USER',NULL,4),(5,'LYANAH','PAULA','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'RIEGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','COR',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14),(16,'','',NULL,'USER',NULL,NULL),(17,'LAURA','ALTEA','Female','FM',2,17),(18,'REBECCA','FAJARDO','Female','PH',2,18),(19,'NOREEN','PEREZ','Female','FM',2,19),(20,'FEDERICO','NUEVA','Male','FM',2,20),(21,'RUBY JANE','DIOSA','Female','FM',2,21),(22,'RACQUEL','CORTEZ','Female','FM',2,22),(23,'RODOLFO','MIRABEL','Male','FM',2,23),(24,'JUANITO','ALVAREZ','Male','FM',2,24),(25,'GRETA','ROSARIO','Female','FM',2,25),(26,'RANDY','OTERO','Male','FM',2,26),(27,'BERILNNE','BOBIS','Female','FM',2,27),(28,'MARTHA ANDREA','DALUYON','Female','FM',2,28),(29,'JOSEPH WILFRED','DELA CRUZ','Male','FM',2,29),(30,'ALEXEN','ELACIO','Male','FM',2,30),(31,'NORMAN','ESPIRITU','Male','FM',2,31),(32,'MICHAEL','FERNANDEZ','Male','FM',2,32),(33,'RAMIL','MADRIAGA','Male','FM',2,33),(34,'DAWN BERNADETTE','MENOR','Female','FM',2,34),(35,'SAMANTHA','SIAO','Female','FM',2,35);
 /*!40000 ALTER TABLE `personnel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -226,7 +226,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL),(2,1,'COMP 102',2,2,NULL),(3,1,'COMP 103',2,2,NULL),(4,1,'COMP 104',2,2,NULL),(5,1,'COMP 105',2,2,NULL),(6,1,'COMP 106',2,2,NULL),(7,1,'IT 101',2,2,NULL),(8,1,'IT 102',2,2,NULL),(9,1,'IT 103',2,2,18),(10,1,'IT 104',2,2,14),(11,1,'IT 105',2,2,NULL),(12,1,'IT 106',2,2,NULL),(13,1,'IT 107',2,2,NULL),(14,1,'IT 108',2,2,NULL),(15,1,'IT 109',2,2,NULL),(16,1,'IT 110',2,2,NULL),(17,1,'IT 111',2,2,NULL),(18,1,'IT 112',2,2,NULL),(19,1,'IT 113',2,2,NULL),(20,1,'IT 114',2,2,NULL),(21,1,'IT 115',2,2,NULL),(22,1,'IT 201',2,2,NULL),(23,1,'IT 202',2,2,NULL),(24,1,'IT 203',2,2,NULL),(25,1,'IT 204',2,2,NULL),(26,1,'IT 301',2,2,NULL),(27,1,'IT 302',2,2,NULL),(28,1,'IT 303',2,2,NULL),(29,1,'IT 304',2,2,NULL),(30,1,'IT 305',2,2,NULL),(31,1,'IT 306',2,2,NULL),(32,2,'COMP 101',3,2,NULL),(33,2,'COMP 102',3,2,NULL),(34,2,'COMP 103',3,2,NULL),(35,2,'COMP 104',3,2,NULL),(36,2,'COMP 105',3,2,NULL),(37,2,'CS 101',3,2,NULL),(38,2,'CS 102',3,2,NULL),(39,2,'CS 103',3,2,NULL),(40,2,'CS 104',3,2,NULL),(41,2,'CS 105',3,2,NULL),(42,2,'CS 106',3,2,NULL),(43,2,'CS 107',3,2,NULL),(44,2,'CS 108',3,2,NULL),(45,2,'CS 109',3,2,NULL),(46,2,'CS 110',3,2,NULL),(47,2,'CS 111',3,2,NULL),(48,2,'CS 112',3,2,NULL),(49,2,'CS 113',3,2,NULL),(50,2,'CS 114',3,2,NULL),(51,2,'CS 115',3,2,NULL),(52,2,'CS 116',3,2,NULL),(53,2,'CS 117',3,2,NULL),(54,2,'CS 201',3,2,NULL),(55,2,'CS 202',3,2,NULL),(56,2,'CS 203',3,2,NULL),(57,2,'CS 301',3,2,NULL),(58,2,'CS 401',3,2,NULL),(59,2,'CS 402',3,2,NULL),(60,2,'CS 403',3,2,NULL),(61,2,'CS 404',3,2,NULL),(62,2,'CS 405',3,2,NULL),(63,2,'CS 406',3,2,NULL);
+INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL),(2,1,'COMP 102',2,2,NULL),(3,1,'COMP 103',2,2,NULL),(4,1,'COMP 104',2,2,NULL),(5,1,'COMP 105',2,2,NULL),(6,1,'COMP 106',2,2,22),(7,1,'IT 101',2,2,NULL),(8,1,'IT 102',2,2,NULL),(9,1,'IT 103',2,2,18),(10,1,'IT 104',2,2,14),(11,1,'IT 105',2,2,NULL),(12,1,'IT 106',2,2,NULL),(13,1,'IT 107',2,2,NULL),(14,1,'IT 108',2,2,NULL),(15,1,'IT 109',2,2,NULL),(16,1,'IT 110',2,2,NULL),(17,1,'IT 111',2,2,NULL),(18,1,'IT 112',2,2,NULL),(19,1,'IT 113',2,2,NULL),(20,1,'IT 114',2,2,NULL),(21,1,'IT 115',2,2,NULL),(22,1,'IT 201',2,2,NULL),(23,1,'IT 202',2,2,NULL),(24,1,'IT 203',2,2,NULL),(25,1,'IT 204',2,2,NULL),(26,1,'IT 301',2,2,NULL),(27,1,'IT 302',2,2,NULL),(28,1,'IT 303',2,2,NULL),(29,1,'IT 304',2,2,NULL),(30,1,'IT 305',2,2,NULL),(31,1,'IT 306',2,2,NULL),(32,2,'COMP 101',3,2,NULL),(33,2,'COMP 102',3,2,NULL),(34,2,'COMP 103',3,2,NULL),(35,2,'COMP 104',3,2,NULL),(36,2,'COMP 105',3,2,NULL),(37,2,'CS 101',3,2,NULL),(38,2,'CS 102',3,2,NULL),(39,2,'CS 103',3,2,NULL),(40,2,'CS 104',3,2,NULL),(41,2,'CS 105',3,2,NULL),(42,2,'CS 106',3,2,NULL),(43,2,'CS 107',3,2,NULL),(44,2,'CS 108',3,2,NULL),(45,2,'CS 109',3,2,NULL),(46,2,'CS 110',3,2,NULL),(47,2,'CS 111',3,2,NULL),(48,2,'CS 112',3,2,NULL),(49,2,'CS 113',3,2,NULL),(50,2,'CS 114',3,2,NULL),(51,2,'CS 115',3,2,NULL),(52,2,'CS 116',3,2,NULL),(53,2,'CS 117',3,2,NULL),(54,2,'CS 201',3,2,NULL),(55,2,'CS 202',3,2,NULL),(56,2,'CS 203',3,2,NULL),(57,2,'CS 301',3,2,NULL),(58,2,'CS 401',3,2,NULL),(59,2,'CS 402',3,2,NULL),(60,2,'CS 403',3,2,NULL),(61,2,'CS 404',3,2,NULL),(62,2,'CS 405',3,2,NULL),(63,2,'CS 406',3,2,NULL);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -347,6 +347,7 @@ CREATE TABLE `task_assignments` (
 
 LOCK TABLES `task_assignments` WRITE;
 /*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
+INSERT INTO `task_assignments` VALUES (1,1,'COMP 106',2,'Pending','Not Reviewed');
 /*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -365,13 +366,15 @@ CREATE TABLE `tasks` (
   `FacultyID` int(11) DEFAULT NULL,
   `DueDate` date DEFAULT NULL,
   `Status` enum('Pending','In Progress','Completed') DEFAULT 'Pending',
+  `SchoolYear` varchar(30) NOT NULL,
+  `Term` varchar(30) NOT NULL,
   `CreatedAt` datetime DEFAULT current_timestamp(),
   PRIMARY KEY (`TaskID`),
   KEY `CreatedBy` (`CreatedBy`),
   KEY `FacultyID` (`FacultyID`),
   CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -380,6 +383,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
+INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-08','Pending','2024-2025','1st','2025-05-08 14:59:11');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -418,4 +422,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-07 23:37:11
+-- Dump completed on 2025-05-08 15:38:46
