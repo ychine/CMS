@@ -251,85 +251,101 @@ $conn->close();
         }
 
         .x-delete-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 10%;
-        background-color: #f3f4f6;
-        color: #dc2626;
-        border: 1px solid #e5e7eb;
-        font-size: 25px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        margin-left: 8px;
-    }
-    
-    .x-delete-btn:hover {
-        background-color: #fee2e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10%;
+            background-color: #f3f4f6;
+            color: #dc2626;
+            border: 1px solid #e5e7eb;
+            font-size: 25px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        .x-delete-btn:hover {
+            background-color: #fee2e2;
             border-color: #fecaca;
             color: #dc2626;
-    }
+        }
 
-    /* Personnel dropdown styling similar to faculty_frame.php */
-    .assign-personnel-dropdown {
-        background-color: #f3f4f6;
-        border-radius: 6px;
-        padding: 8px 12px;
-        border: 1px solid #e5e7eb;
-        font-size: 14px;
-        font-weight: 500;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 0.5rem center;
-        background-size: 1em;
-        padding-right: 2.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #4b5563;
-    }
-    
-    .assign-personnel-dropdown:hover {
-        background-color: #e5e7eb; 
-        border-color: #4a84f1;
-    }
+        .x-delete-btn-sm {
+            width: 24px;
+            height: 24px;
+            font-size: 16px;
+            margin-left: 4px;
+            background-color: transparent;
+            border: none;
+            color: #9ca3af;
+        }
+        
+        .x-delete-btn-sm:hover {
+            background-color: transparent;
+            border: none;
+            color: #dc2626;
+        }
 
-    .assign-personnel-dropdown:focus {
-        outline: none;
-        border-color: #60a5fa;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
+        /* Personnel dropdown styling similar to faculty_frame.php */
+        .assign-personnel-dropdown {
+            background-color: #f3f4f6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            font-size: 14px;
+            font-weight: 500;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #4b5563;
+        }
+        
+        .assign-personnel-dropdown:hover {
+            background-color: #e5e7eb; 
+            border-color: #4a84f1;
+        }
 
-    body.dark {
-        background: #18181b !important;
-        color: #f3f4f6 !important;
-    }
-    .dark .bg-white {
-        background: #23232a !important;
-        color: #f3f4f6 !important;
-    }
-    .dark .shadow-lg, .dark .shadow-2xl {
-        box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
-    }
-    .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
-        color: #e5e7eb !important;
-    }
-    .dark .text-gray-500 {
-        color: #a1a1aa !important;
-    }
-    .dark .border-gray-300, .dark .border {
-        border-color: #374151 !important;
-    }
-    .dark .bg-blue-50, .dark .bg-blue-100 {
-        background: #1e293b !important;
-    }
-    .dark .file-input-label {
-        background: #23232a !important;
-        border-color: #374151 !important;
-        color: #e5e7eb !important;
-    }
+        .assign-personnel-dropdown:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        body.dark {
+            background: #18181b !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .bg-white {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .shadow-lg, .dark .shadow-2xl {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+        }
+        .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
+            color: #e5e7eb !important;
+        }
+        .dark .text-gray-500 {
+            color: #a1a1aa !important;
+        }
+        .dark .border-gray-300, .dark .border {
+            border-color: #374151 !important;
+        }
+        .dark .bg-blue-50, .dark .bg-blue-100 {
+            background: #1e293b !important;
+        }
+        .dark .file-input-label {
+            background: #23232a !important;
+            border-color: #374151 !important;
+            color: #e5e7eb !important;
+        }
     </style>
 </head>
 <body>
@@ -338,7 +354,7 @@ $conn->close();
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1>
     <hr class="border-gray-400">
     <p class="text-gray-500 mt-3 mb-5 font-onest">
-        Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.
+        Manage academic programs and curricula. Create programs, add courses, and assign faculty members. Track curriculum changes over time.
     </p>
 
     <div class="w-[70%] space-y-2 font-onest">
@@ -366,27 +382,33 @@ $conn->close();
                 foreach ($curricula as $year => $courses) {
                     $yearId = 'year_' . md5($programName . $year);
                     echo "<div class='mt-2'>";
+                    echo "<div class='flex items-center justify-between'>";
                     echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">▶ $year</button>";
+                    if ($userRole === 'DN') {
+                        echo "<button onclick=\"confirmDeleteCurriculum('$programId', '$year')\" class=\"x-delete-btn x-delete-btn-sm\" title=\"Delete curriculum\">×</button>";
+                    }
+                    echo "</div>";
                     echo "<div id=\"$yearId\" class='ml-4 mt-1 hidden'>";
                     
                 
                     echo "<div class='overflow-x-auto'>";
                     echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
                     echo "<thead class='bg-gray-100 text-gray-900'>";
-                    echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th>";
-                    echo "<th class='px-4 py-2 border-b text-left'>Assigned Prof.</th>";
+                    echo "<tr>";
+                    echo "<th class='px-4 py-2 border-b w-[70%]'>📚 Course</th>";
+                    echo "<th class='px-4 py-2 border-b text-left w-[30%]'>Assigned Prof.</th>";
                     echo "</tr>";
                     echo "</thead><tbody>";
         
                     foreach ($courses as $idx => $courseData) {
                         $courseTitle = $courseData['title'];
                         $assignedTo = $courseData['assigned_to'] ?? '';
-                        $courseCode = $courseData['code'] ?? $courseTitle; // fallback for legacy, but should use 'code'
+                        $courseCode = $courseData['code'] ?? $courseTitle;
                         $rowId = 'files_' . md5($programName . $year . $courseTitle . $idx);
                         echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
-                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($courseTitle) . "</td>";
+                        echo "<td class='px-4 py-2 border-b w-[70%]'>" . htmlspecialchars($courseTitle) . "</td>";
                     
-                        echo "<td class='px-4 py-2 border-b'>";
+                        echo "<td class='px-4 py-2 border-b w-[30%]'>";
                         
                         
                         if ($userRole === 'DN') {
@@ -599,6 +621,19 @@ $conn->close();
         </div>
     </div>
 
+    <!-- Delete Curriculum Confirmation Modal -->
+    <div id="deleteCurriculumModal" class="modal">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Confirm Deletion</h2>
+            <hr class="border-gray-400 mb-6">
+            <p id="deleteCurriculumMessage" class="text-lg text-gray-700 mb-6">Are you sure you want to delete this curriculum?</p>
+            <div class="flex justify-end gap-4 pt-4">
+                <button onclick="closeDeleteCurriculumModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                <button id="confirmDeleteCurriculumBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-semibold">Delete</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ml-[320px]">
@@ -615,6 +650,8 @@ $conn->close();
     // Store user role in JavaScript for use in functions
     const userRole = "<?php echo $userRole; ?>";
     let programToDelete = null;
+    let curriculumToDelete = null;
+    let curriculumProgramId = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.assign-personnel-dropdown').forEach(dropdown => {
@@ -963,6 +1000,93 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
+    }
+
+    function confirmDeleteCurriculum(programId, curriculumYear) {
+        curriculumToDelete = curriculumYear;
+        curriculumProgramId = programId;
+        document.getElementById('deleteCurriculumMessage').textContent = `Are you sure you want to delete the curriculum "${curriculumYear}"? This will delete all associated courses.`;
+        document.getElementById('deleteCurriculumModal').style.display = 'flex';
+    }
+
+    function closeDeleteCurriculumModal() {
+        document.getElementById('deleteCurriculumModal').style.display = 'none';
+    }
+
+    document.getElementById('confirmDeleteCurriculumBtn').addEventListener('click', function() {
+        if (curriculumToDelete && curriculumProgramId) {
+            deleteCurriculum(curriculumProgramId, curriculumToDelete);
+        }
+    });
+
+    function deleteCurriculum(programId, curriculumYear) {
+        // Show loading state
+        const confirmBtn = document.getElementById('confirmDeleteCurriculumBtn');
+        const originalText = confirmBtn.textContent;
+        confirmBtn.textContent = 'Deleting...';
+        confirmBtn.disabled = true;
+        
+        // Close the modal
+        closeDeleteCurriculumModal();
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('program_id', programId);
+        formData.append('curriculum_year', curriculumYear);
+        formData.append('ajax', 'true');
+        
+        console.log('Deleting curriculum:', { programId, curriculumYear }); // Debug log
+        
+        fetch('../curriculum/remove_curriculum.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status); // Debug log
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data); // Debug log
+            if (data.success === true) {
+                // Show success message with SweetAlert2
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Curriculum deleted successfully',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Reload the page after the user clicks OK
+                    location.reload();
+                });
+            } else {
+                // Show error message with SweetAlert2
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to delete curriculum',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+                // Reset button
+                confirmBtn.textContent = originalText;
+                confirmBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error); // Debug log
+            // Show error message with SweetAlert2
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred while deleting the curriculum. Please check the console for details.',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            // Reset button
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+        });
     }
 </script>
 
