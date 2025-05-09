@@ -258,6 +258,47 @@ $conn->close();
             border-color: #374151 !important;
             color: #e5e7eb !important;
         }
+        .dark .section-card,
+        .dark .bg-gray-50,
+        .dark .bg-white {
+          background: #23232a !important;
+          color: #f3f4f6 !important;
+        }
+        .dark .text-gray-600,
+        .dark .text-gray-500 {
+          color: #a1a1aa !important;
+        }
+        .dark .text-red-600 {
+          color: #f87171 !important;
+        }
+        .dark .btn,
+        .dark .btn-edit {
+          background: #2563eb !important;
+          color: #fff !important;
+        }
+        .dark .btn-edit:hover {
+          background: #1d4ed8 !important;
+        }
+        .dark .btn-delete {
+          background: #ef4444 !important;
+          color: #fff !important;
+        }
+        .dark .btn-delete:hover {
+          background: #dc2626 !important;
+        }
+        .dark .form-input {
+          background: #18181b !important;
+          color: #f3f4f6 !important;
+          border-color: #374151 !important;
+        }
+        .dark .form-input:focus {
+          border-color: #2563eb !important;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        .dark hr,
+        .dark .border-gray-400 {
+          border-color: #374151 !important;
+        }
     </style>
 </head>
 <body>
