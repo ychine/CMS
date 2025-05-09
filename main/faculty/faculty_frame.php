@@ -168,6 +168,44 @@ $conn->close();
             border-color: #374151 !important;
             color: #e5e7eb !important;
         }
+        .dark .role-select {
+            background-color: #23232a !important;
+            color: #f3f4f6 !important;
+            border-color: #374151 !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .dark .role-select:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        .dark .delete-button {
+            background-color: #23232a !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .delete-button:hover {
+            background-color: #7f1d1d !important;
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+        .dark .delete-button svg {
+            color: #f87171 !important;
+        }
+        .dark .delete-button:hover svg {
+            color: #ef4444 !important;
+        }
+        .dark .bg-gray-100 {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .text-gray-800,
+        .dark .text-gray-500,
+        .dark .text-gray-400 {
+            color: #a1a1aa !important;
+        }
+        .dark .hover\:bg-gray-400:hover {
+            background: #374151 !important;
+        }
     </style>
 </head>
 <body>

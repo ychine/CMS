@@ -94,7 +94,7 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
 }
 
 // Handle task approval (Dean only)
-if (isset($_POST['approve_task']) && $userRole == 'Dean') {
+if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $taskAssignmentID = $_POST['task_assignment_id'];
     
     $approveSql = "UPDATE task_assignments 
@@ -152,7 +152,7 @@ if (isset($_POST['approve_task']) && $userRole == 'Dean') {
 // Fetch tasks based on user role
 $tasks = [];
 
-if ($userRole == 'Dean') {
+if ($userRole == 'DN') {
     // Dean sees all tasks in the faculty
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
@@ -659,9 +659,56 @@ $conn->close();
     .dark .fa-check-circle {
       color: #22d3ee !important;
     }
+    .dark .no-tasks {
+      background: transparent !important;
+      color: #a1a1aa !important;
+    }
+    .dark .files-section .bg-white {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .text-gray-500,
+    .dark .text-gray-800 {
+      color: #a1a1aa !important;
+    }
+    .dark .text-blue-500 {
+      color: #38bdf8 !important;
+    }
+    .dark html,
+    .dark body,
+    .dark .content,
+    .dark .tasks-section,
+    .dark .files-section {
+      background: #18181b !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .bg-white,
+    .dark .bg-gray-100,
+    .dark .bg-gray-200,
+    .dark .bg-gray-50 {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .no-tasks {
+      color: #a1a1aa !important;
+    }
+    .dark .text-gray-500,
+    .dark .text-gray-800 {
+      color: #a1a1aa !important;
+    }
+    .dark .text-blue-500 {
+      color: #38bdf8 !important;
+    }
   </style>
 </head>
 <body>
+<?php if ($userRole == 'DN'): ?>
+<script>
+  if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark');
+  }
+</script>
+<?php endif; ?>
   <div class="content">
     <div class="tasks-section">
       <?php if (!empty($message)): ?>
@@ -672,7 +719,7 @@ $conn->close();
       
       <?php if (empty($tasks)): ?>
       <div class="no-tasks">
-        <p>No tasks available. <?php echo ($userRole == 'Dean') ? 'Create your first task!' : 'Tasks assigned to you will appear here.'; ?></p>
+        <p>No tasks available. <?php echo ($userRole == 'DN') ? 'Create your first task!' : 'Tasks assigned to you will appear here.'; ?></p>
       </div>
       <?php else: ?>
         <?php foreach ($tasks as $task): ?>
@@ -734,7 +781,7 @@ $conn->close();
                     <?php if ($assignment['AssignmentStatus'] == 'Completed'): ?>
                       <p class="signed-by">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
                       <p class="text-xs text-gray-500"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
-                    <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'Dean'): ?>
+                    <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
                       <form method="POST" action="" class="mt-1">
                         <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
                         <button type="submit" name="approve_task" class="approval-btn">
@@ -759,7 +806,7 @@ $conn->close();
     <div class="files-section">
       <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto mt-8">
         <h3 class="text-xl font-bold mb-6 text-gray-800">Your files</h3>
-        <?php if (!empty($tasks) && $userRole != 'Dean'): ?>
+        <?php if (!empty($tasks) && $userRole != 'DN'): ?>
           <?php 
           $uploadableTasks = [];
           foreach ($tasks as $task) {
@@ -886,9 +933,9 @@ $conn->close();
         <?php else: ?>
           <div class="text-center py-8">
             <i class="fas fa-info-circle text-4xl text-blue-500 mb-3"></i>
-            <?php if ($userRole == 'Dean'): ?>
+            <?php if ($userRole == 'DN'): ?>
               <p>As Dean, you can create tasks and approve them when submitted.</p>
-              <p class="mt-3 text-sm text-gray-600">Use the create task button to add new tasks.</p>
+              <p class="mt-3 text-sm text-gray-600">Click + at Task Page to add new tasks.</p>
             <?php else: ?>
               <p>No tasks available yet.</p>
               <p class="mt-3 text-sm text-gray-600">Tasks assigned to you will appear here.</p>
@@ -899,13 +946,7 @@ $conn->close();
     </div>
   </div>
   
-  <?php if ($userRole == 'Dean'): ?>
-  <div class="task-floating-button">
-    <button onclick="location.href='create_task.php'">
-      <i class="fas fa-plus"></i> Create Task
-    </button>
-  </div>
-  <?php endif; ?>
+  
 
   <script>
     // Add event listener for task selector change
@@ -1059,9 +1100,11 @@ $conn->close();
       }, 3000);
     }
 
+    <?php if ($userRole == 'DN'): ?>
     if (localStorage.getItem('darkMode') === 'enabled') {
       document.body.classList.add('dark');
     }
+    <?php endif; ?>
   </script>
 </body>
 </html>
