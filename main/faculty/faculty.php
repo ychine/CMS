@@ -396,6 +396,7 @@ $conn->close();
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
              
+
                 <div class="profile-container relative">
                     <div class="user-info flex items-center">
                         <div class="flex items-center cursor-pointer" onclick="toggleUserMenu(event)">

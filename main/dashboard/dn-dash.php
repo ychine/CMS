@@ -150,7 +150,6 @@ foreach ($roleLabels as $code => $label) {
 }
 $roleDataJSON = json_encode($formattedRoleData);
 
-// Fetch the ongoing (pending) task for this faculty
 $ongoingTaskTitle = null;
 $ongoingTaskId = null;
 $ongoingTaskSql = "SELECT TaskID, Title FROM tasks WHERE FacultyID = ? AND Status = 'Pending' ORDER BY CreatedAt DESC LIMIT 1";
