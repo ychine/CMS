@@ -61,6 +61,43 @@ $totalResult = $totalStmt->get_result();
 $totalRow = $totalResult->fetch_assoc();
 $totalFaculty = $totalRow['total'];
 
+// Dynamic submissions counts
+// Count Pending Review
+$sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
+    JOIN tasks t ON ta.TaskID = t.TaskID
+    WHERE t.FacultyID = ? AND ta.Status = 'Submitted'";
+$stmtPending = $conn->prepare($sqlPending);
+$stmtPending->bind_param("i", $facultyId);
+$stmtPending->execute();
+$res = $stmtPending->get_result();
+$pendingCount = $res->fetch_assoc()['cnt'];
+$stmtPending->close();
+
+// Count Complete
+$sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
+    JOIN tasks t ON ta.TaskID = t.TaskID
+    WHERE t.FacultyID = ? AND ta.Status = 'Completed'";
+$stmtComplete = $conn->prepare($sqlComplete);
+$stmtComplete->bind_param("i", $facultyId);
+$stmtComplete->execute();
+$res = $stmtComplete->get_result();
+$completeCount = $res->fetch_assoc()['cnt'];
+$stmtComplete->close();
+
+// Count Unaccomplished (not completed and not submitted)
+$sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
+    JOIN tasks t ON ta.TaskID = t.TaskID
+    WHERE t.FacultyID = ? AND ta.Status NOT IN ('Completed', 'Submitted')";
+$stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
+$stmtUnaccomplished->bind_param("i", $facultyId);
+$stmtUnaccomplished->execute();
+$res = $stmtUnaccomplished->get_result();
+$unaccomplishedCount = $res->fetch_assoc()['cnt'];
+$stmtUnaccomplished->close();
+
+$totalSubmissions = $pendingCount + $unaccomplishedCount + $completeCount;
+$progress = $totalSubmissions > 0 ? round(($completeCount / $totalSubmissions) * 100) : 0;
+
 $roleColors = [
     'DN' => '#4F46E5',
     'COR' => '#10B981',
@@ -117,7 +154,7 @@ $conn->close();
                         <a href="submissionspage.php?type=pending" class="flex-1">
                             <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
                                 <div class="flex items-center">
-                                    <div class="text-2xl font-bold mr-3">7</div>
+                                    <div class="text-2xl font-bold mr-3"><?php echo $pendingCount; ?></div>
                                     <div class="text-sm">Pending Review</div>
                                     <div class="ml-auto">
                                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +171,7 @@ $conn->close();
                         <a href="submissionspage.php?type=unaccomplished" class="flex-1">
                             <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
                                 <div class="flex items-center">
-                                    <div class="text-2xl font-bold mr-3">3</div>
+                                    <div class="text-2xl font-bold mr-3"><?php echo $unaccomplishedCount; ?></div>
                                     <div class="text-sm">Unaccomplished</div>
                                     <div class="ml-auto">
                                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +188,7 @@ $conn->close();
                         <a href="submissionspage.php?type=complete" class="flex-1">
                             <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
                                 <div class="flex items-center">
-                                    <div class="text-2xl font-bold mr-3">10</div>
+                                    <div class="text-2xl font-bold mr-3"><?php echo $completeCount; ?></div>
                                     <div class="text-sm">Complete</div>
                                     <div class="ml-auto">
                                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,9 +204,9 @@ $conn->close();
                     </div>
 
                     <div class="flex items-center">
-                        <div class="text-xs mr-2 font-medium">50%</div>
+                        <div class="text-xs mr-2 font-medium"><?php echo $progress; ?>%</div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                            <div class="bg-green-500 h-2" style="width: 50%"></div>
+                            <div class="bg-green-500 h-2" style="width: <?php echo $progress; ?>%"></div>
                         </div>
                         <div class="ml-2">
                             <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
