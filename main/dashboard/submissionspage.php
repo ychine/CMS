@@ -484,20 +484,25 @@ $conn->close();
     }
     
     .selected-file {
-      margin-top: 10px;
-      padding: 8px 12px;
-      background-color: #e0f2fe;
-      border-radius: 4px;
+      background: #dbeafe;
+      border-radius: 9999px;
+      padding: 0.5rem 1rem;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      max-width: 320px;
+      min-width: 220px;
+      width: 100%;
+      box-sizing: border-box;
     }
     
-    .file-name {
+    .selected-file .file-name {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 80%;
+      max-width: 180px;
+      display: inline-block;
     }
     
     .remove-file {
@@ -648,205 +653,145 @@ $conn->close();
     </div>
     
     <div class="files-section">
-      <h3>Your files</h3>
-      
-      <?php if (!empty($tasks) && $userRole != 'Dean'): ?>
-        <?php 
-        $uploadableTasks = [];
-        foreach ($tasks as $task) {
-            foreach ($task['Assignments'] as $assignment) {
-                if ($assignment['AssignmentStatus'] != 'Completed') {
-                    $uploadableTasks[] = [
-                        'taskID' => $task['TaskID'],
-                        'taskTitle' => $task['Title'],
-                        'courseCode' => $assignment['CourseCode'],
-                        'courseTitle' => $assignment['CourseTitle'],
-                        'programID' => $assignment['ProgramID'],
-                        'status' => $assignment['AssignmentStatus'],
-                        'submissionPath' => $assignment['SubmissionPath']
-                    ];
-                }
-            }
-        }
-        ?>
-        
-        <?php if (!empty($uploadableTasks)): ?>
-          <form method="POST" action="" enctype="multipart/form-data" class="upload-form">
-            <div class="mb-3">
-              <label class="block mb-1 font-medium">Select Task:</label>
-              <select name="task_selector" id="taskSelector" class="w-full p-2 border rounded" onchange="updateTaskSelection()">
-                <option value="">-- Select Task --</option>
-                <?php foreach ($uploadableTasks as $index => $task): ?>
-                  <option value="<?php echo $index; ?>">
-                    <?php echo htmlspecialchars($task['taskTitle'] . ' - ' . $task['courseCode']); ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-            
-            <div id="uploadFormFields" class="hidden">
-              <input type="hidden" name="task_id" id="taskID">
-              <input type="hidden" name="course_code" id="courseCode">
-              <input type="hidden" name="program_id" id="programID">
-              
-              <div class="file-input-container">
-                <label for="taskFile" class="file-input-label">
-                  <i class="fas fa-cloud-upload-alt text-2xl text-blue-500 mb-2"></i>
-                  <p>Drag and drop your file here or click to browse</p>
-                </label>
-                <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
+      <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto mt-8">
+        <h3 class="text-xl font-bold mb-6 text-gray-800">Your files</h3>
+        <?php if (!empty($tasks) && $userRole != 'Dean'): ?>
+          <?php 
+          $uploadableTasks = [];
+          foreach ($tasks as $task) {
+              foreach ($task['Assignments'] as $assignment) {
+                  if ($assignment['AssignmentStatus'] != 'Completed') {
+                      $uploadableTasks[] = [
+                          'taskID' => $task['TaskID'],
+                          'taskTitle' => $task['Title'],
+                          'courseCode' => $assignment['CourseCode'],
+                          'courseTitle' => $assignment['CourseTitle'],
+                          'programID' => $assignment['ProgramID'],
+                          'status' => $assignment['AssignmentStatus'],
+                          'submissionPath' => $assignment['SubmissionPath']
+                      ];
+                  }
+              }
+          }
+          ?>
+          <?php if (!empty($uploadableTasks)): ?>
+            <form method="POST" action="" enctype="multipart/form-data" class="upload-form">
+              <div class="mb-5">
+                <label class="block mb-2 font-semibold text-gray-700">Select Task:</label>
+                <select name="task_selector" id="taskSelector" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
+                  <option value="">-- Select Task --</option>
+                  <?php foreach ($uploadableTasks as $index => $task): ?>
+                    <option value="<?php echo $index; ?>">
+                      <?php echo htmlspecialchars($task['taskTitle'] . ' - ' . $task['courseCode']); ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
               </div>
-              
-              <div id="selectedFile" class="selected-file hidden">
-                <span id="fileName" class="file-name"></span>
-                <span class="remove-file" onclick="removeFile()">
-                  <i class="fas fa-times"></i>
-                </span>
+              <div id="uploadFormFields" class="hidden">
+                <input type="hidden" name="task_id" id="taskID">
+                <input type="hidden" name="course_code" id="courseCode">
+                <input type="hidden" name="program_id" id="programID">
+                <div class="file-input-container mb-4">
+                  <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
+                    <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
+                  </label>
+                  <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
+                </div>
+                <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-file-alt text-blue-500"></i>
+                    <span id="fileName" class="file-name font-medium text-gray-800"></span>
+                  </div>
+                  <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
+                    <i class="fas fa-times"></i>
+                  </span>
+                </div>
+                <div id="filePreview" class="file-preview hidden"></div>
+                <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
+                  Submit and Sign
+                </button>
               </div>
-              
-              <div id="filePreview" class="file-preview hidden"></div>
-              
-              <button type="submit" name="submit_file" class="submit-btn" id="submitBtn" disabled>
-                Submit and Sign
-              </button>
+            </form>
+            <style>
+              .files-section {
+                background: #f3f4f6;
+                min-height: 100vh;
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+              }
+              .file-input-label {
+                border: 2px dashed #60a5fa;
+                background: #f0f9ff;
+                transition: background 0.2s, border-color 0.2s;
+                cursor: pointer;
+                padding: 2rem 1rem;
+                text-align: center;
+              }
+              .file-input-label:hover {
+                background: #e0f2fe;
+                border-color: #2563eb;
+              }
+              .selected-file {
+                background: #dbeafe;
+                border-radius: 9999px;
+                padding: 0.5rem 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 1rem;
+                max-width: 320px;
+                min-width: 220px;
+                width: 100%;
+                box-sizing: border-box;
+              }
+              .selected-file .file-name {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 180px;
+                display: inline-block;
+              }
+              .remove-file {
+                color: #ef4444;
+                cursor: pointer;
+                margin-left: 0.5rem;
+                font-size: 1.2rem;
+              }
+              .submit-btn {
+                background: #2563eb;
+                color: #fff;
+                border: none;
+                border-radius: 0.5rem;
+                padding: 0.75rem 0;
+                font-weight: 600;
+                font-size: 1.1rem;
+                transition: background 0.2s;
+              }
+              .submit-btn:hover {
+                background: #1d4ed8;
+              }
+            </style>
+          <?php else: ?>
+            <div class="text-center py-8">
+              <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
+              <p>All your tasks are completed!</p>
             </div>
-          </form>
-          
-          <script>
-  function updateTaskSelection() {
-    const selector = document.getElementById('taskSelector');
-    const uploadForm = document.getElementById('uploadFormFields');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    if (selector.value === '') {
-      uploadForm.classList.add('hidden');
-      return;
-    }
-    
-    // Get the selected task data
-    const taskData = <?php echo json_encode($uploadableTasks); ?>[selector.value];
-    
-    // Set hidden fields
-    document.getElementById('taskID').value = taskData.taskID;
-    document.getElementById('courseCode').value = taskData.courseCode;
-    document.getElementById('programID').value = taskData.programID;
-    
-    // If there's already a submission, show it
-    const filePreview = document.getElementById('filePreview');
-    if (taskData.submissionPath) {
-      // Extract file name from path
-      const pathParts = taskData.submissionPath.split('/');
-      const fileName = pathParts[pathParts.length - 1];
-      
-      document.getElementById('fileName').textContent = fileName;
-      document.getElementById('selectedFile').classList.remove('hidden');
-      
-      // Show file preview based on extension
-      const extension = fileName.split('.').pop().toLowerCase();
-      if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
-        filePreview.innerHTML = `<img src="${taskData.submissionPath}" class="image-preview">`;
-        filePreview.classList.remove('hidden');
-      } else if (extension === 'pdf') {
-        filePreview.innerHTML = `<embed src="${taskData.submissionPath}" type="application/pdf" class="pdf-preview">`;
-        filePreview.classList.remove('hidden');
-      } else {
-        filePreview.innerHTML = `<div class="doc-preview">
-          <i class="fas fa-file-alt text-4xl text-blue-500"></i>
-          <p class="mt-2">Preview not available for this file type</p>
-        </div>`;
-        filePreview.classList.remove('hidden');
-      }
-    } else {
-      document.getElementById('selectedFile').classList.add('hidden');
-      filePreview.classList.add('hidden');
-    }
-    
-    // Show upload form
-    uploadForm.classList.remove('hidden');
-  }
-  
-  function displayFileName() {
-    const fileInput = document.getElementById('taskFile');
-    const fileName = document.getElementById('fileName');
-    const selectedFile = document.getElementById('selectedFile');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    if (fileInput.files.length > 0) {
-      fileName.textContent = fileInput.files[0].name;
-      selectedFile.classList.remove('hidden');
-      submitBtn.disabled = false;
-      
-      // Preview file if possible
-      previewFile(fileInput.files[0]);
-    } else {
-      selectedFile.classList.add('hidden');
-      submitBtn.disabled = true;
-    }
-  }
-  
-  function removeFile() {
-    const fileInput = document.getElementById('taskFile');
-    const selectedFile = document.getElementById('selectedFile');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    selectedFile.classList.add('hidden');
-    fileInput.value = '';
-    document.getElementById('filePreview').classList.add('hidden');
-    submitBtn.disabled = true;
-  }
-  
-  function previewFile(file) {
-    const filePreview = document.getElementById('filePreview');
-    const fileType = file.type;
-    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
-    
-    if (validImageTypes.includes(fileType)) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview">`;
-        filePreview.classList.remove('hidden');
-      }
-      reader.readAsDataURL(file);
-    } else if (fileType === 'application/pdf') {
-      const objectUrl = URL.createObjectURL(file);
-      filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview">`;
-      filePreview.classList.remove('hidden');
-    } else {
-      filePreview.innerHTML = `<div class="doc-preview">
-        <i class="fas fa-file-alt text-4xl text-blue-500"></i>
-        <p class="mt-2">Preview not available for this file type</p>
-      </div>`;
-      filePreview.classList.remove('hidden');
-    }
-  }
-
-  // Add event listener for task selector change
-  document.addEventListener('DOMContentLoaded', function() {
-    // Check if there are tasks
-    const taskSelector = document.getElementById('taskSelector');
-    if (taskSelector) {
-      taskSelector.addEventListener('change', updateTaskSelection);
-    }
-  });
-</script>
+          <?php endif; ?>
         <?php else: ?>
           <div class="text-center py-8">
-            <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
-            <p>All your tasks are completed!</p>
+            <i class="fas fa-info-circle text-4xl text-blue-500 mb-3"></i>
+            <?php if ($userRole == 'Dean'): ?>
+              <p>As Dean, you can create tasks and approve them when submitted.</p>
+              <p class="mt-3 text-sm text-gray-600">Use the create task button to add new tasks.</p>
+            <?php else: ?>
+              <p>No tasks available yet.</p>
+              <p class="mt-3 text-sm text-gray-600">Tasks assigned to you will appear here.</p>
+            <?php endif; ?>
           </div>
         <?php endif; ?>
-      <?php else: ?>
-        <div class="text-center py-8">
-          <i class="fas fa-info-circle text-4xl text-blue-500 mb-3"></i>
-          <?php if ($userRole == 'Dean'): ?>
-            <p>As Dean, you can create tasks and approve them when submitted.</p>
-            <p class="mt-3 text-sm text-gray-600">Use the create task button to add new tasks.</p>
-          <?php else: ?>
-            <p>No tasks available yet.</p>
-            <p class="mt-3 text-sm text-gray-600">Tasks assigned to you will appear here.</p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
+      </div>
     </div>
   </div>
   
@@ -866,7 +811,6 @@ $conn->close();
       if (taskSelector) {
         taskSelector.addEventListener('change', updateTaskSelection);
       }
-      
       // Real-time status updates for tasks (for demonstration - in production, you'd use WebSockets or AJAX)
       setInterval(function() {
         // This would normally check for updates from the server
@@ -874,7 +818,122 @@ $conn->close();
       }, 30000); // Every 30 seconds
     });
 
-    // Function to toggle task details
+    function updateTaskSelection() {
+      const selector = document.getElementById('taskSelector');
+      const uploadForm = document.getElementById('uploadFormFields');
+      const submitBtn = document.getElementById('submitBtn');
+      const fileInput = document.getElementById('taskFile');
+      const selectedFile = document.getElementById('selectedFile');
+      const filePreview = document.getElementById('filePreview');
+      const fileName = document.getElementById('fileName');
+
+      if (selector.value === '') {
+        uploadForm.classList.add('hidden');
+        if (fileInput) fileInput.value = '';
+        if (selectedFile) selectedFile.classList.add('hidden');
+        if (filePreview) filePreview.classList.add('hidden');
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+      }
+
+      // Get the selected task data
+      const taskData = <?php echo json_encode($uploadableTasks); ?>[selector.value];
+
+      // Set hidden fields
+      document.getElementById('taskID').value = taskData.taskID;
+      document.getElementById('courseCode').value = taskData.courseCode;
+      document.getElementById('programID').value = taskData.programID;
+
+      // If there's already a submission, show it
+      if (taskData.submissionPath) {
+        // Extract file name from path
+        const pathParts = taskData.submissionPath.split('/');
+        const file = pathParts[pathParts.length - 1];
+        fileName.textContent = file;
+        selectedFile.classList.remove('hidden');
+
+        // Show file preview based on extension
+        const extension = file.split('.').pop().toLowerCase();
+        if (["jpg", "jpeg", "png", "gif"].includes(extension)) {
+          filePreview.innerHTML = `<img src="${taskData.submissionPath}" class="image-preview">`;
+          filePreview.classList.remove('hidden');
+        } else if (extension === 'pdf') {
+          filePreview.innerHTML = `<embed src="${taskData.submissionPath}" type="application/pdf" class="pdf-preview">`;
+          filePreview.classList.remove('hidden');
+        } else {
+          filePreview.innerHTML = `<div class=\"doc-preview\">
+            <i class=\"fas fa-file-alt text-4xl text-blue-500\"></i>
+            <p class=\"mt-2\">Preview not available for this file type</p>
+          </div>`;
+          filePreview.classList.remove('hidden');
+        }
+        submitBtn.disabled = true;
+      } else {
+        selectedFile.classList.add('hidden');
+        filePreview.classList.add('hidden');
+        submitBtn.disabled = true;
+      }
+
+      // Show upload form
+      uploadForm.classList.remove('hidden');
+    }
+
+    function displayFileName() {
+      const fileInput = document.getElementById('taskFile');
+      const fileName = document.getElementById('fileName');
+      const selectedFile = document.getElementById('selectedFile');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (fileInput.files.length > 0) {
+        fileName.textContent = fileInput.files[0].name;
+        selectedFile.classList.remove('hidden');
+        submitBtn.disabled = false;
+        // Preview file if possible
+        previewFile(fileInput.files[0]);
+      } else {
+        selectedFile.classList.add('hidden');
+        submitBtn.disabled = true;
+        document.getElementById('filePreview').classList.add('hidden');
+      }
+    }
+
+    function removeFile() {
+      const fileInput = document.getElementById('taskFile');
+      const selectedFile = document.getElementById('selectedFile');
+      const submitBtn = document.getElementById('submitBtn');
+      const fileName = document.getElementById('fileName');
+      selectedFile.classList.add('hidden');
+      fileInput.value = '';
+      document.getElementById('filePreview').classList.add('hidden');
+      submitBtn.disabled = true;
+      if (fileName) fileName.textContent = '';
+    }
+
+    function previewFile(file) {
+      const filePreview = document.getElementById('filePreview');
+      const fileType = file.type;
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+      if (validImageTypes.includes(fileType)) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview">`;
+          filePreview.classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+      } else if (fileType === 'application/pdf') {
+        const objectUrl = URL.createObjectURL(file);
+        filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview">`;
+        filePreview.classList.remove('hidden');
+      } else {
+        filePreview.innerHTML = `<div class=\"doc-preview\">
+          <i class=\"fas fa-file-alt text-4xl text-blue-500\"></i>
+          <p class=\"mt-2\">Preview not available for this file type</p>
+        </div>`;
+        filePreview.classList.remove('hidden');
+      }
+    }
+
+    // Function to toggle task details (for future use)
     function toggleTaskDetails(taskId) {
       const detailsSection = document.getElementById('task-details-' + taskId);
       if (detailsSection.classList.contains('hidden')) {
@@ -891,7 +950,6 @@ $conn->close();
       notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded';
       notification.innerText = `Task ${taskId} has been ${status}`;
       document.body.appendChild(notification);
-      
       setTimeout(function() {
         notification.remove();
       }, 3000);
