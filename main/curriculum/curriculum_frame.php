@@ -346,6 +346,56 @@ $conn->close();
             border-color: #374151 !important;
             color: #e5e7eb !important;
         }
+        .dark .assign-personnel-dropdown {
+            background-color: #23232a !important;
+            color: #f3f4f6 !important;
+            border-color: #374151 !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .dark .assign-personnel-dropdown:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        .dark .x-delete-btn,
+        .dark .x-delete-btn-sm {
+            background-color: #23232a !important;
+            color: #f87171 !important;
+            border-color: #374151 !important;
+        }
+        .dark .x-delete-btn:hover,
+        .dark .x-delete-btn-sm:hover {
+            background-color: #7f1d1d !important;
+            color: #ef4444 !important;
+            border-color: #ef4444 !important;
+        }
+        .dark .bg-white,
+        .dark .bg-gray-100,
+        .dark .bg-blue-100,
+        .dark .bg-blue-50 {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .hover\:bg-blue-200:hover,
+        .dark .hover\:bg-gray-50:hover,
+        .dark .hover\:bg-gray-300:hover,
+        .dark .hover\:bg-gray-100:hover {
+            background: #374151 !important;
+        }
+        .dark .text-gray-700,
+        .dark .text-gray-900,
+        .dark .text-blue-800,
+        .dark .text-blue-700,
+        .dark .text-gray-400,
+        .dark .text-gray-500 {
+            color: #a1a1aa !important;
+        }
+        .dark .border-gray-300,
+        .dark .border {
+            border-color: #374151 !important;
+        }
+        .dark .shadow-lg, .dark .shadow-2xl {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+        }
     </style>
 </head>
 <body>
