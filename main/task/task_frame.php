@@ -236,6 +236,21 @@ if (isset($_POST['submit_file'])) {
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
 
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-animate {
+            animation: modalFadeIn 0.2s ease-out forwards;
+        }
+
         .task-dropdown {
             max-height: 0; 
             opacity: 0;
@@ -494,131 +509,154 @@ if (isset($_POST['submit_file'])) {
         </button>
     </div>
 
-    <!-- Task Modal with improved course selection -->
-    <div id="taskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-[700px] max-h-[90vh] overflow-y-auto">
-            <h2 class="text-2xl font-overpass font-bold mb-4">Create Task</h2>
-            <form method="POST" action="">
-                <div class="mb-3">
-                    <label class="block mb-1 font-medium">Task Title:</label>
-                    <input type="text" name="title" placeholder="Enter task title" required class="w-full p-2 border rounded" />
-                </div>
-                
-                <div class="mb-3">
-                    <label class="block mb-1 font-medium">Task Description:</label>
-                    <textarea name="description" placeholder="Describe the task" class="w-full p-2 border rounded" rows="3"></textarea>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="block mb-1 font-medium">Due Date:</label>
-                    <input type="date" name="due_date" class="w-full p-2 border rounded" required />
-                </div>
-
-                <!-- School Year and Term -->
-                <div class="flex gap-4 mb-3">
-                    <div class="w-1/2">
-                        <label class="block mb-1 font-medium">School Year:</label>
-                        <input type="text" name="school_year" placeholder="e.g. 2024-2025" class="w-full p-2 border rounded" required />
-                    </div>
-                    <div class="w-1/2">
-                        <label class="block mb-1 font-medium">Term:</label>
-                        <select name="term" class="w-full p-2 border rounded" required>
-                            <option value="">Select Term</option>
-                            <option value="1st">1st</option>
-                            <option value="2nd">2nd</option>
-                            <option value="Summer">Summer</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Assign to multiple courses with search and filter -->
-                <div class="mb-3">
-                    <label class="block mb-1 font-medium">Assign to (Course + Assigned Professor):</label>
-                    
-                    <div class="course-list">
-                        <div class="course-filter-container">
-                            <div class="flex gap-2 mb-2">
-                                <input type="text" id="courseSearch" placeholder="Search courses..." 
-                                    class="w-full p-2 border rounded" oninput="filterCourses()">
-                                
-                                <select id="filterType" class="p-2 border rounded" onchange="filterCourses()">
-                                    <option value="all">All</option>
-                                    <option value="assigned">With Professor</option>
-                                    <option value="unassigned">Without Professor</option>
-                                </select>
-                            </div>
-                            
-                            <div class="flex items-center text-sm text-gray-500 mb-1">
-                                <span id="courseCounter">Showing all courses</span>
-                                <button type="button" id="selectAllBtn" 
-                                    class="ml-auto text-blue-600 hover:underline text-sm" 
-                                    onclick="toggleSelectAll()">Select All</button>
-                            </div>
+    <!-- Task Modal  -->
+    <div id="taskModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[900px] border-2 border-gray-400 font-onest modal-animate max-h-[90vh] flex flex-col">
+            <div class="flex-none">
+                <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">❇️ Create Task</h2>
+                <hr class="border-gray-400 mb-6">
+            </div>
+            
+            <form method="POST" action="" class="flex-1 overflow-y-auto pr-2">
+                <div class="grid grid-cols-2 gap-8">
+                    <!--  Task Details -->
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Task Title:</label>
+                            <input type="text" name="title" placeholder="Enter task title" required 
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Task Description:</label>
+                            <textarea name="description" placeholder="Describe the task" 
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                rows="3"></textarea>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Due Date:</label>
+                            <input type="date" name="due_date" 
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                required />
                         </div>
 
-                        <?php if (empty($facultyCoursePairs)): ?>
-                            <p class="text-gray-500">No courses available for assignment.</p>
-                        <?php else: ?>
-                            <div id="courseListContainer">
-                            <?php 
-                            $currentProgram = '';
-                            $programCounter = 0;
-                            
-                            foreach ($facultyCoursePairs as $index => $pair): 
-                                if ($currentProgram != $pair['ProgramName']) {
-                                    $programCounter++;
-                                    $currentProgram = $pair['ProgramName'];
-                                    echo '<div class="program-section" data-program="' . htmlspecialchars($programCounter) . '">';
-                                    echo '<div class="program-title">' . htmlspecialchars($pair['ProgramName']) . '</div>';
-                                }
-                            ?>
-                                <div class="course-item" 
-                                     data-course-code="<?= strtolower(htmlspecialchars($pair['CourseCode'])) ?>"
-                                     data-course-title="<?= strtolower(htmlspecialchars($pair['Title'])) ?>" 
-                                     data-has-professor="<?= empty($pair['AssignedTo']) ? 'no' : 'yes' ?>">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="assigned[]" value="<?= $pair['ProgramID'] . '|' . $pair['CourseCode'] ?>" 
-                                            class="mr-2 course-checkbox" />
-                                        <span class="flex flex-col">
-                                            <span>
-                                                <span class="font-medium"><?= htmlspecialchars($pair['CourseCode']) ?></span> - 
-                                                <?= htmlspecialchars($pair['Title']) ?>
-                                            </span>
-                                            <?php if (!empty($pair['AssignedTo'])): ?>
-                                                <span class="text-sm text-gray-600">
-                                                    Assigned to: <?= htmlspecialchars($pair['AssignedTo']) ?>
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="text-sm text-red-600">
-                                                    No assigned professor
-                                                </span>
-                                            <?php endif; ?>
-                                        </span>
-                                    </label>
-                                </div>
-                            <?php 
-                                // Check if the next item has a different program
-                                $nextIndex = $index + 1;
-                                if (!isset($facultyCoursePairs[$nextIndex]) || 
-                                    $facultyCoursePairs[$nextIndex]['ProgramName'] != $currentProgram) {
-                                    echo '</div>'; // Close program section
-                                }
-                                endforeach; 
-                            ?>
+                        <!-- School Year and Term -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="block text-lg font-semibold text-gray-700">School Year:</label>
+                                <input type="text" name="school_year" placeholder="e.g. 2024-2025" 
+                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                    required />
                             </div>
-                        <?php endif; ?>
+                            <div class="space-y-2">
+                                <label class="block text-lg font-semibold text-gray-700">Term:</label>
+                                <select name="term" 
+                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                    required>
+                                    <option value="">Select Term</option>
+                                    <option value="1st">1st</option>
+                                    <option value="2nd">2nd</option>
+                                    <option value="Summer">Summer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Course Assignments -->
+                    <div class="space-y-4">
+                        <label class="block text-lg font-semibold text-gray-700">Assign to (Course + Assigned Professor):</label>
+                        
+                        <div class="course-list bg-gray-50 p-4 rounded-lg border border-gray-200 h-[500px] flex flex-col">
+                            <div class="course-filter-container flex-none">
+                                <div class="flex gap-2 mb-2">
+                                    <input type="text" id="courseSearch" placeholder="Search courses..." 
+                                        class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                        oninput="filterCourses()">
+                                    
+                                    <select id="filterType" 
+                                        class="p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                        onchange="filterCourses()">
+                                        <option value="all">All</option>
+                                        <option value="assigned">With Professor</option>
+                                        <option value="unassigned">Without Professor</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-center text-sm text-gray-500 mb-1">
+                                    <span id="courseCounter">Showing all courses</span>
+                                    <button type="button" id="selectAllBtn" 
+                                        class="ml-auto text-blue-600 hover:underline text-sm" 
+                                        onclick="toggleSelectAll()">Select All</button>
+                                </div>
+                            </div>
+
+                            <?php if (empty($facultyCoursePairs)): ?>
+                                <p class="text-gray-500">No courses available for assignment.</p>
+                            <?php else: ?>
+                                <div id="courseListContainer" class="flex-1 overflow-y-auto">
+                                <?php 
+                                $currentProgram = '';
+                                $programCounter = 0;
+                                
+                                foreach ($facultyCoursePairs as $index => $pair): 
+                                    if ($currentProgram != $pair['ProgramName']) {
+                                        $programCounter++;
+                                        $currentProgram = $pair['ProgramName'];
+                                        echo '<div class="program-section" data-program="' . htmlspecialchars($programCounter) . '">';
+                                        echo '<div class="program-title text-lg font-semibold text-blue-800 py-2">' . htmlspecialchars($pair['ProgramName']) . '</div>';
+                                    }
+                                ?>
+                                    <div class="course-item p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" 
+                                         data-course-code="<?= strtolower(htmlspecialchars($pair['CourseCode'])) ?>"
+                                         data-course-title="<?= strtolower(htmlspecialchars($pair['Title'])) ?>" 
+                                         data-has-professor="<?= empty($pair['AssignedTo']) ? 'no' : 'yes' ?>">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="assigned[]" value="<?= $pair['ProgramID'] . '|' . $pair['CourseCode'] ?>" 
+                                                class="mr-2 course-checkbox" />
+                                            <span class="flex flex-col">
+                                                <span>
+                                                    <span class="font-medium"><?= htmlspecialchars($pair['CourseCode']) ?></span> - 
+                                                    <?= htmlspecialchars($pair['Title']) ?>
+                                                </span>
+                                                <?php if (!empty($pair['AssignedTo'])): ?>
+                                                    <span class="text-sm text-gray-600">
+                                                        Assigned to: <?= htmlspecialchars($pair['AssignedTo']) ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="text-sm text-red-600">
+                                                        No assigned professor
+                                                    </span>
+                                                <?php endif; ?>
+                                            </span>
+                                        </label>
+                                    </div>
+                                <?php 
+                                    // Check if the next item has a different program
+                                    $nextIndex = $index + 1;
+                                    if (!isset($facultyCoursePairs[$nextIndex]) || 
+                                        $facultyCoursePairs[$nextIndex]['ProgramName'] != $currentProgram) {
+                                        echo '</div>'; // Close program section
+                                    }
+                                    endforeach; 
+                                ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition">
-                        Cancel
-                    </button>
-                    <button type="submit" name="create_task" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                        Create Task
-                    </button>
-                </div>
             </form>
+
+            <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
+                <button type="button" onclick="closeTaskModal()" 
+                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
+                    Cancel
+                </button>
+                <button type="submit" name="create_task" 
+                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">
+                    Create Task
+                </button>
+            </div>
         </div>
     </div>
 

@@ -496,6 +496,15 @@
   .h-\[67px\] {
     height: 67px;
   }
+  .h-\[400px\] {
+    height: 400px;
+  }
+  .h-\[500px\] {
+    height: 500px;
+  }
+  .h-\[700px\] {
+    height: 700px;
+  }
   .h-\[calc\(100vh-100px\)\] {
     height: calc(100vh - 100px);
   }
@@ -513,6 +522,12 @@
   }
   .max-h-\[120px\] {
     max-height: 120px;
+  }
+  .max-h-\[200px\] {
+    max-height: 200px;
+  }
+  .max-h-\[250px\] {
+    max-height: 250px;
   }
   .min-h-\[700px\] {
     min-height: 700px;
@@ -601,6 +616,9 @@
   .w-\[600px\] {
     width: 600px;
   }
+  .w-\[900px\] {
+    width: 900px;
+  }
   .w-full {
     width: 100%;
   }
@@ -624,6 +642,9 @@
   }
   .flex-1 {
     flex: 1;
+  }
+  .flex-none {
+    flex: none;
   }
   .shrink-0 {
     flex-shrink: 0;
@@ -701,6 +722,9 @@
   }
   .gap-5 {
     gap: calc(var(--spacing) * 5);
+  }
+  .gap-8 {
+    gap: calc(var(--spacing) * 8);
   }
   .gap-\[8px\] {
     gap: 8px;
@@ -1018,6 +1042,9 @@
   }
   .pt-\[15px\] {
     padding-top: 15px;
+  }
+  .pr-2 {
+    padding-right: calc(var(--spacing) * 2);
   }
   .pr-10 {
     padding-right: calc(var(--spacing) * 10);
