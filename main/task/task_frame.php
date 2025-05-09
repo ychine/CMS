@@ -201,6 +201,29 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
 }
 $tasksStmt->close();
 
+// After a file is submitted and task_assignment status is set to 'Submitted', update the parent task's status to 'In Progress' if it is currently 'Pending'.
+if (isset($_POST['submit_file'])) {
+    // ... existing file submission logic ...
+    // Assume $taskAssignmentId is available
+    $getTaskIdSql = "SELECT TaskID FROM task_assignments WHERE TaskAssignmentID = ?";
+    $getTaskIdStmt = $conn->prepare($getTaskIdSql);
+    $getTaskIdStmt->bind_param("i", $taskAssignmentId);
+    $getTaskIdStmt->execute();
+    $getTaskIdResult = $getTaskIdStmt->get_result();
+    if ($getTaskIdResult && $getTaskIdResult->num_rows > 0) {
+        $taskIdRow = $getTaskIdResult->fetch_assoc();
+        $taskId = $taskIdRow['TaskID'];
+        // Update the task status if currently 'Pending'
+        $updateTaskSql = "UPDATE tasks SET Status = 'In Progress' WHERE TaskID = ? AND Status = 'Pending'";
+        $updateTaskStmt = $conn->prepare($updateTaskSql);
+        $updateTaskStmt->bind_param("i", $taskId);
+        $updateTaskStmt->execute();
+        $updateTaskStmt->close();
+    }
+    $getTaskIdStmt->close();
+    // ... rest of file submission logic ...
+}
+
 ?>
 
 <!DOCTYPE html>

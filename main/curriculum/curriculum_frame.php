@@ -370,10 +370,12 @@ $conn->close();
                         $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
                                     FROM submissions s
                                     LEFT JOIN personnel per ON s.SubmittedBy = per.PersonnelID
+                                    JOIN task_assignments ta ON s.TaskID = ta.TaskID AND s.CourseCode = ta.CourseCode AND s.ProgramID = ta.ProgramID
                                     WHERE s.FacultyID = ?
                                     AND s.SubmissionPath IS NOT NULL
                                     AND s.SubmissionPath != ''
                                     AND s.CourseCode = ?
+                                    AND ta.ReviewStatus = 'Approved'
                                     ORDER BY s.SubmissionDate DESC";
                         $fileStmt = $conn->prepare($fileSql);
                         $fileStmt->bind_param("is", $facultyID, $courseCode);

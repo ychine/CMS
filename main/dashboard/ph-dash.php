@@ -99,6 +99,89 @@ foreach ($roleLabels as $code => $label) {
 }
 $roleDataJSON = json_encode($formattedRoleData);
 
+// Fetch the ongoing (pending) task for this faculty
+$ongoingTaskTitle = null;
+$ongoingTaskId = null;
+$ongoingTaskSql = "SELECT TaskID, Title FROM tasks WHERE FacultyID = ? AND Status = 'Pending' ORDER BY CreatedAt DESC LIMIT 1";
+$ongoingTaskStmt = $conn->prepare($ongoingTaskSql);
+$ongoingTaskStmt->bind_param("i", $facultyId);
+$ongoingTaskStmt->execute();
+$ongoingTaskResult = $ongoingTaskStmt->get_result();
+if ($ongoingTaskResult && $ongoingTaskResult->num_rows > 0) {
+    $ongoingTaskRow = $ongoingTaskResult->fetch_assoc();
+    $ongoingTaskTitle = $ongoingTaskRow['Title'];
+    $ongoingTaskId = $ongoingTaskRow['TaskID'];
+}
+$ongoingTaskStmt->close();
+
+// Dynamic submissions counts
+if ($userRole === 'DN') {
+    // Dean sees all
+    $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        WHERE t.FacultyID = ? AND ta.Status = 'Submitted'";
+    $stmtPending = $conn->prepare($sqlPending);
+    $stmtPending->bind_param("i", $facultyId);
+    $stmtPending->execute();
+    $res = $stmtPending->get_result();
+    $pendingCount = $res->fetch_assoc()['cnt'];
+    $stmtPending->close();
+
+    $sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        WHERE t.FacultyID = ? AND ta.Status = 'Completed'";
+    $stmtComplete = $conn->prepare($sqlComplete);
+    $stmtComplete->bind_param("i", $facultyId);
+    $stmtComplete->execute();
+    $res = $stmtComplete->get_result();
+    $completeCount = $res->fetch_assoc()['cnt'];
+    $stmtComplete->close();
+
+    $sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        WHERE t.FacultyID = ? AND ta.Status = 'Pending'";
+    $stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
+    $stmtUnaccomplished->bind_param("i", $facultyId);
+    $stmtUnaccomplished->execute();
+    $res = $stmtUnaccomplished->get_result();
+    $unaccomplishedCount = $res->fetch_assoc()['cnt'];
+    $stmtUnaccomplished->close();
+} else {
+    // Other roles see only their assigned tasks
+    $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        WHERE t.FacultyID = ? AND ta.Status = 'Submitted' AND pc.PersonnelID = ?";
+    $stmtPending = $conn->prepare($sqlPending);
+    $stmtPending->bind_param("ii", $facultyId, $personnelId);
+    $stmtPending->execute();
+    $res = $stmtPending->get_result();
+    $pendingCount = $res->fetch_assoc()['cnt'];
+    $stmtPending->close();
+
+    $sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        WHERE t.FacultyID = ? AND ta.Status = 'Completed' AND pc.PersonnelID = ?";
+    $stmtComplete = $conn->prepare($sqlComplete);
+    $stmtComplete->bind_param("ii", $facultyId, $personnelId);
+    $stmtComplete->execute();
+    $res = $stmtComplete->get_result();
+    $completeCount = $res->fetch_assoc()['cnt'];
+    $stmtComplete->close();
+
+    $sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        WHERE t.FacultyID = ? AND ta.Status = 'Pending' AND pc.PersonnelID = ?";
+    $stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
+    $stmtUnaccomplished->bind_param("ii", $facultyId, $personnelId);
+    $stmtUnaccomplished->execute();
+    $res = $stmtUnaccomplished->get_result();
+    $unaccomplishedCount = $res->fetch_assoc()['cnt'];
+    $stmtUnaccomplished->close();
+}
+
 // Close the database connections
 $stmt->close();
 $roleStmt->close();
@@ -127,7 +210,11 @@ $conn->close();
         <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-lg font-bold">Submissions</h2>
-    <div class="text-sm text-blue-600">On-Going Task: 2425 ANDYR COURSE SYLLABUS</div>
+    <?php if ($ongoingTaskTitle): ?>
+        <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
+    <?php else: ?>
+        <span class="text-sm text-gray-500">No ongoing task</span>
+    <?php endif; ?>
   </div>
   
   
