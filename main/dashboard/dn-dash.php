@@ -137,8 +137,8 @@ $conn->close();
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
         <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
 
-        <div class="relative w-full h-full min-h-[700px]">
-            <div class="flex gap-5 justify-between h-full min-h-[700px]">
+        <div class="relative w-full h-full">
+            <div class="flex gap-5 justify-between h-full ">
 
 
             <!-- Left Column -->
@@ -246,7 +246,7 @@ $conn->close();
 
 
             <!-- Right Column -->
-            <div class="w-[300px] min-h-[700px] flex flex-col gap-5">
+            <div class="w-[300px] flex flex-col gap-5">
                 <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md flex-1">
                     <div class="flex justify-between items-center mb-3">
                         <h2 class="text-lg font-bold">Pinboard</h2>
