@@ -187,131 +187,127 @@ $conn->close();
         <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
 
         <div class="relative w-full h-full">
-            <div class="flex gap-5 justify-between h-full ">
-
-
-            <!-- Left Column -->
-            <div class="flex gap-5 w-full">
-                <!-- Submissions -->
-                <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-lg font-bold">Submissions</h2>
-                        <?php if ($ongoingTaskTitle): ?>
-                            <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
-                        <?php else: ?>
-                            <span class="text-sm text-gray-500">No ongoing task</span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="flex space-x-4 mb-5">
-                        <a href="submissionspage.php?type=pending" class="flex-1">
-                            <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-                                <div class="flex items-center">
-                                    <div class="text-2xl font-bold mr-3"><?php echo $pendingCount; ?></div>
-                                    <div class="text-sm">Pending Review</div>
-                                    <div class="ml-auto">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="w-full bg-gray-300 h-1 mt-2">
-                                    <div class="bg-yellow-500 h-1" style="width: 50%"></div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="submissionspage.php?type=unaccomplished" class="flex-1">
-                            <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-                                <div class="flex items-center">
-                                    <div class="text-2xl font-bold mr-3"><?php echo $unaccomplishedCount; ?></div>
-                                    <div class="text-sm">Unaccomplished</div>
-                                    <div class="ml-auto">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="w-full bg-gray-300 h-1 mt-2">
-                                    <div class="bg-red-500 h-1" style="width: 30%"></div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <a href="submissionspage.php?type=complete" class="flex-1">
-                            <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-                                <div class="flex items-center">
-                                    <div class="text-2xl font-bold mr-3"><?php echo $completeCount; ?></div>
-                                    <div class="text-sm">Complete</div>
-                                    <div class="ml-auto">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="w-full bg-gray-300 h-1 mt-2">
-                                    <div class="bg-green-500 h-1" style="width: 100%"></div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="flex items-center">
-                        <div class="text-xs mr-2 font-medium"><?php echo $progress; ?>%</div>
-                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                            <div class="bg-green-500 h-2" style="width: <?php echo $progress; ?>%"></div>
+            <div class="flex w-full h-[calc(100vh-100px)] gap-5 justify-between">
+                <!-- Left group: Submission + Faculty -->
+                <div class="flex gap-5 flex-1 max-w-[900px] h-full">
+                    <!-- Submissions -->
+                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-lg font-bold">Submissions</h2>
+                            <?php if ($ongoingTaskTitle): ?>
+                                <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
+                            <?php else: ?>
+                                <span class="text-sm text-gray-500">No ongoing task</span>
+                            <?php endif; ?>
                         </div>
-                        <div class="ml-2">
-                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
+
+                        <div class="flex space-x-4 mb-5">
+                            <a href="submissionspage.php?type=pending" class="flex-1">
+                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
+                                    <div class="flex items-center">
+                                        <div class="text-2xl font-bold mr-3"><?php echo $pendingCount; ?></div>
+                                        <div class="text-sm">Pending Review</div>
+                                        <div class="ml-auto">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-gray-300 h-1 mt-2">
+                                        <div class="bg-yellow-500 h-1" style="width: 50%"></div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a href="submissionspage.php?type=unaccomplished" class="flex-1">
+                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
+                                    <div class="flex items-center">
+                                        <div class="text-2xl font-bold mr-3"><?php echo $unaccomplishedCount; ?></div>
+                                        <div class="text-sm">Unaccomplished</div>
+                                        <div class="ml-auto">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-gray-300 h-1 mt-2">
+                                        <div class="bg-red-500 h-1" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a href="submissionspage.php?type=complete" class="flex-1">
+                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
+                                    <div class="flex items-center">
+                                        <div class="text-2xl font-bold mr-3"><?php echo $completeCount; ?></div>
+                                        <div class="text-sm">Complete</div>
+                                        <div class="ml-auto">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-gray-300 h-1 mt-2">
+                                        <div class="bg-green-500 h-1" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="flex items-center">
+                            <div class="text-xs mr-2 font-medium"><?php echo $progress; ?>%</div>
+                            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                <div class="bg-green-500 h-2" style="width: <?php echo $progress; ?>%"></div>
+                            </div>
+                            <div class="ml-2">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Faculty -->
+                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">Faculty</h2>
+                            <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
+                                Total: <?php echo $totalFaculty; ?> members
+                            </a>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <!-- Donut Chart (Left) -->
+                            <div class="faculty-chart-container" style="width: 100px; height: 100px;">
+                                <canvas id="facultyDonutChart"></canvas>
+                            </div>
+
+                            <!-- Role Labels (Right) -->
+                            <div class="grid grid-cols-1 gap-1 flex-1">
+                                <?php foreach($roleLabels as $code => $label): ?>
+                                    <div class="flex items-center bg-gray-100 rounded px-2 py-1">
+                                      
+                                        <div class="w-3 h-3 rounded-full mr-2 shrink-0" style="background-color: <?php echo $roleColors[$code]; ?>"></div>
+                                        <div class="text-xs flex-1 truncate"><?php echo $label; ?></div>
+                                        <div class="text-xs font-semibold"><?php echo $roleCounts[$code] ?? 0; ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold">Faculty</h2>
-                        <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
-                            Total: <?php echo $totalFaculty; ?> members
-                        </a>
-                    </div>
-
-                    <div class="flex items-start gap-4">
-                        <!-- Donut Chart (Left) -->
-                        <div class="faculty-chart-container" style="width: 100px; height: 100px;">
-                            <canvas id="facultyDonutChart"></canvas>
+                <!-- Pinboard on the far right -->
+                <div class="w-[300px] flex flex-col h-full">
+                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-full">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-lg font-bold">Pinboard</h2>
+                            <button class="text-xs text-blue-600 hover:underline">Manage</button>
                         </div>
-
-                        <!-- Role Labels (Right) -->
-                        <div class="grid grid-cols-1 gap-1 flex-1">
-                            <?php foreach($roleLabels as $code => $label): ?>
-                                <div class="flex items-center bg-gray-100 rounded px-2 py-1">
-                                    <!-- More prominent dot -->
-                                    <div class="w-3 h-3 rounded-full mr-2 shrink-0" style="background-color: <?php echo $roleColors[$code]; ?>"></div>
-                                    <div class="text-xs flex-1 truncate"><?php echo $label; ?></div>
-                                    <div class="text-xs font-semibold"><?php echo $roleCounts[$code] ?? 0; ?></div>
-                                </div>
-                            <?php endforeach; ?>
+                        <div class="text-sm text-gray-600">
+                            No pinned items yet.
                         </div>
-                    </div>
-                </div>
-
-
-            <!-- Right Column -->
-            <div class="w-[300px] flex flex-col gap-5">
-                <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md flex-1">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-lg font-bold">Pinboard</h2>
-                        <button class="text-xs text-blue-600 hover:underline">Manage</button>
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        No pinned items yet.
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 
