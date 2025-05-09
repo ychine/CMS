@@ -331,6 +331,132 @@ if (isset($_POST['submit_file'])) {
         .status-label.pending {
             color: #f59e0b;
         }
+
+        .dark body,
+        .dark .flex-1,
+        .dark main,
+        .dark .content {
+          background: #18181b !important;
+          color: #f3f4f6 !important;
+        }
+        .dark .bg-gray-100,
+        .dark .bg-gray-200,
+        .dark .bg-gray-300,
+        .dark .bg-gray-400,
+        .dark .bg-gray-50,
+        .dark .bg-white {
+          background: #23232a !important;
+          color: #f3f4f6 !important;
+        }
+        .dark .text-gray-900,
+        .dark .text-gray-800,
+        .dark .text-gray-700,
+        .dark .text-gray-600,
+        .dark .text-gray-500,
+        .dark .text-sm,
+        .dark .text-xs {
+          color: #f3f4f6 !important;
+        }
+        .dark .course-card.completed {
+          background: #134e2e !important;
+          border-left-color: #22d3ee !important;
+          color: #bbf7d0 !important;
+        }
+        .dark .course-card.submitted {
+          background: #1e293b !important;
+          border-left-color: #60a5fa !important;
+          color: #bae6fd !important;
+        }
+        .dark .course-card.pending {
+          background: #3b2f0b !important;
+          border-left-color: #f59e0b !important;
+          color: #fde68a !important;
+        }
+        .dark .text-gray-600,
+        .dark .text-gray-500 {
+          color: #a1a1aa !important;
+        }
+        .dark .text-blue-800 {
+          color: #60a5fa !important;
+        }
+        .dark .text-green-800 {
+          color: #6ee7b7 !important;
+        }
+        .dark .text-yellow-800 {
+          color: #fde68a !important;
+        }
+        .dark .text-red-600 {
+          color: #f87171 !important;
+        }
+        .dark .border,
+        .dark .border-gray-200,
+        .dark .border-gray-400 {
+          border-color: #374151 !important;
+        }
+        .dark .form-input,
+        .dark input,
+        .dark textarea,
+        .dark select {
+          background: #18181b !important;
+          color: #f3f4f6 !important;
+          border-color: #374151 !important;
+        }
+        .dark .form-input:focus,
+        .dark input:focus,
+        .dark textarea:focus,
+        .dark select:focus {
+          border-color: #2563eb !important;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        .dark .bg-green-100 {
+          background: #134e2e !important;
+          color: #bbf7d0 !important;
+        }
+        .dark .bg-blue-100 {
+          background: #1e293b !important;
+          color: #bae6fd !important;
+        }
+        .dark .bg-yellow-100 {
+          background: #3b2f0b !important;
+          color: #fde68a !important;
+        }
+        .dark .text-green-700,
+        .dark .text-green-600 {
+          color: #6ee7b7 !important;
+        }
+        .dark .text-blue-600 {
+          color: #60a5fa !important;
+        }
+        .dark .text-yellow-600 {
+          color: #fde68a !important;
+        }
+        .dark .text-green-600 {
+          color: #6ee7b7 !important;
+        }
+        .dark .text-gray-400 {
+          color: #a1a1aa !important;
+        }
+        .dark .modal-animate,
+        .dark .bg-white[style] {
+          background: #23232a !important;
+          color: #f3f4f6 !important;
+        }
+        .dark .bg-black.bg-opacity-50 {
+          background: rgba(24,24,27,0.85) !important;
+        }
+        .dark .text-green-800 {
+          color: #bbf7d0 !important;
+        }
+        .dark .text-blue-800 {
+          color: #bae6fd !important;
+        }
+        .dark .text-yellow-800 {
+          color: #fde68a !important;
+        }
+        .dark .course-card.completed,
+        .dark .course-card.completed * {
+          color: #bbf7d0 !important;
+        }
     </style>
 </head>
 <body>
@@ -709,6 +835,11 @@ if (isset($_POST['submit_file'])) {
     </div>
 
     <script>
+
+if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark');
+        }
+        
         function toggleTaskDropdown() {
             const dropdown = document.getElementById('task-dropdown');
             const button = document.querySelector('a[title="Add Task"]');

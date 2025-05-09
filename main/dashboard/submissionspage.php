@@ -555,6 +555,110 @@ $conn->close();
       padding: 15px;
       text-align: center;
     }
+    
+    body.dark {
+      background: #18181b !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .bg-white {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .shadow-lg, .dark .shadow-2xl {
+      box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+    }
+    .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
+      color: #e5e7eb !important;
+    }
+    .dark .text-gray-500 {
+      color: #a1a1aa !important;
+    }
+    .dark .border-gray-300, .dark .border {
+      border-color: #374151 !important;
+    }
+    .dark .bg-blue-50, .dark .bg-blue-100 {
+      background: #1e293b !important;
+    }
+    .dark .file-input-label {
+      background: #23232a !important;
+      border-color: #374151 !important;
+      color: #e5e7eb !important;
+    }
+    .dark .bg-gray-100,
+    .dark .bg-gray-200 {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .border,
+    .dark .border-gray-300,
+    .dark .border-gray-200 {
+      border-color: #374151 !important;
+    }
+    .dark .text-gray-900,
+    .dark .text-gray-800,
+    .dark .text-gray-700,
+    .dark .text-gray-600,
+    .dark .text-gray-500,
+    .dark .text-sm,
+    .dark .text-xs {
+      color: #f3f4f6 !important;
+    }
+    .dark .hover\:bg-gray-200:hover {
+      background: #2d2d36 !important;
+    }
+    .dark .task-card,
+    .dark .bg-white,
+    .dark .bg-gray-100,
+    .dark .bg-gray-200,
+    .dark .file-placeholder {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .course-card.completed {
+      background: #134e2e !important;
+      border-left-color: #22d3ee !important;
+      color: #bbf7d0 !important;
+    }
+    .dark .course-card.submitted {
+      background: #1e293b !important;
+      border-left-color: #60a5fa !important;
+      color: #bae6fd !important;
+    }
+    .dark .course-card.pending {
+      background: #3b2f0b !important;
+      border-left-color: #f59e0b !important;
+      color: #fde68a !important;
+    }
+    .dark .faculty-role,
+    .dark .deadline,
+    .dark .status-label,
+    .dark .signed-by,
+    .dark .text-xs,
+    .dark .text-sm {
+      color: #f3f4f6 !important;
+    }
+    .dark .status-label.completed {
+      color: #6ee7b7 !important;
+    }
+    .dark .status-label.submitted {
+      color: #38bdf8 !important;
+    }
+    .dark .status-label.pending {
+      color: #fde68a !important;
+    }
+    .dark .submit-btn {
+      background: #2563eb !important;
+      color: #fff !important;
+    }
+    .dark .submit-btn:hover {
+      background: #1d4ed8 !important;
+    }
+    .dark .remove-file {
+      color: #f87171 !important;
+    }
+    .dark .fa-check-circle {
+      color: #22d3ee !important;
+    }
   </style>
 </head>
 <body>
@@ -953,6 +1057,10 @@ $conn->close();
       setTimeout(function() {
         notification.remove();
       }, 3000);
+    }
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      document.body.classList.add('dark');
     }
   </script>
 </body>
