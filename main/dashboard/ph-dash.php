@@ -1,9 +1,7 @@
 <?php
-
 session_start();
 
 if (!isset($_SESSION['Username'])) {
-    // Redirect to login if not logged in
     header('Location: ../index.php');
     exit;
 }
@@ -13,10 +11,8 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get the account ID from the session
 $accountID = $_SESSION['AccountID'];
 
-// Get the personnel information and faculty for the logged-in user
 $query = "SELECT p.PersonnelID, p.FirstName, p.LastName, p.Role, f.FacultyID, f.Faculty
           FROM personnel p
           INNER JOIN faculties f ON p.FacultyID = f.FacultyID
@@ -32,16 +28,12 @@ if ($result->num_rows > 0) {
     $personnelId = $userData['PersonnelID'];
     $facultyId = $userData['FacultyID'];
     $facultyName = $userData['Faculty'];
-    $userRole = $userData['Role'];
 } else {
-    // Handle error - user not found or not associated with any faculty
     $personnelId = 0;
     $facultyId = 0;
     $facultyName = "Unknown Faculty";
-    $userRole = "Unknown";
 }
 
-// Get counts of faculty members grouped by role
 $roleCounts = [];
 $roleLabels = [
     'DN' => 'Dean',
@@ -50,28 +42,17 @@ $roleLabels = [
     'FM' => 'Faculty Member'
 ];
 
-$roleQuery = "SELECT Role, COUNT(*) as count 
-              FROM personnel 
-              WHERE FacultyID = ? 
-              GROUP BY Role";
-
+$roleQuery = "SELECT Role, COUNT(*) as count FROM personnel WHERE FacultyID = ? GROUP BY Role";
 $roleStmt = $conn->prepare($roleQuery);
 $roleStmt->bind_param("i", $facultyId);
 $roleStmt->execute();
 $roleResult = $roleStmt->get_result();
 
-$roleCounts = [
-    'DN' => 0,
-    'COR' => 0,
-    'PH' => 0,
-    'FM' => 0
-];
-
+$roleCounts = ['DN' => 0, 'COR' => 0, 'PH' => 0, 'FM' => 0];
 while ($row = $roleResult->fetch_assoc()) {
     $roleCounts[$row['Role']] = $row['count'];
 }
 
-// Get total faculty count
 $totalQuery = "SELECT COUNT(*) as total FROM personnel WHERE FacultyID = ?";
 $totalStmt = $conn->prepare($totalQuery);
 $totalStmt->bind_param("i", $facultyId);
@@ -80,42 +61,9 @@ $totalResult = $totalStmt->get_result();
 $totalRow = $totalResult->fetch_assoc();
 $totalFaculty = $totalRow['total'];
 
-// Define colors for each role for the visual presentation
-$roleColors = [
-    'DN' => '#4F46E5',  // Blue
-    'COR' => '#10B981', // Green
-    'PH' => '#F59E0B',  // Amber
-    'FM' => '#EF4444'   // Red
-];
-
-// Format the data for JavaScript
-$formattedRoleData = [];
-foreach ($roleLabels as $code => $label) {
-    $formattedRoleData[] = [
-        'name' => $label,
-        'value' => $roleCounts[$code] ?? 0,
-        'color' => $roleColors[$code]
-    ];
-}
-$roleDataJSON = json_encode($formattedRoleData);
-
-// Fetch the ongoing (pending) task for this faculty
-$ongoingTaskTitle = null;
-$ongoingTaskId = null;
-$ongoingTaskSql = "SELECT TaskID, Title FROM tasks WHERE FacultyID = ? AND Status = 'Pending' ORDER BY CreatedAt DESC LIMIT 1";
-$ongoingTaskStmt = $conn->prepare($ongoingTaskSql);
-$ongoingTaskStmt->bind_param("i", $facultyId);
-$ongoingTaskStmt->execute();
-$ongoingTaskResult = $ongoingTaskStmt->get_result();
-if ($ongoingTaskResult && $ongoingTaskResult->num_rows > 0) {
-    $ongoingTaskRow = $ongoingTaskResult->fetch_assoc();
-    $ongoingTaskTitle = $ongoingTaskRow['Title'];
-    $ongoingTaskId = $ongoingTaskRow['TaskID'];
-}
-$ongoingTaskStmt->close();
-
 // Dynamic submissions counts
-if ($userRole === 'DN') {
+// Count Pending Review
+if ($userData['Role'] === 'DN') {
     // Dean sees all
     $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
         JOIN tasks t ON ta.TaskID = t.TaskID
@@ -182,7 +130,40 @@ if ($userRole === 'DN') {
     $stmtUnaccomplished->close();
 }
 
-// Close the database connections
+$totalSubmissions = $pendingCount + $unaccomplishedCount + $completeCount;
+$progress = $totalSubmissions > 0 ? round(($completeCount / $totalSubmissions) * 100) : 0;
+
+$roleColors = [
+    'DN' => '#4F46E5',
+    'COR' => '#10B981',
+    'PH' => '#F59E0B',
+    'FM' => '#EF4444'
+];
+
+$formattedRoleData = [];
+foreach ($roleLabels as $code => $label) {
+    $formattedRoleData[] = [
+        'name' => $label,
+        'value' => $roleCounts[$code] ?? 0,
+        'color' => $roleColors[$code]
+    ];
+}
+$roleDataJSON = json_encode($formattedRoleData);
+
+$ongoingTaskTitle = null;
+$ongoingTaskId = null;
+$ongoingTaskSql = "SELECT TaskID, Title FROM tasks WHERE FacultyID = ? AND Status = 'Pending' ORDER BY CreatedAt DESC LIMIT 1";
+$ongoingTaskStmt = $conn->prepare($ongoingTaskSql);
+$ongoingTaskStmt->bind_param("i", $facultyId);
+$ongoingTaskStmt->execute();
+$ongoingTaskResult = $ongoingTaskStmt->get_result();
+if ($ongoingTaskResult && $ongoingTaskResult->num_rows > 0) {
+    $ongoingTaskRow = $ongoingTaskResult->fetch_assoc();
+    $ongoingTaskTitle = $ongoingTaskRow['Title'];
+    $ongoingTaskId = $ongoingTaskRow['TaskID'];
+}
+$ongoingTaskStmt->close();
+
 $stmt->close();
 $roleStmt->close();
 $totalStmt->close();
@@ -202,163 +183,169 @@ $conn->close();
     </style>
 </head>
 <body>
-    
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
-     <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
+        <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
 
-        <div class="grid grid-cols-2 gap-5">
-        <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md">
-  <div class="flex items-center justify-between mb-6">
-    <h2 class="text-lg font-bold">Submissions</h2>
-    <?php if ($ongoingTaskTitle): ?>
-        <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
-    <?php else: ?>
-        <span class="text-sm text-gray-500">No ongoing task</span>
-    <?php endif; ?>
-  </div>
-  
-  
-  <div class="flex space-x-4 mb-5">
-   
-    <a href="submissionspage.php?type=pending" class="flex-1">
-      <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-        <div class="flex items-center">
-          <div class="text-2xl font-bold mr-3">7</div>
-          <div class="text-sm">Pending Review</div>
-          <div class="ml-auto">
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </div>
-        </div>
-        <div class="w-full bg-gray-300 h-1 mt-2">
-          <div class="bg-yellow-500 h-1" style="width: 50%"></div>
-        </div>
-      </div>
-    </a>
-    
-   
-    <a href="submissionspage.php?type=unaccomplished" class="flex-1">
-      <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-        <div class="flex items-center">
-          <div class="text-2xl font-bold mr-3">3</div>
-          <div class="text-sm">Unaccomplished</div>
-          <div class="ml-auto">
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </div>
-        </div>
-        <div class="w-full bg-gray-300 h-1 mt-2">
-          <div class="bg-red-500 h-1" style="width: 30%"></div>
-        </div>
-      </div>
-    </a>
-    
-    
-    <a href="submissionspage.php?type=complete" class="flex-1">
-      <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-        <div class="flex items-center">
-          <div class="text-2xl font-bold mr-3">10</div>
-          <div class="text-sm">Complete</div>
-          <div class="ml-auto">
-            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </div>
-        </div>
-        <div class="w-full bg-gray-300 h-1 mt-2">
-          <div class="bg-green-500 h-1" style="width: 100%"></div>
-        </div>
-      </div>
-    </a>
-  </div>
-  
-  
-  <div class="flex items-center">
-    <div class="text-xs mr-2 font-medium">50%</div>
-    <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-      <div class="bg-green-500 h-2" style="width: 50%"></div>
-    </div>
-    <div class="ml-2">
-      <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-      </svg>
-    </div>
-  </div>
-</div>
-          <div class="bg-white p-[30px] rounded-lg shadow-md">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-bold font-overpass">Faculty</h2>
-              <a href="../faculty/faculty_frame.php" class="text-sm text-blue-600 hover:underline">
-                  Total: <?php echo $totalFaculty; ?> members
-              </a>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
-              <div class="faculty-chart-container" style="position: relative; height: 200px;">
-                <canvas id="facultyDonutChart"></canvas>
-              </div>
-              
-              <div class="grid grid-cols-2 gap-2">
-                <?php foreach($roleLabels as $code => $label): ?>
-                <div class="bg-gray-100 p-3 rounded-lg">
-                  <div class="flex items-center mb-1">
-                    <div class="w-3 h-3 rounded-full mr-2" style="background-color: <?php echo $roleColors[$code]; ?>"></div>
-                    <div class="text-sm font-medium"><?php echo $label; ?></div>
-                  </div>
-                  <div class="text-2xl font-bold"><?php echo $roleCounts[$code] ?? 0; ?></div>
+        <div class="relative w-full">
+            <div class="flex w-full gap-5 justify-between">
+                <!-- Left group: Submission + Faculty -->
+                <div class="flex gap-5 flex-1 max-w-[900px]">
+                    <!-- Submissions -->
+                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[250px]">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-lg font-bold">Submissions</h2>
+                            <?php if ($ongoingTaskTitle): ?>
+                                <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
+                            <?php else: ?>
+                                <span class="text-sm text-gray-500">No ongoing task</span>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="flex space-x-4 mb-5">
+                            <a href="submissionspage.php?type=pending" class="flex-1">
+                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
+                                    <div class="flex items-center">
+                                        <div class="text-2xl font-bold mr-3"><?php echo $pendingCount; ?></div>
+                                        <div class="text-sm">Pending Review</div>
+                                        <div class="ml-auto">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-gray-300 h-1 mt-2">
+                                        <div class="bg-yellow-500 h-1" style="width: 50%"></div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a href="submissionspage.php?type=unaccomplished" class="flex-1">
+                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
+                                    <div class="flex items-center">
+                                        <div class="text-2xl font-bold mr-3"><?php echo $unaccomplishedCount; ?></div>
+                                        <div class="text-sm">Unaccomplished</div>
+                                        <div class="ml-auto">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-gray-300 h-1 mt-2">
+                                        <div class="bg-red-500 h-1" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a href="submissionspage.php?type=complete" class="flex-1">
+                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
+                                    <div class="flex items-center">
+                                        <div class="text-2xl font-bold mr-3"><?php echo $completeCount; ?></div>
+                                        <div class="text-sm">Complete</div>
+                                        <div class="ml-auto">
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full bg-gray-300 h-1 mt-2">
+                                        <div class="bg-green-500 h-1" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="flex items-center">
+                            <div class="text-xs mr-2 font-medium"><?php echo $progress; ?>%</div>
+                            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                <div class="bg-green-500 h-2" style="width: <?php echo $progress; ?>%"></div>
+                            </div>
+                            <div class="ml-2">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Faculty -->
+                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[250px]">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">Faculty</h2>
+                            <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
+                                Total: <?php echo $totalFaculty; ?> members
+                            </a>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <!-- Donut Chart (Left) -->
+                            <div class="faculty-chart-container" style="width: 100px; height: 100px;">
+                                <canvas id="facultyDonutChart"></canvas>
+                            </div>
+
+                            <!-- Role Labels (Right) -->
+                            <div class="grid grid-cols-1 gap-1 flex-1">
+                                <?php foreach($roleLabels as $code => $label): ?>
+                                    <div class="flex items-center bg-gray-100 rounded px-2 py-1">
+                                      
+                                        <div class="w-3 h-3 rounded-full mr-2 shrink-0" style="background-color: <?php echo $roleColors[$code]; ?>"></div>
+                                        <div class="text-xs flex-1 truncate"><?php echo $label; ?></div>
+                                        <div class="text-xs font-semibold"><?php echo $roleCounts[$code] ?? 0; ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <?php endforeach; ?>
-              </div>
+                <!-- Pinboard on the far right -->
+                <div class="w-[300px]">
+                    <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md h-[calc(100vh-300px)]">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-lg font-bold">Pinboard</h2>
+                            <button class="text-xs text-blue-600 hover:underline">Manage</button>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            No pinned items yet.
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="bg-white p-[30px] rounded-lg shadow-md">Pending Reviews</div>
-          <div class="bg-white p-[30px] rounded-lg shadow-md">Pinboard</div>
         </div>
-      </div>
+    </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Parse the PHP data
-      const roleData = <?php echo $roleDataJSON; ?>;
-      
-      // Setup the chart colors and labels
-      const colors = roleData.map(item => item.color);
-      const labels = roleData.map(item => item.name);
-      const values = roleData.map(item => item.value);
-      
-      // Create the chart
-      const ctx = document.getElementById('facultyDonutChart').getContext('2d');
-      const facultyChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: values,
-            backgroundColor: colors,
-            borderWidth: 0,
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '60%',
-          plugins: {
-            legend: {
-              display: false
+        const roleData = <?php echo $roleDataJSON; ?>;
+        const colors = roleData.map(item => item.color);
+        const labels = roleData.map(item => item.name);
+        const values = roleData.map(item => item.value);
+
+        const ctx = document.getElementById('facultyDonutChart').getContext('2d');
+        const facultyChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
             },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.raw} members`;
-                }
-              }
-            }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw} members`;
+                            }
+                        }
+                    }
           }
-        }
-      });
+            }
+        });
     });
     </script>
 </body>

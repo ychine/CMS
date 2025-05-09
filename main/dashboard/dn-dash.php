@@ -186,12 +186,12 @@ $conn->close();
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
         <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
 
-        <div class="relative w-full h-full">
-            <div class="flex w-full h-[calc(100vh-100px)] gap-5 justify-between">
+        <div class="relative w-full">
+            <div class="flex w-full gap-5 justify-between">
                 <!-- Left group: Submission + Faculty -->
-                <div class="flex gap-5 flex-1 max-w-[900px] h-full">
+                <div class="flex gap-5 flex-1 max-w-[900px]">
                     <!-- Submissions -->
-                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md">
+                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[250px]">
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-lg font-bold">Submissions</h2>
                             <?php if ($ongoingTaskTitle): ?>
@@ -267,7 +267,7 @@ $conn->close();
                         </div>
                     </div>
                     <!-- Faculty -->
-                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass">
+                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[250px]">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-bold">Faculty</h2>
                             <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
@@ -296,8 +296,8 @@ $conn->close();
                     </div>
                 </div>
                 <!-- Pinboard on the far right -->
-                <div class="w-[300px] flex flex-col h-full">
-                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-full">
+                <div class="w-[300px]">
+                    <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md h-[calc(100vh-300px)]">
                         <div class="flex justify-between items-center mb-3">
                             <h2 class="text-lg font-bold">Pinboard</h2>
                             <button class="text-xs text-blue-600 hover:underline">Manage</button>
