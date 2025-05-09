@@ -165,6 +165,22 @@ $conn->close();
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
 
+        /* Modal animations */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-animate {
+            animation: modalFadeIn 0.2s ease-out forwards;
+        }
+
         .task-dropdown {
             max-height: 0;
             opacity: 0;
@@ -430,90 +446,110 @@ $conn->close();
     </a>
 
     <!-- Dropdown -->
-    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-48 space-y-2 z-50">
+    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-80 space-y-2 z-50 flex flex-col items-end">
         <button onclick="openProgramModal()"
-            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
+            class="text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150 whitespace-nowrap">
             Add Program or Curriculum
         </button>
         <button onclick="openCourseModal()"
-            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+            class="text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
             Add Course
         </button>
     </div>
     <?php endif; ?>
 
-    <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-green-500">
-        <h2 class="text-2xl font-overpass font-bold mb-4">Add New Course</h2>
-        <form id="addCourseForm" method="POST" action="../curriculum/add_course.php">
-            
-            <label class="block mb-1 font-semibold">Select Program:</label>
-            <select id="course_program" name="program_id" class="w-full mb-3 p-2 border rounded" required onchange="loadCurricula(this.value)">
-                <option value="">-- Select Program --</option>
-                <?php foreach ($existingPrograms as $program): ?>
-                    <option value="<?= $program['id'] ?>">
-                        <?= $program['code'] ?> - <?= $program['name'] ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-
-            <label class="block mb-1 font-semibold">Select Curriculum:</label>
-            <select id="course_curriculum" name="curriculum_id" class="w-full mb-3 p-2 border rounded" required>
-                <option value="">-- Select Program First --</option>
-            </select>
-
-            <label class="block mb-1 font-semibold">Course Code:</label>
-            <input type="text" id="course_code" name="course_code" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., COMP101" />
-
-            <label class="block mb-1 font-semibold">Course Title:</label>
-            <input type="text" id="course_title" name="course_title" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., Introduction to Programming" />
-
-            <div class="mt-4 flex justify-end gap-2">
-                <button type="button" onclick="closeCourseModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Add Course</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-    <!-- Add Program Modal -->
-    <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-blue-500">
-            <h2 class="text-2xl font-overpass font-bold mb-4">Create Curriculum</h2>
-            <form method="POST" action="../curriculum/create_program.php">
+    <div id="courseModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Add New Course</h2>
+            <hr class="border-gray-400 mb-6">
+            <form id="addCourseForm" method="POST" action="../curriculum/add_course.php" class="space-y-4">
                 
-                <label class="block mb-1 font-semibold">Select Program:</label>
-                <select id="existing_program" name="existing_program" class="w-full mb-3 p-2 border rounded" onchange="toggleProgramFields(); updateCurriculumPreview();">
-                    <option value="">-- Select Program --</option>
-                    <?php foreach ($existingPrograms as $program): ?>
-                        <option value="<?= $program['code'] ?>" data-name="<?= $program['name'] ?>">
-                            <?= $program['code'] ?> - <?= $program['name'] ?>
-                        </option>
-                    <?php endforeach; ?>
-                    <option value="other">Other (Add New Program)</option>
-                </select>
-
-                <div id="new_program_fields" class="hidden">
-                    <label class="block mb-1 font-semibold">Program Code (e.g., BSIS):</label>
-                    <input type="text" id="program_code_input" name="program_code" class="w-full mb-3 p-2 border rounded" oninput="updateCurriculumPreview()" />
-
-                    <label class="block mb-1 font-semibold">Program Name:</label>
-                    <input type="text" id="program_name_input" name="program_name" class="w-full mb-3 p-2 border rounded" />
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Program:</label>
+                    <select id="course_program" name="program_id" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required onchange="loadCurricula(this.value)">
+                        <option value="">-- Select Program --</option>
+                        <?php foreach ($existingPrograms as $program): ?>
+                            <option value="<?= $program['id'] ?>">
+                                <?= $program['code'] ?> - <?= $program['name'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
-                <label class="block mb-1 font-semibold">Curriculum Year:</label>
-                <input type="number" id="curriculum_year_input" name="curriculum_year" value="<?= date('Y') ?>" required class="w-full mb-3 p-2 border rounded" oninput="updateCurriculumPreview()" />
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Curriculum:</label>
+                    <select id="course_curriculum" name="curriculum_id" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required>
+                        <option value="">-- Select Program First --</option>
+                    </select>
+                </div>
 
-                <p class="text-sm text-gray-600 mt-1 mb-3">
-                    <strong>Generated Curriculum Name:</strong>
-                    <span id="curriculum_preview" class="text-blue-700 font-semibold">—</span>
-                </p>
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Course Code:</label>
+                    <input type="text" id="course_code" name="course_code" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required placeholder="e.g., COMP101" />
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Course Title:</label>
+                    <input type="text" id="course_title" name="course_title" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required placeholder="e.g., Introduction to Programming" />
+                </div>
+
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" onclick="closeCourseModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">Add Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Program Modal -->
+    <div id="programModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Create Curriculum</h2>
+            <hr class="border-gray-400 mb-6">
+            <form method="POST" action="../curriculum/create_program.php" class="space-y-4">
+                
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Program:</label>
+                    <select id="existing_program" name="existing_program" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" onchange="toggleProgramFields(); updateCurriculumPreview();">
+                        <option value="">-- Select Program --</option>
+                        <?php foreach ($existingPrograms as $program): ?>
+                            <option value="<?= $program['code'] ?>" data-name="<?= $program['name'] ?>">
+                                <?= $program['code'] ?> - <?= $program['name'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <option value="other">Other (Add New Program)</option>
+                    </select>
+                </div>
+
+                <div id="new_program_fields" class="hidden space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-gray-700">Program Code:</label>
+                        <input type="text" id="program_code_input" name="program_code" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="e.g., BSIS" oninput="updateCurriculumPreview()" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-gray-700">Program Name:</label>
+                        <input type="text" id="program_name_input" name="program_name" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="e.g., Bachelor of Science in Information Systems" />
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Curriculum Year:</label>
+                    <input type="number" id="curriculum_year_input" name="curriculum_year" value="<?= date('Y') ?>" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" oninput="updateCurriculumPreview()" />
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p class="text-gray-700">
+                        <span class="font-semibold">Generated Curriculum Name:</span>
+                        <span id="curriculum_preview" class="text-blue-700 font-bold ml-2">—</span>
+                    </p>
+                </div>
 
                 <input type="hidden" id="curriculum_name_input" name="curriculum_name" />
 
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" onclick="closeProgramModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Create</button>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" onclick="closeProgramModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">Create Curriculum</button>
                 </div>
             </form>
         </div>
@@ -522,15 +558,16 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
-        <p id="deleteMessage" class="mb-4">Are you sure you want to delete this program?</p>
-        <div class="flex justify-end gap-2">
-            <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
-            <button id="confirmDeleteBtn" class= "delete-btn ml-2 px-4 py-2"> Delete </button>
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Confirm Deletion</h2>
+            <hr class="border-gray-400 mb-6">
+            <p id="deleteMessage" class="text-lg text-gray-700 mb-6">Are you sure you want to delete this program?</p>
+            <div class="flex justify-end gap-4 pt-4">
+                <button onclick="closeDeleteModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                <button id="confirmDeleteBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-semibold">Delete</button>
+            </div>
         </div>
     </div>
-</div>
 
 </div>
 
