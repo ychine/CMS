@@ -230,6 +230,34 @@ $conn->close();
             margin-bottom: 1.5rem;
 
         }
+        body.dark {
+            background: #18181b !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .bg-white {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .shadow-lg, .dark .shadow-2xl {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+        }
+        .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
+            color: #e5e7eb !important;
+        }
+        .dark .text-gray-500 {
+            color: #a1a1aa !important;
+        }
+        .dark .border-gray-300, .dark .border {
+            border-color: #374151 !important;
+        }
+        .dark .bg-blue-50, .dark .bg-blue-100 {
+            background: #1e293b !important;
+        }
+        .dark .file-input-label {
+            background: #23232a !important;
+            border-color: #374151 !important;
+            color: #e5e7eb !important;
+        }
     </style>
 </head>
 <body>
@@ -363,6 +391,10 @@ $conn->close();
         // Confirm delete account
         function confirmDelete() {
             return confirm("Are you sure you want to delete your account? This action cannot be undone.");
+        }
+
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark');
         }
     </script>
 </body>
