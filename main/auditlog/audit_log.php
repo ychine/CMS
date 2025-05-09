@@ -328,6 +328,55 @@ $conn->close();
         
                 
 
+        /* DARK MODE STYLES */
+        body.dark {
+            background: #181a1b;
+        }
+        .dark .bg-white {
+            background: #2d3036 !important;
+            color: #fff;
+        }
+        .dark #sidebar {
+            background: #23252b !important;
+            color: #e3e3e3;
+        }
+        .dark .flex-1 {
+            background: #1a1c20 !important;
+            color: #fff;
+        }
+        .dark .profile-dropdown-item {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-item:hover {
+            background: #35373c !important;
+            color: #fff !important;
+        }
+        .dark .user-info {
+            background: transparent !important;
+        }
+        .dark .user-info:hover {
+            background: #23252b !important;
+        }
+        .dark .profile-dropdown {
+            background: #23252b !important;
+            border-color: #35373c !important;
+        }
+        .dark .profile-dropdown svg {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-item svg {
+            color: #e3e3e3 !important;
+        }
+        .dark .hover\:bg-gray-100:hover {
+            background: #35373c !important;
+        }
+        .dark .text-gray-600, .dark .text-gray-500 {
+            color: #e3e3e3 !important;
+        }
+        .dark .rounded-full.bg-\[\#1D387B\] {
+            background: #314f9b !important;
+        }
+
     </style>
 </head>
 
@@ -623,5 +672,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   </script>
   <!-- hi -->
+  <script>
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      document.body.classList.add('dark');
+    }
+  </script>
 </body>
 </html>
