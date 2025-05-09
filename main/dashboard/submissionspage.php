@@ -261,8 +261,8 @@ $conn->close();
     
     .files-section {
       flex: 1;
-      padding: 20px;
-      background-color: #f9fafb;
+      padding: 40px;
+      
     }
     
     .section-header {
@@ -715,7 +715,7 @@ $conn->close();
             </form>
             <style>
               .files-section {
-                background: #f3f4f6;
+                
                 min-height: 100vh;
                 display: flex;
                 align-items: flex-start;
