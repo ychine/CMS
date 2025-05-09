@@ -377,6 +377,11 @@ $conn->close();
             background: #314f9b !important;
         }
 
+        .dark .link-text, .dark .font-onest, .dark .font-overpass {
+            color: #e3e3e3 !important;
+        }
+        
+
     </style>
 </head>
 

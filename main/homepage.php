@@ -344,12 +344,22 @@ $conn->close();
             background: #23252b !important;
             border-color: #35373c !important;
         }
-        .dark .profile-dropdown-item {
+        .dark .profile-dropdown-item {  
             color: #e3e3e3 !important;
         }
         .dark .profile-dropdown-item:hover {
             background: #35373c !important;
             color: #fff !important;
+        }
+        .dark .user-info:hover {
+            background: #23252b !important;
+        }
+        .dark .text-gray-600, .dark .text-gray-500, .dark .text-[#333], .dark .text-[#808080] {
+            color: #e3e3e3 !important;
+        }
+
+        .dark .link-text, .dark .font-onest, .dark .font-overpass {
+            color: #e3e3e3 !important;
         }
     </style>
 </head>

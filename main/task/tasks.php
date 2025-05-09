@@ -377,6 +377,14 @@ $conn->close();
             background: #314f9b !important;
         }
 
+        .dark .link-text, .dark .font-onest, .dark .font-overpass {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-bg {
+            background: #23252b !important;
+            border-color: #35373c !important;
+        }
+
     </style>
 </head>
 
