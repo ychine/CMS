@@ -102,9 +102,11 @@
       if (this.checked) {
         document.body.classList.add('dark');
         localStorage.setItem('darkMode', 'enabled');
+        window.parent.postMessage({ darkMode: 'enabled' }, '*');
       } else {
         document.body.classList.remove('dark');
         localStorage.setItem('darkMode', 'disabled');
+        window.parent.postMessage({ darkMode: 'disabled' }, '*');
       }
     });
   </script>

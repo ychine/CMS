@@ -671,6 +671,16 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('darkMode') === 'enabled') {
     document.body.classList.add('dark');
   }
+  // Listen for dark mode changes from the settings frame
+  window.addEventListener('message', function(event) {
+    if (event.data && typeof event.data.darkMode !== 'undefined') {
+      if (event.data.darkMode === 'enabled') {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
+    }
+  });
 </script>
 </body>
 </html>
