@@ -318,7 +318,39 @@ $conn->close();
             transition: all 1s ease-in-out;
         }
                 
-
+        /* DARK MODE STYLES */
+        body.dark {
+            background: #181a1b;
+        }
+        .dark .header-bar {
+            background: #2d3036 !important;
+            color: #fff;
+        }
+        .dark .sidebar {
+            background: #23252b !important;
+            color: #e3e3e3;
+        }
+        .dark .main-content {
+            background: #1a1c20 !important;
+            color: #fff;
+        }
+        .dark .notif-btn svg {
+            color: #fff !important;
+        }
+        .dark .notif-btn:hover {
+            background: #35373c !important;
+        }
+        .dark .profile-dropdown-bg {
+            background: #23252b !important;
+            border-color: #35373c !important;
+        }
+        .dark .profile-dropdown-item {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-item:hover {
+            background: #35373c !important;
+            color: #fff !important;
+        }
     </style>
 </head>
 
@@ -328,7 +360,7 @@ $conn->close();
     <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
 
         <!-- Sidebar -->
-        <div id="sidebar" class="w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">
+        <div id="sidebar" class="sidebar w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">
             <div class="text-left leading-tight mb-4 ml-2 font-onest flex items-center justify-between">
                 <div class="flex flex-col items-start">
                     <img src="../img/COURSEDOCK.svg" class="w-[180px] transition-all duration-300" id="logo" />
@@ -392,9 +424,9 @@ $conn->close();
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col h-full ">
+        <div class="main-content flex-1 flex flex-col h-full ">
 
-            <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
+            <div class="header-bar bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
                 <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
@@ -402,7 +434,7 @@ $conn->close();
                 <div class="flex items-center gap-4">
                     <!-- Notification Icon -->
                     <div class="relative">
-                        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+                        <button class="p-2 rounded-full notif-btn transition-colors duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
@@ -443,7 +475,7 @@ $conn->close();
                         
                         <!-- Dropdown Menu (Hidden by Default) -->
                         <div id="userMenu" class="hidden">
-                            <div class="py-1 border border-gray-200 rounded-md">
+                            <div class="py-1 border border-gray-200 rounded-md profile-dropdown-bg">
                                 <a href="profile/profile.php" class="profile-dropdown-item">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -458,7 +490,7 @@ $conn->close();
                                     Settings
                                 </a>
                                 <hr class="my-1 border-gray-200" />
-                                <a href="../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
+                                <a href="../index.php" class="profile-dropdown-item text-red-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                     </svg>
@@ -745,7 +777,13 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark');
+  }
+
   </script>
+
+
 
 
 </body>
