@@ -362,7 +362,7 @@ $conn->close();
                     <span class="link-text">Tasks</span>
                 </a>
 
-                <a href="../faculty/faculty.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="../faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
                 </a>
@@ -478,7 +478,7 @@ $conn->close();
             
 
             <!-- Dynamic Content -->
-            <iframe id="contentIframe" src="faculty_frame.php" class="w-full flex-1 fade-in" frameborder="0"></iframe>
+            <iframe id="contentIframe" src="settings_frame.php" class="w-full flex-1 fade-in" frameborder="0"></iframe>
 
         </div>
     </div>
