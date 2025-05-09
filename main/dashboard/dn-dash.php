@@ -63,37 +63,72 @@ $totalFaculty = $totalRow['total'];
 
 // Dynamic submissions counts
 // Count Pending Review
-$sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
-    JOIN tasks t ON ta.TaskID = t.TaskID
-    WHERE t.FacultyID = ? AND ta.Status = 'Submitted'";
-$stmtPending = $conn->prepare($sqlPending);
-$stmtPending->bind_param("i", $facultyId);
-$stmtPending->execute();
-$res = $stmtPending->get_result();
-$pendingCount = $res->fetch_assoc()['cnt'];
-$stmtPending->close();
+if ($userData['Role'] === 'DN') {
+    // Dean sees all
+    $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        WHERE t.FacultyID = ? AND ta.Status = 'Submitted'";
+    $stmtPending = $conn->prepare($sqlPending);
+    $stmtPending->bind_param("i", $facultyId);
+    $stmtPending->execute();
+    $res = $stmtPending->get_result();
+    $pendingCount = $res->fetch_assoc()['cnt'];
+    $stmtPending->close();
 
-// Count Complete
-$sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
-    JOIN tasks t ON ta.TaskID = t.TaskID
-    WHERE t.FacultyID = ? AND ta.Status = 'Completed'";
-$stmtComplete = $conn->prepare($sqlComplete);
-$stmtComplete->bind_param("i", $facultyId);
-$stmtComplete->execute();
-$res = $stmtComplete->get_result();
-$completeCount = $res->fetch_assoc()['cnt'];
-$stmtComplete->close();
+    $sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        WHERE t.FacultyID = ? AND ta.Status = 'Completed'";
+    $stmtComplete = $conn->prepare($sqlComplete);
+    $stmtComplete->bind_param("i", $facultyId);
+    $stmtComplete->execute();
+    $res = $stmtComplete->get_result();
+    $completeCount = $res->fetch_assoc()['cnt'];
+    $stmtComplete->close();
 
-// Count Unaccomplished (not completed and not submitted)
-$sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
-    JOIN tasks t ON ta.TaskID = t.TaskID
-    WHERE t.FacultyID = ? AND ta.Status NOT IN ('Completed', 'Submitted')";
-$stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
-$stmtUnaccomplished->bind_param("i", $facultyId);
-$stmtUnaccomplished->execute();
-$res = $stmtUnaccomplished->get_result();
-$unaccomplishedCount = $res->fetch_assoc()['cnt'];
-$stmtUnaccomplished->close();
+    $sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        WHERE t.FacultyID = ? AND ta.Status = 'Not Started'";
+    $stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
+    $stmtUnaccomplished->bind_param("i", $facultyId);
+    $stmtUnaccomplished->execute();
+    $res = $stmtUnaccomplished->get_result();
+    $unaccomplishedCount = $res->fetch_assoc()['cnt'];
+    $stmtUnaccomplished->close();
+} else {
+    // Other roles see only their assigned tasks
+    $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        WHERE t.FacultyID = ? AND ta.Status = 'Submitted' AND pc.PersonnelID = ?";
+    $stmtPending = $conn->prepare($sqlPending);
+    $stmtPending->bind_param("ii", $facultyId, $personnelId);
+    $stmtPending->execute();
+    $res = $stmtPending->get_result();
+    $pendingCount = $res->fetch_assoc()['cnt'];
+    $stmtPending->close();
+
+    $sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        WHERE t.FacultyID = ? AND ta.Status = 'Completed' AND pc.PersonnelID = ?";
+    $stmtComplete = $conn->prepare($sqlComplete);
+    $stmtComplete->bind_param("ii", $facultyId, $personnelId);
+    $stmtComplete->execute();
+    $res = $stmtComplete->get_result();
+    $completeCount = $res->fetch_assoc()['cnt'];
+    $stmtComplete->close();
+
+    $sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
+        JOIN tasks t ON ta.TaskID = t.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        WHERE t.FacultyID = ? AND ta.Status = 'Not Started' AND pc.PersonnelID = ?";
+    $stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
+    $stmtUnaccomplished->bind_param("ii", $facultyId, $personnelId);
+    $stmtUnaccomplished->execute();
+    $res = $stmtUnaccomplished->get_result();
+    $unaccomplishedCount = $res->fetch_assoc()['cnt'];
+    $stmtUnaccomplished->close();
+}
 
 $totalSubmissions = $pendingCount + $unaccomplishedCount + $completeCount;
 $progress = $totalSubmissions > 0 ? round(($completeCount / $totalSubmissions) * 100) : 0;

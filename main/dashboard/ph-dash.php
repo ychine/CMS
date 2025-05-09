@@ -32,11 +32,13 @@ if ($result->num_rows > 0) {
     $personnelId = $userData['PersonnelID'];
     $facultyId = $userData['FacultyID'];
     $facultyName = $userData['Faculty'];
+    $userRole = $userData['Role'];
 } else {
     // Handle error - user not found or not associated with any faculty
     $personnelId = 0;
     $facultyId = 0;
     $facultyName = "Unknown Faculty";
+    $userRole = "Unknown";
 }
 
 // Get counts of faculty members grouped by role
