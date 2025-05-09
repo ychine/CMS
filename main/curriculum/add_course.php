@@ -39,8 +39,42 @@ if ($conn->connect_error) {
 $conn->begin_transaction();
 
 try {
-    // Check if the course already exists
-    $checkCourseStmt = $conn->prepare("SELECT CourseCode, Title FROM courses WHERE CourseCode = ?");
+    // Check if the course already exists in this specific curriculum
+    $checkCourseStmt = $conn->prepare("
+        SELECT pc.CourseCode 
+        FROM program_courses pc 
+        WHERE pc.ProgramID = ? AND pc.CurriculumID = ? AND pc.CourseCode = ?
+    ");
+    $checkCourseStmt->bind_param("iis", $programId, $curriculumId, $courseCode);
+    $checkCourseStmt->execute();
+    $result = $checkCourseStmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        echo json_encode(['success' => false, 'message' => "Course $courseCode is already added to this curriculum"]);
+        exit();
+    }
+    $checkCourseStmt->close();
+
+    // Check if course exists in the program (across all curricula)
+    $checkProgramCourseStmt = $conn->prepare("
+        SELECT pc.CourseCode, c.Title 
+        FROM program_courses pc 
+        JOIN courses c ON pc.CourseCode = c.CourseCode
+        WHERE pc.ProgramID = ? AND pc.CourseCode = ?
+    ");
+    $checkProgramCourseStmt->bind_param("is", $programId, $courseCode);
+    $checkProgramCourseStmt->execute();
+    $result = $checkProgramCourseStmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        echo json_encode(['success' => false, 'message' => "Course $courseCode already exists in this program with title: " . $row['Title']]);
+        exit();
+    }
+    $checkProgramCourseStmt->close();
+
+    // Check if course exists in courses table
+    $checkCourseStmt = $conn->prepare("SELECT CourseCode FROM courses WHERE CourseCode = ?");
     $checkCourseStmt->bind_param("s", $courseCode);
     $checkCourseStmt->execute();
     $result = $checkCourseStmt->get_result();
@@ -54,14 +88,6 @@ try {
             throw new Exception("Failed to insert course: " . $insertCourseStmt->error);
         }
         $insertCourseStmt->close();
-    } else {
-        // Course exists, check if the title matches
-        $courseRow = $result->fetch_assoc();
-        if ($courseRow['Title'] !== $courseTitle) {
-            // A course with this code exists but has a different title
-            echo json_encode(['success' => false, 'message' => "A course with code $courseCode already exists with a different title"]);
-            exit();
-        }
     }
     $checkCourseStmt->close();
 
@@ -78,22 +104,6 @@ try {
         throw new Exception("Faculty ID not found for account");
     }
     $facultyIdStmt->close();
-    
-    // Check if the course is already in the program's curriculum
-    $checkProgramCourseStmt = $conn->prepare("
-        SELECT * FROM program_courses 
-        WHERE ProgramID = ? AND CurriculumID = ? AND CourseCode = ?
-    ");
-    $checkProgramCourseStmt->bind_param("iis", $programId, $curriculumId, $courseCode);
-    $checkProgramCourseStmt->execute();
-    $programCourseResult = $checkProgramCourseStmt->get_result();
-    
-    if ($programCourseResult->num_rows > 0) {
-        // Course already exists in this program and curriculum
-        echo json_encode(['success' => false, 'message' => "Course $courseCode is already added to this program curriculum"]);
-        exit();
-    }
-    $checkProgramCourseStmt->close();
 
     // Add the course to the program_courses table
     $insertProgramCourseStmt = $conn->prepare("

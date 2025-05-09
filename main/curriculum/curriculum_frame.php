@@ -119,8 +119,8 @@ $programQuery = "
     SELECT DISTINCT p.ProgramID, p.ProgramCode, p.ProgramName
     FROM programs p
     INNER JOIN curricula c ON p.ProgramID = c.ProgramID
-    INNER JOIN program_courses pc ON c.id = pc.CurriculumID
-    WHERE pc.FacultyID = ?
+    WHERE c.FacultyID = ?
+    ORDER BY p.ProgramCode
 ";
 
 $stmt = $conn->prepare($programQuery);
@@ -535,14 +535,15 @@ $conn->close();
         <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
             <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Create Curriculum</h2>
             <hr class="border-gray-400 mb-6">
-            <form method="POST" action="../curriculum/create_program.php" class="space-y-4">
+            <form id="createProgramForm" method="POST" action="../curriculum/create_program.php" class="space-y-4">
+                <input type="hidden" name="is_new_program" id="is_new_program" value="0">
                 
                 <div class="space-y-2">
                     <label class="block text-lg font-semibold text-gray-700">Select Program:</label>
                     <select id="existing_program" name="existing_program" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" onchange="toggleProgramFields(); updateCurriculumPreview();">
                         <option value="">-- Select Program --</option>
                         <?php foreach ($existingPrograms as $program): ?>
-                            <option value="<?= $program['code'] ?>" data-name="<?= $program['name'] ?>">
+                            <option value="<?= $program['id'] ?>" data-code="<?= $program['code'] ?>" data-name="<?= $program['name'] ?>">
                                 <?= $program['code'] ?> - <?= $program['name'] ?>
                             </option>
                         <?php endforeach; ?>
@@ -740,16 +741,19 @@ $conn->close();
     function toggleProgramFields() {
         const dropdown = document.getElementById("existing_program");
         const otherFields = document.getElementById("new_program_fields");
+        const isNewProgramInput = document.getElementById("is_new_program");
         const selectedOption = dropdown.options[dropdown.selectedIndex];
 
         if (dropdown.value === "other") {
             otherFields.classList.remove("hidden");
             document.getElementById("program_code_input").required = true;
             document.getElementById("program_name_input").required = true;
+            isNewProgramInput.value = "1";
         } else {
             otherFields.classList.add("hidden");
             document.getElementById("program_code_input").required = false;
             document.getElementById("program_name_input").required = false;
+            isNewProgramInput.value = "0";
         }
 
         updateCurriculumPreview();
@@ -761,13 +765,17 @@ $conn->close();
         const yearInput = document.getElementById("curriculum_year_input");
         const preview = document.getElementById("curriculum_preview");
         const hiddenInput = document.getElementById("curriculum_name_input");
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
 
         let code = "";
+        let name = "";
 
         if (dropdown.value === "other") {
             code = codeInput.value.trim();
+            name = document.getElementById("program_name_input").value.trim();
         } else if (dropdown.value !== "") {
-            code = dropdown.value;
+            code = selectedOption.dataset.code;
+            name = selectedOption.dataset.name;
         }
 
         const year = yearInput.value.trim();
@@ -957,5 +965,29 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.add('dark');
     }
 </script>
+
+<?php if (isset($_SESSION['success'])): ?>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: '<?php echo $_SESSION['success']; ?>',
+        showConfirmButton: false,
+        timer: 1500
+    });
+</script>
+<?php unset($_SESSION['success']); endif; ?>
+
+<?php if (isset($_SESSION['error'])): ?>
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: '<?php echo $_SESSION['error']; ?>',
+        showConfirmButton: false,
+        timer: 1500
+    });
+</script>
+<?php unset($_SESSION['error']); endif; ?>
 </body>
 </html>
