@@ -344,11 +344,28 @@ $conn->close();
             background: #1a1c20 !important;
             color: #fff;
         }
+        .dark .profile-dropdown, .dark .profile-dropdown-bg {
+            background: #23252b !important;
+            border: 1px solid #35373c !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
+        }
         .dark .profile-dropdown-item {
             color: #e3e3e3 !important;
+            background: transparent !important;
         }
         .dark .profile-dropdown-item:hover {
             background: #35373c !important;
+            color: #fff !important;
+        }
+        .dark .profile-dropdown-item svg {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-item.text-red-500 {
+            color: #ff6b6b !important;
+        }
+        .dark .profile-dropdown-item.text-red-500:hover {
+            background: #3a2323 !important;
             color: #fff !important;
         }
         .dark .user-info {
@@ -356,16 +373,6 @@ $conn->close();
         }
         .dark .user-info:hover {
             background: #23252b !important;
-        }
-        .dark .profile-dropdown {
-            background: #23252b !important;
-            border-color: #35373c !important;
-        }
-        .dark .profile-dropdown svg {
-            color: #e3e3e3 !important;
-        }
-        .dark .profile-dropdown-item svg {
-            color: #e3e3e3 !important;
         }
         .dark .hover\:bg-gray-100:hover {
             background: #35373c !important;
