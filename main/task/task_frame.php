@@ -84,6 +84,18 @@ if ($result && $result->num_rows > 0) {
 
 $stmt->close();
 
+// Fetch user role
+$userRole = '';
+$userRoleQuery = "SELECT Role FROM personnel WHERE AccountID = ?";
+$roleStmt = $conn->prepare($userRoleQuery);
+$roleStmt->bind_param("i", $accountID);
+$roleStmt->execute();
+$roleResult = $roleStmt->get_result();
+if ($roleResult && $roleResult->num_rows > 0) {
+    $userRole = $roleResult->fetch_assoc()['Role'];
+}
+$roleStmt->close();
+
 // Process task creation form submission
 if (isset($_POST['create_task'])) {
     $title = $_POST['title'];
@@ -130,18 +142,33 @@ if (isset($_POST['create_task'])) {
 }
 
 // Fetch tasks for display in the grid
-$tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
-            COUNT(ta.CourseCode) as AssignedCourses,
-            SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
-            p.Role as UserRole
-            FROM tasks t
-            LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
-            LEFT JOIN personnel p ON p.AccountID = ?
-            WHERE t.FacultyID = ?
-            GROUP BY t.TaskID
-            ORDER BY t.CreatedAt DESC";
-$tasksStmt = $conn->prepare($tasksSql);
-$tasksStmt->bind_param("ii", $accountID, $facultyID);
+if ($userRole === 'DN') {
+    $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
+                COUNT(ta.CourseCode) as AssignedCourses,
+                SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
+                'DN' as UserRole
+                FROM tasks t
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                WHERE t.FacultyID = ?
+                GROUP BY t.TaskID
+                ORDER BY t.CreatedAt DESC";
+    $tasksStmt = $conn->prepare($tasksSql);
+    $tasksStmt->bind_param("i", $facultyID);
+} else {
+    $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
+                COUNT(ta.CourseCode) as AssignedCourses,
+                SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
+                p.Role as UserRole
+                FROM tasks t
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN personnel p ON p.AccountID = ?
+                WHERE t.FacultyID = ? AND pc.PersonnelID = ?
+                GROUP BY t.TaskID
+                ORDER BY t.CreatedAt DESC";
+    $tasksStmt = $conn->prepare($tasksSql);
+    $tasksStmt->bind_param("iii", $accountID, $facultyID, $personnelID);
+}
 $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
 
