@@ -600,16 +600,16 @@ $tasksStmt->close();
     </div>
 
     <!-- Preview Modal -->
-    <div id="previewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-[900px] max-h-[90vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">Submission Preview</h2>
-                <button onclick="closePreviewModal()" class="text-gray-500 hover:text-gray-700">
+    <div id="previewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="z-index:9999;">
+        <div style="width:98vw; height:90vh; max-width:none; max-height:none; background:white; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.25); display:flex; flex-direction:column; padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h2 style="font-size:2rem; font-weight:bold;">Submission Preview</h2>
+                <button onclick="closePreviewModal()" style="color:#6b7280; font-size:1.5rem; background:none; border:none; cursor:pointer;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-hidden">
-                <iframe id="previewFrame" class="w-full h-full border-0"></iframe>
+            <div style="flex:1; overflow:hidden;">
+                <iframe id="previewFrame" style="width:100%; height:100%; border:none; display:block;"></iframe>
             </div>
         </div>
     </div>
