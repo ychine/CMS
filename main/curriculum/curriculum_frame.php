@@ -1,5 +1,5 @@
-
 <?php
+// curriculum_frame.php
 session_start();
 
 if (!isset($_SESSION['Username'])) {
@@ -14,6 +14,17 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Fetch user role
+$userRole = "";
+$userRoleQuery = "SELECT Role FROM personnel WHERE AccountID = ?";
+$roleStmt = $conn->prepare($userRoleQuery);
+$roleStmt->bind_param("i", $accountID);
+$roleStmt->execute();
+$roleResult = $roleStmt->get_result();
+if ($roleResult && $roleResult->num_rows > 0) {
+    $userRole = $roleResult->fetch_assoc()['Role'];
+}
+$roleStmt->close();
 
 $facultyID = null;
 $stmt = $conn->prepare("SELECT FacultyID FROM personnel WHERE AccountID = ?");
@@ -38,11 +49,13 @@ $sql = "
         p.ProgramID, p.ProgramCode,
         c.id AS CurriculumID, c.name AS CurriculumName,
         co.CourseCode, co.Title,
-        c.FacultyID
+        pc.PersonnelID,
+        per.FirstName, per.LastName
     FROM programs p
     LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
     LEFT JOIN program_courses pc ON c.id = pc.CurriculumID
     LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
+    LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
     WHERE c.FacultyID = ?
     ORDER BY p.ProgramCode, c.name, co.Title
 ";
@@ -56,8 +69,14 @@ while ($row = $res->fetch_assoc()) {
     $programId = $row['ProgramID'];
     $program = $row['ProgramCode'];
     $curriculum = $row['CurriculumName'];
-    $course = $row['Title'];
-    
+    $courseTitle = $row['Title'];
+
+    // Combine personnel name
+    $assignedPersonnel = ($row['FirstName'] && $row['LastName']) 
+        ? $row['FirstName'] . ' ' . $row['LastName'] 
+        : null;
+
+    // Init program entry if not set
     if (!isset($programs[$programId])) {
         $programs[$programId] = [
             'code' => $program,
@@ -65,12 +84,18 @@ while ($row = $res->fetch_assoc()) {
         ];
     }
 
+    // Init curriculum entry if not set
     if ($curriculum && !isset($programs[$programId]['curricula'][$curriculum])) {
         $programs[$programId]['curricula'][$curriculum] = [];
     }
 
-    if ($course) {
-        $programs[$programId]['curricula'][$curriculum][] = $course;
+    // Add course with assigned personnel and course code
+    if ($courseTitle) {
+        $programs[$programId]['curricula'][$curriculum][] = [
+            'title' => $courseTitle,
+            'code' => $row['CourseCode'],
+            'assigned_to' => $assignedPersonnel
+        ];
     }
 }
 
@@ -111,8 +136,22 @@ while ($row = $res->fetch_assoc()) {
     ];
 }
 
-
 $stmt->close();
+
+// 1. Get current school year and term from the latest task in this faculty
+$currentSchoolYear = '';
+$currentTerm = '';
+$taskSql = "SELECT SchoolYear, Term FROM tasks WHERE FacultyID = ? ORDER BY CreatedAt DESC LIMIT 1";
+$taskStmt = $conn->prepare($taskSql);
+$taskStmt->bind_param("i", $facultyID);
+$taskStmt->execute();
+$taskResult = $taskStmt->get_result();
+if ($row = $taskResult->fetch_assoc()) {
+    $currentSchoolYear = $row['SchoolYear'];
+    $currentTerm = $row['Term'];
+}
+$taskStmt->close();
+
 $conn->close();
 ?>
 
@@ -216,11 +255,41 @@ $conn->close();
             border-color: #fecaca;
             color: #dc2626;
     }
+
+    /* Personnel dropdown styling similar to faculty_frame.php */
+    .assign-personnel-dropdown {
+        background-color: #f3f4f6;
+        border-radius: 6px;
+        padding: 8px 12px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        font-weight: 500;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1em;
+        padding-right: 2.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #4b5563;
+    }
+    
+    .assign-personnel-dropdown:hover {
+        background-color: #e5e7eb; 
+        border-color: #4a84f1;
+    }
+
+    .assign-personnel-dropdown:focus {
+        outline: none;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
     </style>
 </head>
 <body>
 
-<div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+<div class="flex-1 flex flex-col px-[50px] pt-[15px] pb-[50px] overflow-y-auto">
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1>
     <hr class="border-gray-400">
     <p class="text-gray-500 mt-3 mb-5 font-onest">
@@ -230,16 +299,21 @@ $conn->close();
     <div class="w-[70%] space-y-2 font-onest">
         <?php
         
-        function renderProgramTree($programs) {
+        function renderProgramTree($programs, $userRole, $facultyID, $currentSchoolYear, $currentTerm) {
+            $conn = new mysqli("localhost", "root", "", "cms");
             foreach ($programs as $programId => $programData) {
                 $programName = $programData['code'];
                 $curricula = $programData['curricula'];
-                
                 $progId = 'prog_' . md5($programName);
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
                 echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">▶ $programName</button>";
-                echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
+                
+                
+                if ($userRole === 'DN') {
+                    echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
+                }
+                
                 echo "</div>";
                 
                 echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
@@ -256,46 +330,97 @@ $conn->close();
                     echo "<thead class='bg-gray-100 text-gray-900'>";
                     echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th>";
                     echo "<th class='px-4 py-2 border-b text-left'>Assigned Prof.</th>";
-                    echo "<th class='px-4 py-2 border-b text-left'>Status</th>";
                     echo "</tr>";
                     echo "</thead><tbody>";
         
-                    foreach ($courses as $course) {
-                        echo "<tr class='hover:bg-gray-50'>";
-                    
-                        // Course Name Cell
-                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($course) . "</td>";
+                    foreach ($courses as $idx => $courseData) {
+                        $courseTitle = $courseData['title'];
+                        $assignedTo = $courseData['assigned_to'] ?? '';
+                        $courseCode = $courseData['code'] ?? $courseTitle; // fallback for legacy, but should use 'code'
+                        $rowId = 'files_' . md5($programName . $year . $courseTitle . $idx);
+                        echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
+                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($courseTitle) . "</td>";
                     
                         echo "<td class='px-4 py-2 border-b'>";
-                        echo "<select class='w-full border border-gray-300 rounded px-2 py-1 text-sm assign-personnel-dropdown' 
-                            data-course-code='" . htmlspecialchars($course) . "' 
-                            data-curriculum='" . htmlspecialchars($year) . "' 
-                            data-program='" . htmlspecialchars($programId) . "'>";
-                        echo "<option value=''>-- Assign Personnel --</option>";
-                        foreach ($GLOBALS['personnelList'] as $person) {
-                            echo "<option value='" . $person['id'] . "'>" . htmlspecialchars($person['name']) . "</option>";
+                        
+                        
+                        if ($userRole === 'DN') {
+                            echo "<select class='w-full assign-personnel-dropdown' 
+                                data-course-code='" . htmlspecialchars($courseTitle) . "' 
+                                data-curriculum='" . htmlspecialchars($year) . "' 
+                                data-program='" . htmlspecialchars($programId) . "'>";
+                            echo "<option value=''>-- Assign Personnel --</option>";
+                        
+                            foreach ($GLOBALS['personnelList'] as $person) {
+                                $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
+                                echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
+                            }
+                        
+                            echo "</select>";
+                        } else {
+                            
+                            echo htmlspecialchars($assignedTo ?: 'Not assigned');
                         }
-                        echo "</select>";
+                        
                         echo "</td>";
-                    
-                      
-                        echo "</tr>";
+                        // Collapsible row for approved files
+                        echo "<tr id='$rowId' class='hidden'>";
+                        echo "<td colspan='2' class='bg-gray-50 px-6 py-3 border-b'>";
+                        // Fetch all submissions for this course, current year/term
+                        $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
+                                    FROM submissions s
+                                    LEFT JOIN personnel per ON s.SubmittedBy = per.PersonnelID
+                                    JOIN task_assignments ta ON s.TaskID = ta.TaskID AND s.CourseCode = ta.CourseCode AND s.ProgramID = ta.ProgramID
+                                    WHERE s.FacultyID = ?
+                                    AND s.SubmissionPath IS NOT NULL
+                                    AND s.SubmissionPath != ''
+                                    AND s.CourseCode = ?
+                                    AND ta.ReviewStatus = 'Approved'
+                                    ORDER BY s.SubmissionDate DESC";
+                        $fileStmt = $conn->prepare($fileSql);
+                        $fileStmt->bind_param("is", $facultyID, $courseCode);
+                        $fileStmt->execute();
+                        $fileResult = $fileStmt->get_result();
+                        if ($fileResult->num_rows > 0) {
+                            echo "<ul class='list-disc pl-4'>";
+                            while ($fileRow = $fileResult->fetch_assoc()) {
+                                $filePath = $fileRow['SubmissionPath'];
+                                $submitter = trim($fileRow['FirstName'] . ' ' . $fileRow['LastName']);
+                                $date = $fileRow['SubmissionDate'] ? date('M j, Y g:i A', strtotime($fileRow['SubmissionDate'])) : '';
+                                $fileName = basename($filePath);
+                                $fileUrl = '../../' . htmlspecialchars($filePath);
+                                echo "<li class='mb-1'>";
+                                echo "<a href='javascript:void(0);' onclick=\"openFilePreviewModal('$fileUrl')\" class='text-blue-600 hover:underline'>Preview</a> | ";
+                                echo "<a href='$fileUrl' download class='text-green-600 hover:underline'>Download</a> ";
+                                echo "<span class='text-gray-700 ml-2'>($fileName)</span>";
+                                if ($submitter) echo "<span class='text-gray-500 ml-2'>by $submitter</span>";
+                                if ($date) echo "<span class='text-gray-400 ml-2'>$date</span>";
+                                echo "</li>";
+                            }
+                            echo "</ul>";
+                        } else {
+                            echo "<span class='text-gray-400 italic'>No approved files</span>";
+                        }
+                        $fileStmt->close();
+                        echo "</td></tr>";
                     }
                     
         
-                    echo "</tbody></table></div>"; // Close table and scroll container
-                    echo "</div></div>"; // Close year div
+                    echo "</tbody></table></div>"; 
+                    echo "</div></div>"; 
                 }
         
-                echo "</div></div>"; // Close program   div
+                echo "</div></div>"; 
             }
+            $conn->close();
         }
 
-        renderProgramTree($programs);
+        renderProgramTree($programs, $userRole, $facultyID, $currentSchoolYear, $currentTerm);
         ?>
     </div>
 
     <!-- Floating Add Button -->
+    <?php if ($userRole === 'DN'): ?>
     <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 
         class="task-button fixed bottom-8 right-10 w-13 h-13 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
         title="Add Task">
@@ -307,14 +432,49 @@ $conn->close();
     <!-- Dropdown -->
     <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-48 space-y-2 z-50">
         <button onclick="openProgramModal()"
-            class="w-screen text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
+            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
             Add Program or Curriculum
         </button>
         <button onclick="openCourseModal()"
-            class="w-screen text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
             Add Course
         </button>
     </div>
+    <?php endif; ?>
+
+    <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-green-500">
+        <h2 class="text-2xl font-overpass font-bold mb-4">Add New Course</h2>
+        <form id="addCourseForm" method="POST" action="../curriculum/add_course.php">
+            
+            <label class="block mb-1 font-semibold">Select Program:</label>
+            <select id="course_program" name="program_id" class="w-full mb-3 p-2 border rounded" required onchange="loadCurricula(this.value)">
+                <option value="">-- Select Program --</option>
+                <?php foreach ($existingPrograms as $program): ?>
+                    <option value="<?= $program['id'] ?>">
+                        <?= $program['code'] ?> - <?= $program['name'] ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
+            <label class="block mb-1 font-semibold">Select Curriculum:</label>
+            <select id="course_curriculum" name="curriculum_id" class="w-full mb-3 p-2 border rounded" required>
+                <option value="">-- Select Program First --</option>
+            </select>
+
+            <label class="block mb-1 font-semibold">Course Code:</label>
+            <input type="text" id="course_code" name="course_code" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., COMP101" />
+
+            <label class="block mb-1 font-semibold">Course Title:</label>
+            <input type="text" id="course_title" name="course_title" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., Introduction to Programming" />
+
+            <div class="mt-4 flex justify-end gap-2">
+                <button type="button" onclick="closeCourseModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Add Course</button>
+            </div>
+        </form>
+    </div>
+</div>
 
     <!-- Add Program Modal -->
     <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -374,8 +534,19 @@ $conn->close();
 
 </div>
 
+<div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ml-[320px]">
+  <div class="bg-white p-6 pr-12 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative">
+    <button onclick="closeFilePreviewModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
+    <div class="flex justify-center items-center mb-4" style="position:relative;">
+      <h2 class="text-2xl font-bold w-full text-center">File Preview</h2>
+    </div>
+    <div class="flex-1 overflow-hidden" id="filePreviewContent"></div>
+  </div>
+</div>
+
 <script>
-    
+    // Store user role in JavaScript for use in functions
+    const userRole = "<?php echo $userRole; ?>";
     let programToDelete = null;
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -555,7 +726,7 @@ $conn->close();
     window.addEventListener('click', function (event) {
         const dropdown = document.getElementById('task-dropdown');
         const button = document.querySelector('a[title="Add Task"]');
-        if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+        if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
             dropdown.classList.remove('show');
             button.classList.remove('open');
         }
@@ -571,8 +742,14 @@ $conn->close();
     }
 
     function openCourseModal() {
-        // This function seems to be missing but is referenced in your HTML
-        alert("Course modal functionality not yet implemented");
+        document.getElementById('courseModal').classList.remove('hidden');
+    document.getElementById('task-dropdown').classList.remove('show');
+    
+    // Reset form fields
+    document.getElementById('course_program').value = '';
+    document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
+    document.getElementById('course_code').value = '';
+    document.getElementById('course_title').value = '';
     }
 
     window.addEventListener('keydown', function (e) {
@@ -583,6 +760,99 @@ $conn->close();
         }
     });
 
+
+    function closeCourseModal() {
+    document.getElementById('courseModal').classList.add('hidden');
+}
+
+function loadCurricula(programId) {
+    if (!programId) {
+        document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
+        return;
+    }
+    
+    // Show loading state
+    document.getElementById('course_curriculum').innerHTML = '<option value="">Loading curricula...</option>';
+    
+    // Fetch curricula for the selected program
+    fetch(`../curriculum/get_curricula.php?program_id=${programId}`)
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('course_curriculum');
+            
+            if (data.success) {
+                if (data.curricula.length > 0) {
+                    select.innerHTML = '<option value="">-- Select Curriculum --</option>';
+                    data.curricula.forEach(curriculum => {
+                        select.innerHTML += `<option value="${curriculum.id}">${curriculum.name}</option>`;
+                    });
+                } else {
+                    select.innerHTML = '<option value="">No curricula available</option>';
+                }
+            } else {
+                select.innerHTML = '<option value="">Error loading curricula</option>';
+                console.error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('course_curriculum').innerHTML = '<option value="">Error loading curricula</option>';
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const addCourseForm = document.getElementById('addCourseForm');
+    if (addCourseForm) {
+        addCourseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            // Submit form via AJAX
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Close modal and reload page
+                        closeCourseModal();
+                        location.reload();
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message,
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while adding the course',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+    }
+});
+
     function closeTaskModal() {
         // This function is called in the event listener but doesn't seem to exist
         // Adding an empty implementation to prevent errors
@@ -590,14 +860,32 @@ $conn->close();
 
     function toggleCollapse(id) {
         const el = document.getElementById(id);
-        el.classList.toggle("hidden");
-        const btn = document.querySelector(`button[onclick="toggleCollapse('${id}')"]`);
-        if (btn && btn.textContent.trim().startsWith("▶")) {
-            btn.textContent = btn.textContent.replace("▶", "▼");
-        } else if (btn && btn.textContent.trim().startsWith("▼")) {
-            btn.textContent = btn.textContent.replace("▼", "▶");
-        }
+        if (el) el.classList.toggle('hidden');
     }
+
+    function openFilePreviewModal(fileUrl) {
+        const modal = document.getElementById('filePreviewModal');
+        const content = document.getElementById('filePreviewContent');
+        // Determine file type
+        const ext = fileUrl.split('.').pop().toLowerCase();
+        if (["pdf"].includes(ext)) {
+            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" style="width:100vw;height:85vh;">`;
+        } else if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
+            content.innerHTML = `<img src="${fileUrl}" style="max-width:100vw;max-height:85vh;display:block;margin:auto;">`;
+        } else {
+            content.innerHTML = `<div class='text-center text-gray-500'>Preview not available for this file type.</div>`;
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closeFilePreviewModal() {
+        document.getElementById('filePreviewModal').classList.add('hidden');
+        document.getElementById('filePreviewContent').innerHTML = '';
+    }
+
+    window.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") closeFilePreviewModal();
+    });
 </script>
 </body>
 </html>

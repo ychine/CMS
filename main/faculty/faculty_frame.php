@@ -142,14 +142,14 @@ $conn->close();
     </style>
 </head>
 <body>
-    <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+    <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto pb-[50px]">
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold flex items-center gap-4">Members of 
             <?php echo htmlspecialchars($facultyName); ?> 
 
             <?php if (!empty($joinCode) && $userRole === 'DN'): ?>
                     <div onclick="copyJoinCode()" class="flex items-center gap-2 bg-gray-100 text-gray-800 text-sm font-semibold px-3 py-1 rounded-md inline-flex cursor-pointer hover:bg-gray-400 transition">
                         <span id="join-code"><?php echo htmlspecialchars($joinCode); ?></span>
-                        <!-- Copy icon -->
+                        
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 hover:text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8l4 4v8a2 2 0 01-2 2h-2M8 16v4a2 2 0 002 2h6" />
                         </svg>
@@ -160,13 +160,18 @@ $conn->close();
         <hr class="border-gray-400">
         <?php if ($userRole === 'DN'): ?>
             <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view, delete, and change the roles of your faculty members.</p>
-        <?php else: ?>
-            <p class="text-gray-500 mt-3 mb-5 font-onest">This section displays your faculty members and their roles.</p>
-        <?php endif; ?>
+            <?php else: ?>
+                <p class="text-gray-500 mt-3 mb-2 font-onest">This section displays your faculty members and their roles.</p>
+            <?php endif; ?>
+
+            <div class="mb-5 w-[60%]">
+                <input type="text" id="searchInput" placeholder="Search members..." class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 font-onest" />
+            </div>
+
         <div class="grid grid-cols-1 grid-rows-3 gap-5 w-[60%]">
             <?php if (!empty($members)): ?>
                 <?php foreach ($members as $member): ?>
-                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-between items-center">
+                    <div class="member-card bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-between items-center">
                         <div>
                             <h2 class="text-lg font-bold"><?php echo htmlspecialchars($member['FirstName'] . ' ' . $member['LastName']); ?></h2>
                             <?php
@@ -208,6 +213,21 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const filter = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.member-card');
+        
+        cards.forEach(card => {
+            const name = card.querySelector('h2').innerText.toLowerCase();
+            const role = card.querySelector('.text-sm.text-gray-400').innerText.toLowerCase();
+
+            if (name.includes(filter) || role.includes(filter)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
 
 const loggedInUserRole = "<?php echo $userRole; ?>";
 
