@@ -73,15 +73,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        // Check if program already exists
-        $checkStmt = $conn->prepare("SELECT ProgramID FROM programs WHERE ProgramCode = ?");
+        // Check if program already exists for this faculty
+        $checkStmt = $conn->prepare("
+            SELECT p.ProgramID 
+            FROM programs p
+            JOIN curricula c ON p.ProgramID = c.ProgramID
+            WHERE p.ProgramCode = ? AND c.FacultyID = ?
+        ");
         if (!$checkStmt) {
             $_SESSION['error'] = 'Prepare failed: ' . $conn->error;
             header('Location: curriculum_frame.php');
             exit();
         }
 
-        $checkStmt->bind_param("s", $programCode);
+        $checkStmt->bind_param("si", $programCode, $facultyId);
         if (!$checkStmt->execute()) {
             $_SESSION['error'] = 'Execute failed: ' . $checkStmt->error;
             header('Location: curriculum_frame.php');
@@ -91,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = $checkStmt->get_result();
 
         if ($result->num_rows > 0) {
-            $_SESSION['error'] = 'Program already exists';
+            $_SESSION['error'] = 'Program already exists in your faculty';
             header('Location: curriculum_frame.php');
             exit();
         }
