@@ -771,18 +771,17 @@ if (isset($_POST['submit_file'])) {
                         </div>
                     </div>
                 </div>
+                <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeTaskModal()" 
+                        class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" name="create_task" 
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">
+                        Create Task
+                    </button>
+                </div>
             </form>
-
-            <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
-                <button type="button" onclick="closeTaskModal()" 
-                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
-                    Cancel
-                </button>
-                <button type="submit" name="create_task" 
-                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">
-                    Create Task
-                </button>
-            </div>
         </div>
     </div>
 
