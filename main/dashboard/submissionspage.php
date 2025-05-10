@@ -949,9 +949,10 @@ $conn->close();
                       <p class="signed-by font-light">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
                       <p class="text-xs text-gray-500 font-light"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
                     <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
-                      <form method="POST" action="" class="mt-1">
+                      <form method="POST" action="../task/task_actions.php" class="mt-1">
                         <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
-                        <button type="submit" name="approve_task" class="approval-btn">
+                        <input type="hidden" name="action" value="complete">
+                        <button type="submit" class="approval-btn">
                           Approve
                         </button>
                       </form>
