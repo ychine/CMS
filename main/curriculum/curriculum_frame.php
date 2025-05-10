@@ -686,11 +686,11 @@ $conn->close();
 
 </div>
 
-<div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ml-[320px]">
+<div id="filePreviewModal" class="hidden fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white p-6 pr-12 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative">
     <button onclick="closeFilePreviewModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
     <div class="flex justify-center items-center mb-4" style="position:relative;">
-      <h2 class="text-2xl font-bold w-full text-center">File Preview</h2>
+      <h2 class="text-2xl font-bold w-full text-center font-overpass">File Preview</h2>
     </div>
     <div class="flex-1 overflow-hidden" id="filePreviewContent"></div>
   </div>
@@ -1030,9 +1030,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Determine file type
         const ext = fileUrl.split('.').pop().toLowerCase();
         if (["pdf"].includes(ext)) {
-            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" style="width:100vw;height:85vh;">`;
+            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" style="width:100%;height:85vh;">`;
         } else if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
-            content.innerHTML = `<img src="${fileUrl}" style="max-width:100vw;max-height:85vh;display:block;margin:auto;">`;
+            content.innerHTML = `<img src="${fileUrl}" style="max-width:100%;max-height:85vh;display:block;margin:auto;">`;
         } else {
             content.innerHTML = `<div class='text-center text-gray-500'>Preview not available for this file type.</div>`;
         }
@@ -1043,6 +1043,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('filePreviewModal').classList.add('hidden');
         document.getElementById('filePreviewContent').innerHTML = '';
     }
+
+    // Add click outside functionality
+    document.getElementById('filePreviewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeFilePreviewModal();
+        }
+    });
 
     window.addEventListener('keydown', function(e) {
         if (e.key === "Escape") closeFilePreviewModal();
