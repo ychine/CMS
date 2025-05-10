@@ -61,10 +61,9 @@ $totalResult = $totalStmt->get_result();
 $totalRow = $totalResult->fetch_assoc();
 $totalFaculty = $totalRow['total'];
 
-// Dynamic submissions counts
-// Count Pending Review
+
 if ($userData['Role'] === 'DN') {
-    // Dean sees all
+    
     $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
         JOIN tasks t ON ta.TaskID = t.TaskID
         WHERE t.FacultyID = ? AND ta.Status = 'Submitted'";
@@ -95,7 +94,7 @@ if ($userData['Role'] === 'DN') {
     $unaccomplishedCount = $res->fetch_assoc()['cnt'];
     $stmtUnaccomplished->close();
 } else {
-    // Other roles see only their assigned tasks
+   
     $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
         JOIN tasks t ON ta.TaskID = t.TaskID
         JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
