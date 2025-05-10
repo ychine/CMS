@@ -635,8 +635,10 @@ $conn->close();
     }
     .dark .bg-white,
     .dark .files-section .bg-white {
-      background: #23232a !important;
+      background: #26272b !important;
       color: #f3f4f6 !important;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.32) !important;
+      border: 1px solid #34343c !important;
     }
     .dark .shadow-lg, .dark .shadow-2xl {
       box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
@@ -762,40 +764,10 @@ $conn->close();
       color: #a1a1aa !important;
     }
     .dark .files-section .bg-white {
-      background: #23232a !important;
+      background: #26272b !important;
       color: #f3f4f6 !important;
-    }
-    .dark .text-gray-500,
-    .dark .text-gray-800,
-    .dark .files-section .text-gray-500,
-    .dark .files-section .text-gray-800 {
-      color: #a1a1aa !important;
-    }
-    .dark .text-blue-500,
-    .dark .files-section .text-blue-500 {
-      color: #38bdf8 !important;
-    }
-    .dark html,
-    .dark body,
-    .dark .content,
-    .dark .tasks-section,
-    .dark .files-section {
-      background: #18181b !important;
-      color: #f3f4f6 !important;
-    }
-    .dark .bg-white,
-    .dark .bg-gray-100,
-    .dark .bg-gray-200,
-    .dark .bg-gray-50,
-    .dark .files-section .bg-white,
-    .dark .files-section .bg-gray-100,
-    .dark .files-section .bg-gray-200,
-    .dark .files-section .bg-gray-50 {
-      background: #23232a !important;
-      color: #f3f4f6 !important;
-    }
-    .dark .no-tasks {
-      color: #a1a1aa !important;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.32) !important;
+      border: 1px solid #34343c !important;
     }
     .dark .text-gray-500,
     .dark .text-gray-800,
@@ -818,6 +790,82 @@ $conn->close();
       background: #23232a !important;
       color: #f3f4f6 !important;
     }
+    /* --- Modern UI/UX Improvements --- */
+    .task-card, .files-section, .course-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    /* Only course-card has hover effect */
+    .course-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+      transform: translateY(-2px) scale(1.01);
+    }
+    .section-header h3 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+    }
+    .section-header .course-code {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #64748b;
+    }
+    .submit-btn, .approval-btn {
+      border-radius: 9999px;
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .submit-btn:focus, .approval-btn:focus {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    input, select {
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px #2563eb33;
+    }
+    .file-input-label {
+      border-radius: 16px;
+      border-width: 2px;
+      border-style: dashed;
+      border-color: #60a5fa;
+      background: #f0f9ff;
+      padding: 2.5rem 1.5rem;
+      font-size: 1.1rem;
+    }
+    .file-input-label i {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .selected-file {
+      border-radius: 9999px;
+      background: #dbeafe;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+    @media (max-width: 900px) {
+      .content {
+        flex-direction: column;
+      }
+      .files-section {
+        padding: 20px;
+        margin-top: 2rem;
+      }
+    }
+    /* --- End Modern UI/UX Improvements --- */
+    .dark .files-section {
+      background: #18181b !important;
+    }
   </style>
 </head>
 <body>
@@ -831,7 +879,7 @@ $conn->close();
   <div class="content">
     <div class="tasks-section">
       <?php if (!empty($message)): ?>
-      <div class="bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded mb-4">
+      <div class="bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded mb-6">
           <?php echo $message; ?>
       </div>
       <?php endif; ?>
@@ -842,29 +890,29 @@ $conn->close();
       </div>
       <?php else: ?>
         <?php foreach ($tasks as $task): ?>
-        <div class="task-list">
-          <div class="section-header">
+        <div class="task-list mb-8">
+          <div class="section-header mb-4">
             <h3><?php echo htmlspecialchars($task['Title']); ?></h3>
             <span class="course-code">
               <?php echo htmlspecialchars($task['SchoolYear'] . ' ' . $task['Term']); ?>
             </span>
           </div>
           
-          <div class="task-card">
-            <div class="task-header">
+          <div class="task-card mb-4">
+            <div class="task-header mb-2">
               <div class="faculty-info">
                 <div class="faculty-avatar"></div>
                 <div class="faculty-details">
-                  <p class="faculty-name"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
-                  <p class="faculty-role"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
+                  <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
+                  <p class="faculty-role font-light"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
                 </div>
               </div>
               <div class="deadline">
                 <p>Deadline: <?php echo date("F j, g:i a", strtotime($task['DueDate'])); ?></p>
               </div>
             </div>
-            <div class="task-content">
-              <p>"<?php echo htmlspecialchars($task['Description']); ?>"</p>
+            <div class="task-content mb-2">
+              <p class="text-base font-light">"<?php echo htmlspecialchars($task['Description']); ?>"</p>
               <?php if (!empty($task['RevisionReason'])): ?>
                 <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <h4 class="font-medium text-yellow-800 mb-2">Revision Requested</h4>
@@ -875,22 +923,22 @@ $conn->close();
           </div>
           
           <div class="approval-section">
-            <div class="approval-header">
-              <h3>Approval Status</h3>
-              <div class="complete-label">Complete: <?php echo $task['CompletedAssignments']; ?>/<?php echo $task['TotalAssignments']; ?></div>
+            <div class="approval-header mb-2">
+              <h3 class="font-semibold">Approval Status</h3>
+              <div class="complete-label font-light">Complete: <?php echo $task['CompletedAssignments']; ?>/<?php echo $task['TotalAssignments']; ?></div>
             </div>
             
             <?php if (!empty($task['Assignments'])): ?>
               <?php foreach ($task['Assignments'] as $assignment): ?>
-                <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?>">
+                <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3">
                   <div class="course-info">
-                    <p class="course-name"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
+                    <p class="course-name font-semibold"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
                     <div class="course-badges">
                       <span class="badge"></span>
                       <span class="badge"></span>
                     </div>
-                    <p class="text-xs text-gray-600"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
-                    <p class="text-xs text-gray-600">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
+                    <p class="text-xs text-gray-600 font-light"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
+                    <p class="text-xs text-gray-600 font-light">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
                   </div>
                   <div class="status">
                     <span class="status-label <?php echo strtolower($assignment['AssignmentStatus']); ?>">
@@ -898,8 +946,8 @@ $conn->close();
                     </span>
                     
                     <?php if ($assignment['AssignmentStatus'] == 'Completed'): ?>
-                      <p class="signed-by">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
-                      <p class="text-xs text-gray-500"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
+                      <p class="signed-by font-light">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
+                      <p class="text-xs text-gray-500 font-light"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
                     <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
                       <form method="POST" action="" class="mt-1">
                         <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
@@ -908,13 +956,13 @@ $conn->close();
                         </button>
                       </form>
                     <?php elseif ($assignment['AssignmentStatus'] == 'Submitted'): ?>
-                      <p class="text-xs text-gray-500">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
+                      <p class="text-xs text-gray-500 font-light">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
                     <?php endif; ?>
                   </div>
                 </div>
               <?php endforeach; ?>
             <?php else: ?>
-              <p class="text-center text-gray-500 my-4">No courses assigned to this task.</p>
+              <p class="text-center text-gray-500 my-4 font-light">No courses assigned to this task.</p>
             <?php endif; ?>
           </div>
         </div>
@@ -924,7 +972,7 @@ $conn->close();
     
     <div class="files-section">
       <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto mt-8">
-        <h3 class="text-xl font-bold mb-6 text-gray-800">Your files</h3>
+        <h3 class="text-2xl font-bold mb-8 text-gray-800">Your files</h3>
         <?php if (!empty($tasks) && $userRole != 'DN'): ?>
           <?php 
           $uploadableTasks = [];
@@ -946,7 +994,7 @@ $conn->close();
           ?>
           <?php if (!empty($uploadableTasks)): ?>
             <form method="POST" action="" enctype="multipart/form-data" class="upload-form">
-              <div class="mb-5">
+              <div class="mb-6">
                 <label class="block mb-2 font-semibold text-gray-700">Select Task:</label>
                 <select name="task_selector" id="taskSelector" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
                   <option value="">-- Select Task --</option>
@@ -961,7 +1009,7 @@ $conn->close();
                 <input type="hidden" name="task_id" id="taskID">
                 <input type="hidden" name="course_code" id="courseCode">
                 <input type="hidden" name="program_id" id="programID">
-                <div class="file-input-container mb-4">
+                <div class="file-input-container mb-6">
                   <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
                     <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
                     <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
@@ -983,66 +1031,6 @@ $conn->close();
                 </button>
               </div>
             </form>
-            <style>
-              .files-section {
-                
-                min-height: 100vh;
-                display: flex;
-                align-items: flex-start;
-                justify-content: center;
-              }
-              .file-input-label {
-                border: 2px dashed #60a5fa;
-                background: #f0f9ff;
-                transition: background 0.2s, border-color 0.2s;
-                cursor: pointer;
-                padding: 2rem 1rem;
-                text-align: center;
-              }
-              .file-input-label:hover {
-                background: #e0f2fe;
-                border-color: #2563eb;
-              }
-              .selected-file {
-                background: #dbeafe;
-                border-radius: 9999px;
-                padding: 0.5rem 1rem;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 1rem;
-                max-width: 320px;
-                min-width: 220px;
-                width: 100%;
-                box-sizing: border-box;
-              }
-              .selected-file .file-name {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                max-width: 180px;
-                display: inline-block;
-              }
-              .remove-file {
-                color: #ef4444;
-                cursor: pointer;
-                margin-left: 0.5rem;
-                font-size: 1.2rem;
-              }
-              .submit-btn {
-                background: #2563eb;
-                color: #fff;
-                border: none;
-                border-radius: 0.5rem;
-                padding: 0.75rem 0;
-                font-weight: 600;
-                font-size: 1.1rem;
-                transition: background 0.2s;
-              }
-              .submit-btn:hover {
-                background: #1d4ed8;
-              }
-            </style>
           <?php else: ?>
             <div class="text-center py-8">
               <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
