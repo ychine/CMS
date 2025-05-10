@@ -330,7 +330,7 @@ $conn->close();
 
         /* DARK MODE STYLES */
         body.dark {
-            background: #181a1b;
+            background-color: #324f96;
         }
         .dark .bg-white {
             background: #2d3036 !important;
