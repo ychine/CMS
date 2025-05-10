@@ -371,6 +371,19 @@ $conn->close();
         .dark .hover\:bg-gray-100:hover {
             background: #35373c !important;
         }
+        .dark .profile-dropdown-item.text-red-500 {
+            color: #ff6b6b !important;
+        }
+
+        .dark .profile-dropdown-bg {
+            background: #23252b !important;
+            border-color: #35373c !important;
+        }
+
+        .dark .link-text, .dark .font-onest, .dark .font-overpass {
+            color: #e3e3e3 !important;
+        }
+        
         .dark .text-gray-600, .dark .text-gray-500 {
             color: #e3e3e3 !important;
         }
@@ -498,7 +511,7 @@ $conn->close();
                         
                     <!-- Dropdown Menu (Hidden by Default) -->
                     <div id="userMenu" class="hidden">
-                            <div class="py-1 border border-gray-200 rounded-md">
+                            <div class="py-1 border border-gray-200 rounded-md profile-dropdown-bg">
                                 <a href="../profile/profile.php" class="profile-dropdown-item">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />

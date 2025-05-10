@@ -359,6 +359,9 @@ $conn->close();
         .dark .profile-dropdown-item svg {
             color: #e3e3e3 !important;
         }
+        .dark .profile-dropdown-item.text-red-500 {
+            color: #ff6b6b !important;
+        }
         .dark .user-info {
             background: transparent !important;
         }
