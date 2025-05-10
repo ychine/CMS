@@ -109,6 +109,9 @@ $conn->close();
         .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
             color: #e5e7eb !important;
         }
+        .dark .text-gray-900 {
+            color: #f3f4f6 !important;
+        }
         .dark .text-gray-500 {
             color: #a1a1aa !important;
         }
@@ -122,6 +125,10 @@ $conn->close();
             background: #23232a !important;
             border-color: #374151 !important;
             color: #e5e7eb !important;
+        }
+        .dark thead th {
+            color: #f3f4f6 !important;
+            background: #23232a !important;
         }
     </style>
 </head>
