@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
     
         .password-container {
@@ -81,12 +82,14 @@
                                 </svg>
                             </span>
                         </div>
-                
-                    <br>
-
-                    <button class="btnlogin" type="submit">Login</button>
-                    <br>
                     </div>
+
+                    <div class="g-recaptcha" data-sitekey="6LdTgDQrAAAAAHokkaDM8gCwd4ZjgYAJh-H4o4Zg" data-theme="dark" style="margin: 10px 0; border-radius: 30px;"></div>
+                 
+                  
+
+                    <button class="btnlogin" type="submit" style="margin-bottom: 20px;">Login</button>
+                    <br>
                 </div>
             </form>
             
@@ -131,15 +134,25 @@ togglePassword.addEventListener('click', function () {
 form.addEventListener('submit', function(e) {
     const username = usernameField.value.trim();
     const password = passwordField.value.trim();
+    const captchaResponse = grecaptcha.getResponse();
 
-    if (username === '' || password === '') {
+    if (username === '' || password === '' || captchaResponse === '') {
         e.preventDefault();
 
-       
         if (username === '') usernameField.classList.add('error-border');
         if (password === '') passwordField.classList.add('error-border');
+        if (captchaResponse === '') {
+            const toast = document.createElement('div');
+            toast.className = 'toast error';
+            toast.innerText = 'Please complete the CAPTCHA.';
+            document.body.appendChild(toast);
 
-        
+            setTimeout(() => {
+                toast.remove(); 
+            }, 3000);
+            return;
+        }
+
         const toast = document.createElement('div');
         toast.className = 'toast error';
         toast.innerText = 'Please fill in all fields.';
