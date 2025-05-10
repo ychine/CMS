@@ -358,19 +358,16 @@ if (isset($_POST['submit_file'])) {
           color: #f3f4f6 !important;
         }
         .dark .course-card.completed {
-          background: #134e2e !important;
-          border-left-color: #22d3ee !important;
+          background: #14532d !important; /* green-900 */
           color: #bbf7d0 !important;
         }
         .dark .course-card.submitted {
-          background: #1e293b !important;
-          border-left-color: #60a5fa !important;
-          color: #bae6fd !important;
+          background: #1e3a8a !important; /* blue-900 */
+          color: #dbeafe !important;
         }
         .dark .course-card.pending {
-          background: #3b2f0b !important;
-          border-left-color: #f59e0b !important;
-          color: #fde68a !important;
+          background: #78350f !important; /* yellow-900 */
+          color: #fef9c3 !important;
         }
         .dark .text-gray-600,
         .dark .text-gray-500 {
@@ -457,9 +454,51 @@ if (isset($_POST['submit_file'])) {
         .dark .course-card.completed * {
           color: #bbf7d0 !important;
         }
+        /* Extra dark mode fixes for course cards and badges */
+        body.dark .course-card, body.dark .bg-yellow-50, body.dark .bg-blue-50, body.dark .bg-green-50 {
+          background-color: #23232a !important;
+          color: #f3f4f6 !important;
+        }
+        body.dark .course-card .text-gray-800, body.dark .course-card .text-gray-600, body.dark .course-card .text-gray-500, body.dark .course-card .text-xs {
+          color: #f3f4f6 !important;
+        }
+        body.dark .status-badge, body.dark .bg-yellow-100, body.dark .bg-blue-100, body.dark .bg-green-100 {
+          background-color: #374151 !important;
+          color: #f3f4f6 !important;
+        }
+        body.dark .text-yellow-700 {
+          color: #fde68a !important;
+        }
+
+        body.dark .text-blue-700{
+            color: #60a5fa !important;
+        }
+        body.dark .text-green-700 {
+            color: #6ee7b7 !important;
+        }
+
+        body.dark .text-blue-600 { color: #60a5fa !important; }
+        body.dark .text-yellow-600 { color: #fde68a !important; }
+        body.dark .text-green-600 { color: #6ee7b7 !important; }
+        body.dark .text-red-500 { color: #f87171 !important; }
+        body.dark .status-badge.completed {
+          background-color: #22c55e !important; /* green-500 */
+          color: #022c22 !important;
+        }
+        body.dark .status-badge.submitted {
+          background-color: #2563eb !important; /* blue-600 */
+          color: #dbeafe !important;
+        }
+        body.dark .status-badge.pending {
+          background-color: #f59e0b !important; /* yellow-500 */
+          color: #23232a !important;
+        }
+        body.dark .dean-action-btn.preview { color: #60a5fa !important; }
+        body.dark .dean-action-btn.revision { color: #fde68a !important; }
+        body.dark .dean-action-btn.complete { color: #6ee7b7 !important; }
     </style>
 </head>
-<body>
+<body class="bg-gray-100">
     <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
         <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Tasks</h1> 
         <hr class="border-gray-400">
@@ -472,146 +511,124 @@ if (isset($_POST['submit_file'])) {
         <?php endif; ?>
         
         <!-- Task Grid -->
-<div class="grid grid-cols-1 gap-5 w-full md:w-[80%]">
+<div class="grid grid-cols-1 w-full md:w-[80%] px-4">
     <?php if (empty($tasks)): ?>
         <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
             <p class="text-gray-500">No tasks available. Create your first task!</p>
         </div>
     <?php else: ?>
         <?php foreach ($tasks as $task): ?>
-        <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md">
-            <div class="flex justify-between items-center">
-                <h3 class="text-xl font-semibold"><?php echo htmlspecialchars($task['Title']); ?></h3>
-                <span class="px-3 py-1 rounded-full text-sm 
-                    <?php 
-                    if ($task['Status'] == 'Completed') {
-                        echo 'bg-green-100 text-green-800';
-                    } elseif ($task['Status'] == 'In Progress') {
-                        echo 'bg-blue-100 text-blue-800';
-                    } else {
-                        echo 'bg-yellow-100 text-yellow-800';
-                    }
-                    ?>">
-                    <?php echo $task['Status']; ?>
-                </span>
-            </div>
-            <div class="approval-header">
-                <h3>Approval Status</h3>
-                <div class="complete-label">
-                    Complete: <?php echo $task['CompletedCount']; ?>/<?php echo $task['AssignedCourses']; ?>
+        <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1
+                        <?php 
+                        if ($task['Status'] == 'Completed') {
+                            echo 'bg-green-100 text-green-700';
+                        } elseif ($task['Status'] == 'In Progress') {
+                            echo 'bg-blue-100 text-blue-700';
+                        } else {
+                            echo 'bg-yellow-100 text-yellow-700';
+                        }
+                        ?>">
+                        <?php if ($task['Status'] == 'Completed'): ?>
+                            <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+                        <?php elseif ($task['Status'] == 'In Progress'): ?>
+                            <svg class="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+                        <?php else: ?>
+                            <svg class="w-4 h-4 mr-1 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><circle cx="12" cy="16" r="1"/></svg>
+                        <?php endif; ?>
+                        <?php echo $task['Status']; ?>
+                    </span>
+                </div>
+                <div class="flex flex-col md:items-end text-sm text-gray-500">
+                    <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
+                    <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                 </div>
             </div>
-            <p class="text-gray-600 mt-2"><?php echo htmlspecialchars($task['Description']); ?></p>
-            <div class="mt-4 text-sm text-gray-500">
-                <p>Due: <?php echo date("F j, Y", strtotime($task['DueDate'])); ?></p>
-                <p>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></p>
-                
-                <!-- Assigned Courses with Professors -->
-                <div class="mt-2">
-                    <p class="font-medium">Assigned Courses (<?php echo $task['AssignedCourses']; ?>):</p>
-                    <?php if (!empty($task['Courses'])): ?>
-                        <div class="mt-1 pl-2 border-l-2 border-gray-200 max-h-[120px] overflow-y-auto">
+            <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+            <div class="flex items-center gap-3 mb-2">
+                <span class="font-medium text-gray-700">Progress:</span>
+                <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
+                <div class="flex-1 min-w-[120px] max-w-[200px] h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-3 rounded-full transition-all duration-300"
+                        style="width: <?php echo $progress; ?>%; background: linear-gradient(90deg, #22c55e, #3b82f6);"></div>
+                </div>
+                <span class="text-sm text-gray-500"><?php echo $task['CompletedCount']; ?>/<?php echo $task['AssignedCourses']; ?> Complete</span>
+            </div>
+            <div class="mt-2">
+                <span class="font-medium text-gray-700">Assigned Courses (<?php echo $task['AssignedCourses']; ?>):</span>
+                <?php if (!empty($task['Courses'])): ?>
+                    <div class="mt-1 pl-2 border-l-2 border-gray-100 max-h-[120px] overflow-y-auto">
+                        <?php foreach ($task['Courses'] as $course): ?>
+                        <div class="flex items-center justify-between py-1 px-2 rounded-lg mb-1 course-card
                             <?php 
-                            $currentProgram = '';
-                            foreach ($task['Courses'] as $course): 
-                                if ($currentProgram != $course['ProgramName']):
-                                    $currentProgram = $course['ProgramName'];
-                            ?>
-                                <div class="course-card <?php 
-                                    if ($course['AssignmentStatus'] === 'Completed') {
-                                        echo 'completed';
-                                    } elseif ($course['AssignmentStatus'] === 'Submitted') {
-                                        echo 'submitted';
-                                    } else {
-                                        echo 'pending';
-                                    }
-                                ?>">
-                                    <div class="course-info">
-                                        <p class="course-name"><?php echo htmlspecialchars($course['CourseCode'] . ' ' . $course['CourseTitle']); ?></p>
-                                        <div class="course-badges">
-                                            <span class="badge"></span>
-                                            <span class="badge"></span>
-                                        </div>
-                                        <p class="text-xs text-gray-600"><?php echo htmlspecialchars($course['ProgramName']); ?></p>
-                                        <p class="text-xs text-gray-600">Assigned to: <?php echo !empty($course['AssignedTo']) ? htmlspecialchars($course['AssignedTo']) : 'No assigned professor'; ?></p>
-                                    </div>
-                                    <div class="status">
-                                        <span class="status-label <?php 
-                                            if ($course['AssignmentStatus'] === 'Completed') {
-                                                echo 'completed';
-                                            } elseif ($course['AssignmentStatus'] === 'Submitted') {
-                                                echo 'submitted';
-                                            } else {
-                                                echo 'pending';
-                                            }
-                                        ?>">
-                                            <?php echo $course['AssignmentStatus']; ?>
-                                        </span>
-                                        
-                                        <?php if ($course['AssignmentStatus'] === 'Completed' && !empty($course['ApprovalDate'])): ?>
-                                            <p class="text-xs text-gray-500">Completed: <?php echo date("M j, Y", strtotime($course['ApprovalDate'])); ?></p>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                                <div class="pl-3 py-0.5">
-                                    <?php
+                                if ($course['AssignmentStatus'] === 'Completed') {
+                                    echo 'completed bg-green-50';
+                                } elseif ($course['AssignmentStatus'] === 'Submitted') {
+                                    echo 'submitted bg-blue-50';
+                                } else {
+                                    echo 'pending bg-yellow-50';
+                                }
+                            ?>">
+                            <div>
+                                <span class="font-semibold text-gray-800"><?php echo htmlspecialchars($course['CourseCode']); ?></span>
+                                <span class="text-gray-600">- <?php echo htmlspecialchars($course['CourseTitle']); ?></span>
+                                <span class="ml-2 text-xs text-gray-500">Assigned to: <?php echo !empty($course['AssignedTo']) ? htmlspecialchars($course['AssignedTo']) : '<span class=\'text-red-500\'>No assigned professor</span>'; ?></span>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold status-badge
+                                    <?php 
+                                        if ($course['AssignmentStatus'] === 'Completed') {
+                                            echo 'completed bg-green-100 text-green-700';
+                                        } elseif ($course['AssignmentStatus'] === 'Submitted') {
+                                            echo 'submitted bg-blue-100 text-blue-700';
+                                        } else {
+                                            echo 'pending bg-yellow-100 text-yellow-700';
+                                        }
+                                    ?>">
+                                    <?php echo $course['AssignmentStatus']; ?>
+                                </span>
+                                <?php
+                                // Dean's options for submitted/completed assignments
+                                if ($task['UserRole'] === 'DN') {
                                     // Fetch submission details for this course
-                                    $submissionSql = "SELECT ta.TaskAssignmentID, ta.SubmissionPath, ta.SubmissionDate, ta.Status as AssignmentStatus 
-                                                    FROM task_assignments ta 
-                                                    WHERE ta.TaskID = ? AND ta.CourseCode = ? AND ta.ProgramID = ?";
+                                    $submissionSql = "SELECT ta.TaskAssignmentID, ta.SubmissionPath, ta.SubmissionDate, ta.Status as AssignmentStatus FROM task_assignments ta WHERE ta.TaskID = ? AND ta.CourseCode = ? AND ta.ProgramID = ?";
                                     $submissionStmt = $conn->prepare($submissionSql);
                                     $submissionStmt->bind_param("isi", $task['TaskID'], $course['CourseCode'], $course['ProgramID']);
                                     $submissionStmt->execute();
                                     $submissionResult = $submissionStmt->get_result();
                                     $submission = $submissionResult->fetch_assoc();
                                     $submissionStmt->close();
-                                    ?>
-
-                                    <?php if ($submission && $submission['SubmissionPath']): ?>
-                                        <div class="mt-2 pl-5">
-                                            <p class="text-sm text-gray-600">
-                                                Submitted: <?php echo date("M j, Y g:i A", strtotime($submission['SubmissionDate'])); ?>
-                                            </p>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <button onclick="openPreviewModal('<?php echo '../../' . htmlspecialchars($submission['SubmissionPath']); ?>', '<?php echo $submission['TaskAssignmentID']; ?>')" 
-                                                        class="text-blue-600 hover:underline text-sm">
-                                                    <i class="fas fa-eye"></i> Preview Submission
-                                                </button>
-                                                
-                                                <?php if ($task['UserRole'] === 'DN' && $submission['AssignmentStatus'] === 'Submitted'): ?>
-                                                    <button onclick="openRevisionModal('<?php echo $submission['TaskAssignmentID']; ?>')" 
-                                                            class="text-yellow-600 hover:underline text-sm">
-                                                        <i class="fas fa-undo"></i> Request Revision
-                                                    </button>
-                                                    <form method="POST" action="task_actions.php" class="inline">
-                                                        <input type="hidden" name="task_assignment_id" value="<?php echo $submission['TaskAssignmentID']; ?>">
-                                                        <input type="hidden" name="action" value="complete">
-                                                        <button type="submit" class="text-green-600 hover:underline text-sm">
-                                                            <i class="fas fa-check"></i> Mark as Complete
-                                                        </button>
-                                                    </form>
-                                                <?php elseif ($submission['AssignmentStatus'] === 'Completed'): ?>
-                                                    <span class="text-green-600 text-sm">
-                                                        <i class="fas fa-check-circle"></i> Completed
-                                                        <?php if (!empty($submission['ApprovalDate'])): ?>
-                                                            on <?php echo date("M j, Y", strtotime($submission['ApprovalDate'])); ?>
-                                                        <?php endif; ?>
-                                                    </span>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
+                                    if ($submission && ($submission['AssignmentStatus'] === 'Submitted' || $submission['AssignmentStatus'] === 'Completed')) {
+                                        if (!empty($submission['SubmissionPath'])) {
+                                            $previewPath = '../../' . htmlspecialchars($submission['SubmissionPath']);
+                                            $taskAssignmentId = htmlspecialchars($submission['TaskAssignmentID']);
+                                            echo '<button onclick="openPreviewModal(\'' . $previewPath . '\', ' . $taskAssignmentId . ')" class="dean-action-btn preview text-blue-600 hover:underline text-xs">Preview Submission</button>';
+                                        }
+                                    }
+                                    if ($submission && $submission['AssignmentStatus'] === 'Submitted') {
+                                        $taskAssignmentId = htmlspecialchars($submission['TaskAssignmentID']);
+                                        echo '<button onclick="openRevisionModal(\'' . $taskAssignmentId . '\')" class="dean-action-btn revision text-yellow-600 hover:underline text-xs">Request Revision</button>';
+                                        echo '<form method="POST" action="task_actions.php" class="inline">';
+                                        echo '<input type="hidden" name="task_assignment_id" value="' . $taskAssignmentId . '">';
+                                        echo '<input type="hidden" name="action" value="complete">';
+                                        echo '<button type="submit" class="dean-action-btn complete text-green-600 hover:underline text-xs">Mark as Complete</button>';
+                                        echo '</form>';
+                                    }
+                                }
+                                ?>
+                            </div>
                         </div>
-                    <?php else: ?>
-                        <p class="text-gray-400 italic pl-3">No courses assigned</p>
-                    <?php endif; ?>
-                </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p class="text-gray-400 italic pl-3">No courses assigned</p>
+                <?php endif; ?>
             </div>
-            <div class="mt-3 flex justify-end">
-                <a href="task_details.php?id=<?php echo $task['TaskID']; ?>" class="text-blue-600 hover:underline">View Details</a>
+            <div class="mt-4 flex justify-end">
+                <a href="task_details.php?id=<?php echo $task['TaskID']; ?>" class="inline-block px-5 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200 shadow-sm">View Details</a>
             </div>
         </div>
         <?php endforeach; ?>
