@@ -379,6 +379,16 @@ $conn->close();
             color: #e3e3e3 !important;
         }
 
+        .dark .profile-dropdown-bg {
+            background: #23252b !important;
+            border-color: #35373c !important;
+        }
+
+        .dark .profile-dropdown-item.text-red-500 {
+            color: #ff6b6b !important;
+        }
+
+
     </style>
 </head>
 
