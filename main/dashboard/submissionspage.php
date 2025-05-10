@@ -262,7 +262,80 @@ $conn->close();
     .files-section {
       flex: 1;
       padding: 40px;
-      
+      background: #f8fafc;
+    }
+    
+    .files-section .bg-white {
+      background: white;
+      color: #1f2937;
+    }
+    
+    .files-section .text-gray-800 {
+      color: #1f2937;
+    }
+    
+    .files-section .text-gray-600 {
+      color: #4b5563;
+    }
+    
+    .files-section .text-gray-500 {
+      color: #6b7280;
+    }
+    
+    .files-section .border-gray-300 {
+      border-color: #d1d5db;
+    }
+    
+    .files-section .bg-blue-50 {
+      background: #eff6ff;
+    }
+    
+    .files-section .hover\:bg-blue-100:hover {
+      background: #dbeafe;
+    }
+    
+    .files-section .text-blue-500 {
+      color: #3b82f6;
+    }
+    
+    .files-section .bg-blue-100 {
+      background: #dbeafe;
+    }
+    
+    .files-section .bg-blue-600 {
+      background: #2563eb;
+    }
+    
+    .files-section .hover\:bg-blue-700:hover {
+      background: #1d4ed8;
+    }
+    
+    .files-section .border-blue-300 {
+      border-color: #93c5fd;
+    }
+    
+    .files-section .bg-green-100 {
+      background: #dcfce7;
+    }
+    
+    .files-section .text-green-500 {
+      color: #22c55e;
+    }
+    
+    .files-section .bg-yellow-50 {
+      background: #fefce8;
+    }
+    
+    .files-section .border-yellow-200 {
+      border-color: #fef08a;
+    }
+    
+    .files-section .text-yellow-800 {
+      color: #854d0e;
+    }
+    
+    .files-section .text-yellow-700 {
+      color: #a16207;
     }
     
     .section-header {
@@ -560,7 +633,8 @@ $conn->close();
       background: #18181b !important;
       color: #f3f4f6 !important;
     }
-    .dark .bg-white {
+    .dark .bg-white,
+    .dark .files-section .bg-white {
       background: #23232a !important;
       color: #f3f4f6 !important;
     }
@@ -576,22 +650,27 @@ $conn->close();
     .dark .border-gray-300, .dark .border {
       border-color: #374151 !important;
     }
-    .dark .bg-blue-50, .dark .bg-blue-100 {
+    .dark .bg-blue-50, .dark .bg-blue-100, .dark .files-section .bg-blue-50, .dark .files-section .bg-blue-100 {
       background: #1e293b !important;
     }
-    .dark .file-input-label {
+    .dark .file-input-label, .dark .files-section .file-input-label {
       background: #23232a !important;
       border-color: #374151 !important;
       color: #e5e7eb !important;
     }
     .dark .bg-gray-100,
-    .dark .bg-gray-200 {
+    .dark .bg-gray-200,
+    .dark .files-section .bg-gray-100,
+    .dark .files-section .bg-gray-200 {
       background: #23232a !important;
       color: #f3f4f6 !important;
     }
     .dark .border,
     .dark .border-gray-300,
-    .dark .border-gray-200 {
+    .dark .border-gray-200,
+    .dark .files-section .border,
+    .dark .files-section .border-gray-300,
+    .dark .files-section .border-gray-200 {
       border-color: #374151 !important;
     }
     .dark .text-gray-900,
@@ -600,17 +679,30 @@ $conn->close();
     .dark .text-gray-600,
     .dark .text-gray-500,
     .dark .text-sm,
-    .dark .text-xs {
+    .dark .text-xs,
+    .dark .files-section .text-gray-900,
+    .dark .files-section .text-gray-800,
+    .dark .files-section .text-gray-700,
+    .dark .files-section .text-gray-600,
+    .dark .files-section .text-gray-500,
+    .dark .files-section .text-sm,
+    .dark .files-section .text-xs {
       color: #f3f4f6 !important;
     }
-    .dark .hover\:bg-gray-200:hover {
+    .dark .hover\:bg-gray-200:hover,
+    .dark .files-section .hover\:bg-gray-200:hover {
       background: #2d2d36 !important;
     }
     .dark .task-card,
     .dark .bg-white,
     .dark .bg-gray-100,
     .dark .bg-gray-200,
-    .dark .file-placeholder {
+    .dark .file-placeholder,
+    .dark .files-section .task-card,
+    .dark .files-section .bg-white,
+    .dark .files-section .bg-gray-100,
+    .dark .files-section .bg-gray-200,
+    .dark .files-section .file-placeholder {
       background: #23232a !important;
       color: #f3f4f6 !important;
     }
@@ -634,7 +726,13 @@ $conn->close();
     .dark .status-label,
     .dark .signed-by,
     .dark .text-xs,
-    .dark .text-sm {
+    .dark .text-sm,
+    .dark .files-section .faculty-role,
+    .dark .files-section .deadline,
+    .dark .files-section .status-label,
+    .dark .files-section .signed-by,
+    .dark .files-section .text-xs,
+    .dark .files-section .text-sm {
       color: #f3f4f6 !important;
     }
     .dark .status-label.completed {
@@ -668,10 +766,13 @@ $conn->close();
       color: #f3f4f6 !important;
     }
     .dark .text-gray-500,
-    .dark .text-gray-800 {
+    .dark .text-gray-800,
+    .dark .files-section .text-gray-500,
+    .dark .files-section .text-gray-800 {
       color: #a1a1aa !important;
     }
-    .dark .text-blue-500 {
+    .dark .text-blue-500,
+    .dark .files-section .text-blue-500 {
       color: #38bdf8 !important;
     }
     .dark html,
@@ -685,7 +786,11 @@ $conn->close();
     .dark .bg-white,
     .dark .bg-gray-100,
     .dark .bg-gray-200,
-    .dark .bg-gray-50 {
+    .dark .bg-gray-50,
+    .dark .files-section .bg-white,
+    .dark .files-section .bg-gray-100,
+    .dark .files-section .bg-gray-200,
+    .dark .files-section .bg-gray-50 {
       background: #23232a !important;
       color: #f3f4f6 !important;
     }
@@ -693,11 +798,25 @@ $conn->close();
       color: #a1a1aa !important;
     }
     .dark .text-gray-500,
-    .dark .text-gray-800 {
+    .dark .text-gray-800,
+    .dark .files-section .text-gray-500,
+    .dark .files-section .text-gray-800 {
       color: #a1a1aa !important;
     }
-    .dark .text-blue-500 {
+    .dark .text-blue-500,
+    .dark .files-section .text-blue-500 {
       color: #38bdf8 !important;
+    }
+    /* Dark mode for select and option in files-section */
+    .dark .files-section select,
+    .dark .files-section select:focus {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+      border-color: #60a5fa !important;
+    }
+    .dark .files-section option {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
     }
   </style>
 </head>
@@ -951,6 +1070,10 @@ $conn->close();
   <script>
     // Add event listener for task selector change
     document.addEventListener('DOMContentLoaded', function() {
+      // Enable dark mode for all roles if set in localStorage
+      if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+      }
       // Check if there are tasks
       const taskSelector = document.getElementById('taskSelector');
       if (taskSelector) {
@@ -1099,12 +1222,6 @@ $conn->close();
         notification.remove();
       }, 3000);
     }
-
-    <?php if ($userRole == 'DN'): ?>
-    if (localStorage.getItem('darkMode') === 'enabled') {
-      document.body.classList.add('dark');
-    }
-    <?php endif; ?>
   </script>
 </body>
 </html>
