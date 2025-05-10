@@ -190,7 +190,7 @@ $tasksResult = $tasksStmt->get_result();
 while ($taskRow = $tasksResult->fetch_assoc()) {
     // For each task, get the courses and their assignment details
     $assignmentsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.Status as AssignmentStatus, 
-                    ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate,
+                    ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
                     CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
                     CONCAT(apr.FirstName, ' ', apr.LastName) as ApprovedBy
@@ -939,6 +939,12 @@ $conn->close();
                     </div>
                     <p class="text-xs text-gray-600 font-light"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
                     <p class="text-xs text-gray-600 font-light">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
+                    <?php if (!empty($assignment['RevisionReason'])): ?>
+                      <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                        <span class="font-medium text-yellow-800">Revision Requested:</span>
+                        <span class="text-yellow-700"><?php echo nl2br(htmlspecialchars($assignment['RevisionReason'])); ?></span>
+                      </div>
+                    <?php endif; ?>
                   </div>
                   <div class="status">
                     <span class="status-label <?php echo strtolower($assignment['AssignmentStatus']); ?>">
