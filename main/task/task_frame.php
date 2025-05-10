@@ -787,17 +787,13 @@ if (isset($_POST['submit_file'])) {
     </div>
 
     <!-- Preview Modal -->
-    <div id="previewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="z-index:9999;">
-        <div style="width:98vw; height:90vh; max-width:none; max-height:none; background:white; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.25); display:flex; flex-direction:column; padding:24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h2 style="font-size:2rem; font-weight:bold;">Submission Preview</h2>
-                <button onclick="closePreviewModal()" style="color:#6b7280; font-size:1.5rem; background:none; border:none; cursor:pointer;">
-                    <i class="fas fa-times"></i>
-                </button>
+    <div id="previewModal" class="hidden fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 pr-12 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative">
+            <button onclick="closePreviewModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
+            <div class="flex justify-center items-center mb-4" style="position:relative;">
+                <h2 class="text-2xl font-bold w-full text-center font-overpass">File Preview</h2>
             </div>
-            <div style="flex:1; overflow:hidden;">
-                <iframe id="previewFrame" style="width:100%; height:100%; border:none; display:block;"></iframe>
-            </div>
+            <div class="flex-1 overflow-hidden" id="previewContent"></div>
         </div>
     </div>
 
@@ -957,15 +953,23 @@ if (localStorage.getItem('darkMode') === 'enabled') {
 
         function openPreviewModal(filePath, taskId) {
             const modal = document.getElementById('previewModal');
-            const frame = document.getElementById('previewFrame');
-            frame.src = filePath;
+            const content = document.getElementById('previewContent');
+            // Determine file type
+            const ext = filePath.split('.').pop().toLowerCase();
+            if (["pdf"].includes(ext)) {
+                content.innerHTML = `<embed src="${filePath}" type="application/pdf" style="width:100%;height:85vh;">`;
+            } else if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
+                content.innerHTML = `<img src="${filePath}" style="max-width:100%;max-height:85vh;display:block;margin:auto;">`;
+            } else {
+                content.innerHTML = `<div class='text-center text-gray-500'>Preview not available for this file type.</div>`;
+            }
             modal.classList.remove('hidden');
         }
 
         function closePreviewModal() {
             const modal = document.getElementById('previewModal');
-            const frame = document.getElementById('previewFrame');
-            frame.src = '';
+            const content = document.getElementById('previewContent');
+            content.innerHTML = '';
             modal.classList.add('hidden');
         }
 
