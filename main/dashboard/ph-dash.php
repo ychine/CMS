@@ -346,17 +346,7 @@ $conn->close();
                     </div>
                 </div>
                 <!-- Pinboard on the far right -->
-                <div class="w-[300px]">
-                    <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md h-[calc(100vh-300px)]">
-                        <div class="flex justify-between items-center mb-3">
-                            <h2 class="text-lg font-bold">Pinboard</h2>
-                            <button class="text-xs text-blue-600 hover:underline">Manage</button>
-                        </div>
-                        <div class="text-sm text-gray-600">
-                            No pinned items yet.
-                        </div>
-                    </div>
-                </div>
+                <?php include 'pinboard.php'; ?>
             </div>
         </div>
     </div>
