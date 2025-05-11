@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Check if user is logged in
+
 if (!isset($_SESSION['Username'])) {
     header("Location: ../index.php");
     exit();
@@ -18,7 +18,6 @@ $userRole = "";
 $facultyID = null;
 $message = "";
 
-// Fetch the faculty name, faculty ID and role based on the logged-in user
 $sql = "SELECT personnel.PersonnelID, personnel.FacultyID, personnel.Role, faculties.Faculty 
         FROM personnel 
         JOIN faculties ON personnel.FacultyID = faculties.FacultyID
@@ -152,14 +151,42 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
 // Fetch tasks based on user role
 $tasks = [];
 
-if ($userRole == 'DN') {
-    // Dean sees all tasks in the faculty
+// Check if task_id is provided in URL
+if (isset($_GET['task_id'])) {
+    $taskID = $_GET['task_id'];
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
+                ta.RevisionReason
                 FROM tasks t
-                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
+                WHERE t.TaskID = ? AND t.FacultyID = ?";
+    
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
+        $tasksSql .= " AND pc.PersonnelID = ?";
+    }
+    
+    $tasksSql .= " GROUP BY t.TaskID ORDER BY t.CreatedAt DESC";
+    
+    $tasksStmt = $conn->prepare($tasksSql);
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
+        $tasksStmt->bind_param("iii", $taskID, $facultyID, $personnelID);
+    } else {
+        $tasksStmt->bind_param("ii", $taskID, $facultyID);
+    }
+} else if ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR') {
+    // Dean, Program Head, and Coordinator see all tasks in their faculty
+    $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
+                t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
+                SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
+                ta.RevisionReason
+                FROM tasks t
+                JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
                 WHERE t.FacultyID = ?
                 GROUP BY t.TaskID
@@ -167,7 +194,7 @@ if ($userRole == 'DN') {
     $tasksStmt = $conn->prepare($tasksSql);
     $tasksStmt->bind_param("i", $facultyID);
 } else {
-    // Faculty members and professors see tasks assigned to them
+    // Regular faculty members see only tasks assigned to them
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
@@ -193,6 +220,7 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                     ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
                     CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
+                    per.PersonnelID as PersonnelID,
                     CONCAT(apr.FirstName, ' ', apr.LastName) as ApprovedBy
                     FROM task_assignments ta
                     JOIN courses c ON ta.CourseCode = c.CourseCode
@@ -202,8 +230,8 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                     LEFT JOIN personnel apr ON ta.ApprovedBy = apr.PersonnelID
                     WHERE ta.TaskID = ?";
     
-    if ($userRole != 'DN') {
-        // Non-deans only see their own assignments
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
+        // Regular faculty members only see their own assignments
         $assignmentsSql .= " AND pc.PersonnelID = ?";
     }
     
@@ -211,7 +239,7 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
     
     $assignmentsStmt = $conn->prepare($assignmentsSql);
     
-    if ($userRole != 'DN') {
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
         $assignmentsStmt->bind_param("ii", $taskRow['TaskID'], $personnelID);
     } else {
         $assignmentsStmt->bind_param("i", $taskRow['TaskID']);
@@ -980,80 +1008,74 @@ $conn->close();
     <div class="files-section">
       <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto mt-8">
         <h3 class="text-2xl font-bold mb-8 text-gray-800">Your files</h3>
-        <?php if (!empty($tasks) && $userRole != 'DN'): ?>
-          <?php 
-          $uploadableTasks = [];
-          foreach ($tasks as $task) {
-              foreach ($task['Assignments'] as $assignment) {
-                  if ($assignment['AssignmentStatus'] != 'Completed') {
-                      $uploadableTasks[] = [
-                          'taskID' => $task['TaskID'],
-                          'taskTitle' => $task['Title'],
-                          'courseCode' => $assignment['CourseCode'],
-                          'courseTitle' => $assignment['CourseTitle'],
-                          'programID' => $assignment['ProgramID'],
-                          'status' => $assignment['AssignmentStatus'],
-                          'submissionPath' => $assignment['SubmissionPath']
-                      ];
-                  }
-              }
-          }
-          ?>
-          <?php if (!empty($uploadableTasks)): ?>
-            <form method="POST" action="" enctype="multipart/form-data" class="upload-form">
-              <div class="mb-6">
-                <label class="block mb-2 font-semibold text-gray-700">Select Task:</label>
-                <select name="task_selector" id="taskSelector" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
-                  <option value="">-- Select Task --</option>
-                  <?php foreach ($uploadableTasks as $index => $task): ?>
-                    <option value="<?php echo $index; ?>">
-                      <?php echo htmlspecialchars($task['taskTitle'] . ' - ' . $task['courseCode']); ?>
-                    </option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-              <div id="uploadFormFields" class="hidden">
-                <input type="hidden" name="task_id" id="taskID">
-                <input type="hidden" name="course_code" id="courseCode">
-                <input type="hidden" name="program_id" id="programID">
-                <div class="file-input-container mb-6">
-                  <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
-                    <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
-                  </label>
-                  <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
-                </div>
-                <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
-                  <div class="flex items-center gap-2">
-                    <i class="fas fa-file-alt text-blue-500"></i>
-                    <span id="fileName" class="file-name font-medium text-gray-800"></span>
-                  </div>
-                  <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
-                    <i class="fas fa-times"></i>
-                  </span>
-                </div>
-                <div id="filePreview" class="file-preview hidden"></div>
-                <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
-                  Submit and Sign
-                </button>
-              </div>
-            </form>
-          <?php else: ?>
-            <div class="text-center py-8">
-              <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
-              <p>All your tasks are completed!</p>
+        <?php 
+        $uploadableTasks = [];
+        if (!empty($tasks)) {
+            foreach ($tasks as $task) {
+                foreach ($task['Assignments'] as $assignment) {
+                    // Only include if assigned to the current user and not completed
+                    if (
+                        $assignment['AssignmentStatus'] != 'Completed' &&
+                        isset($assignment['PersonnelID']) &&
+                        $assignment['PersonnelID'] == $personnelID
+                    ) {
+                        $uploadableTasks[] = [
+                            'taskID' => $task['TaskID'],
+                            'taskTitle' => $task['Title'],
+                            'courseCode' => $assignment['CourseCode'],
+                            'courseTitle' => $assignment['CourseTitle'],
+                            'programID' => $assignment['ProgramID'],
+                            'status' => $assignment['AssignmentStatus'],
+                            'submissionPath' => $assignment['SubmissionPath']
+                        ];
+                    }
+                }
+            }
+        }
+        ?>
+        <?php if (!empty($uploadableTasks)): ?>
+          <form method="POST" action="" enctype="multipart/form-data" class="upload-form">
+            <div class="mb-6">
+              <label class="block mb-2 font-semibold text-gray-700">Select Task:</label>
+              <select name="task_selector" id="taskSelector" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
+                <option value="">-- Select Task --</option>
+                <?php foreach ($uploadableTasks as $index => $task): ?>
+                  <option value="<?php echo $index; ?>">
+                    <?php echo htmlspecialchars($task['taskTitle'] . ' - ' . $task['courseCode']); ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
             </div>
-          <?php endif; ?>
+            <div id="uploadFormFields" class="hidden">
+              <input type="hidden" name="task_id" id="taskID">
+              <input type="hidden" name="course_code" id="courseCode">
+              <input type="hidden" name="program_id" id="programID">
+              <div class="file-input-container mb-6">
+                <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
+                  <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
+                  <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
+                </label>
+                <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
+              </div>
+              <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-file-alt text-blue-500"></i>
+                  <span id="fileName" class="file-name font-medium text-gray-800"></span>
+                </div>
+                <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
+                  <i class="fas fa-times"></i>
+                </span>
+              </div>
+              <div id="filePreview" class="file-preview hidden"></div>
+              <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
+                Submit and Sign
+              </button>
+            </div>
+          </form>
         <?php else: ?>
           <div class="text-center py-8">
             <i class="fas fa-info-circle text-4xl text-blue-500 mb-3"></i>
-            <?php if ($userRole == 'DN'): ?>
-              <p>As Dean, you can create tasks and approve them when submitted.</p>
-              <p class="mt-3 text-sm text-gray-600">Click + at Task Page to add new tasks.</p>
-            <?php else: ?>
-              <p>No tasks available yet.</p>
-              <p class="mt-3 text-sm text-gray-600">Tasks assigned to you will appear here.</p>
-            <?php endif; ?>
+            <p>No tasks assigned to you yet.</p>
           </div>
         <?php endif; ?>
       </div>

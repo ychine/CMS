@@ -55,24 +55,6 @@ try {
     }
     $checkCourseStmt->close();
 
-    // Check if course exists in the program (across all curricula)
-    $checkProgramCourseStmt = $conn->prepare("
-        SELECT pc.CourseCode, c.Title 
-        FROM program_courses pc 
-        JOIN courses c ON pc.CourseCode = c.CourseCode
-        WHERE pc.ProgramID = ? AND pc.CourseCode = ?
-    ");
-    $checkProgramCourseStmt->bind_param("is", $programId, $courseCode);
-    $checkProgramCourseStmt->execute();
-    $result = $checkProgramCourseStmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        echo json_encode(['success' => false, 'message' => "Course $courseCode already exists in this program with title: " . $row['Title']]);
-        exit();
-    }
-    $checkProgramCourseStmt->close();
-
     // Check if course exists in courses table
     $checkCourseStmt = $conn->prepare("SELECT CourseCode FROM courses WHERE CourseCode = ?");
     $checkCourseStmt->bind_param("s", $courseCode);
