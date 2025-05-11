@@ -377,7 +377,6 @@ CREATE TABLE `task_assignments` (
   `ApprovalDate` datetime DEFAULT NULL,
   `RevisionReason` text DEFAULT NULL,
   PRIMARY KEY (`TaskAssignmentID`),
-  UNIQUE KEY `task_assignment_unique` (`TaskID`,`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `fk_task_assignments_tasks` (`TaskID`),
   KEY `fk_task_assignments_program_courses` (`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `fk_task_assignments_approver` (`ApprovedBy`),
@@ -468,4 +467,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-12  0:41:06
+-- Dump completed on 2025-05-12  0:59:53
