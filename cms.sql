@@ -237,16 +237,16 @@ CREATE TABLE `program_courses` (
   `FacultyID` int(11) DEFAULT NULL,
   `PersonnelID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ProgramCourseID`),
-  UNIQUE KEY `uq_program_course` (`ProgramID`,`CourseCode`),
-  UNIQUE KEY `unique_program_course_faculty` (`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `CourseCode` (`CourseCode`),
   KEY `fk_program_courses_curriculum` (`CurriculumID`),
   KEY `fk_program_courses_personnel` (`PersonnelID`),
+  KEY `fk_program_courses_faculty` (`FacultyID`),
   CONSTRAINT `fk_program_courses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`),
+  CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
+  CONSTRAINT `fk_program_courses_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -379,14 +379,17 @@ CREATE TABLE `task_assignments` (
   `ApprovalDate` datetime DEFAULT NULL,
   `RevisionReason` text DEFAULT NULL,
   PRIMARY KEY (`TaskAssignmentID`),
-  UNIQUE KEY `task_assignment_unique` (`TaskID`,`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `fk_task_assignments_tasks` (`TaskID`),
-  KEY `fk_task_assignments_program_courses` (`ProgramID`,`CourseCode`,`FacultyID`),
+  KEY `fk_task_assignments_program` (`ProgramID`),
+  KEY `fk_task_assignments_course` (`CourseCode`),
+  KEY `fk_task_assignments_faculty` (`FacultyID`),
   KEY `fk_task_assignments_approver` (`ApprovedBy`),
   CONSTRAINT `fk_task_assignments_approver` FOREIGN KEY (`ApprovedBy`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
-  CONSTRAINT `fk_task_assignments_program_courses` FOREIGN KEY (`ProgramID`, `CourseCode`, `FacultyID`) REFERENCES `program_courses` (`ProgramID`, `CourseCode`, `FacultyID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_course` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
