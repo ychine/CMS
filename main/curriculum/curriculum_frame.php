@@ -537,7 +537,7 @@ $conn->close();
     </div>
 
     <!-- Floating Add Button -->
-    <?php if ($userRole === 'DN'): ?>
+    <?php if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR'): ?>
     <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 
         class="task-button fixed bottom-8 right-10 w-13 h-13 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
         title="Add Task">
@@ -762,7 +762,7 @@ $conn->close();
     });
 
     function deleteProgram(programId) {
-    // Show loading state
+  
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     const originalText = confirmBtn.textContent;
     confirmBtn.textContent = 'Deleting...';

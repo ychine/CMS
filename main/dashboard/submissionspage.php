@@ -1082,8 +1082,29 @@ $conn->close();
     </div>
   </div>
   
-  
+  <!-- Floating Add Button -->
+  <?php if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR'): ?>
+  <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 
+      class="task-button fixed bottom-8 right-10 w-13 h-13 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
+      title="Add Task">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 transition-transform duration-500 ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+  </a>
 
+  <!-- Dropdown -->
+  <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-80 space-y-2 z-50 flex flex-col items-end">
+      <button onclick="openProgramModal()"
+          class="text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150 whitespace-nowrap">
+          Add Program or Curriculum
+      </button>
+      <button onclick="openCourseModal()"
+          class="text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+          Add Course
+      </button>
+  </div>
+  <?php endif; ?>
+  
   <script>
     // Add event listener for task selector change
     document.addEventListener('DOMContentLoaded', function() {
