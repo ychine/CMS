@@ -223,6 +223,38 @@ INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'
 UNLOCK TABLES;
 
 --
+-- Table structure for table `pinboard`
+--
+
+DROP TABLE IF EXISTS `pinboard`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pinboard` (
+  `PinID` int(11) NOT NULL AUTO_INCREMENT,
+  `Title` varchar(255) NOT NULL,
+  `Message` text NOT NULL,
+  `CreatedBy` int(11) NOT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `FacultyID` int(11) NOT NULL,
+  PRIMARY KEY (`PinID`),
+  KEY `CreatedBy` (`CreatedBy`),
+  KEY `FacultyID` (`FacultyID`),
+  CONSTRAINT `pinboard_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
+  CONSTRAINT `pinboard_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pinboard`
+--
+
+LOCK TABLES `pinboard` WRITE;
+/*!40000 ALTER TABLE `pinboard` DISABLE KEYS */;
+INSERT INTO `pinboard` VALUES (1,'ANNOUNCEMENT!!','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',12,'2025-05-11 18:08:27',2),(4,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',13,'2025-05-11 19:27:53',2),(5,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',18,'2025-05-11 19:29:41',2);
+/*!40000 ALTER TABLE `pinboard` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `program_courses`
 --
 
@@ -241,9 +273,10 @@ CREATE TABLE `program_courses` (
   KEY `fk_program_courses_curriculum` (`CurriculumID`),
   KEY `fk_program_courses_personnel` (`PersonnelID`),
   KEY `fk_program_courses_faculty` (`FacultyID`),
+  KEY `program_courses_ibfk_1` (`ProgramID`),
   CONSTRAINT `fk_program_courses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
   CONSTRAINT `fk_program_courses_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
+  CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -385,9 +418,9 @@ CREATE TABLE `task_assignments` (
   KEY `fk_task_assignments_faculty` (`FacultyID`),
   KEY `fk_task_assignments_approver` (`ApprovedBy`),
   CONSTRAINT `fk_task_assignments_approver` FOREIGN KEY (`ApprovedBy`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
-  CONSTRAINT `fk_task_assignments_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_course` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -473,4 +506,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-12  1:11:18
+-- Dump completed on 2025-05-12  4:13:36
