@@ -59,16 +59,23 @@ $conn->close();
                 </div>
             <?php else: ?>
                 <?php foreach ($pinboardPosts as $post): ?>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="flex items-start justify-between mb-2">
-                            <h3 class="font-semibold text-gray-800"><?php echo htmlspecialchars($post['Title']); ?></h3>
-                            <span class="text-xs text-gray-500"><?php echo date('M j, Y', strtotime($post['CreatedAt'])); ?></span>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-2"><?php echo nl2br(htmlspecialchars($post['Message'])); ?></p>
-                        <div class="flex items-center text-xs text-gray-500">
-                            <span class="font-medium"><?php echo htmlspecialchars($post['AuthorName']); ?></span>
-                            <span class="mx-1">•</span>
-                            <span><?php echo htmlspecialchars($post['AuthorRole']); ?></span>
+                    <div class="relative bg-gray-100 rounded-xl p-6 shadow-sm flex flex-col">
+                        <div class="flex flex-row items-start">
+                            <div class="w-1.5 h-full bg-green-400 rounded-full mr-4"></div>
+                            <div class="flex-1 flex flex-col">
+                                <h3 class="font-bold italic text-lg tracking-tight mb-1 break-words" style="color: #0D5191;"><?php echo htmlspecialchars($post['Title']); ?></h3>
+                                <div class="flex items-center gap-1 mb-3">
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    <span class="text-xs text-gray-400 font-medium"><?php echo date('M j, Y', strtotime($post['CreatedAt'])); ?></span>
+                                </div>
+                                <p class="text-base leading-relaxed text-gray-700 mb-4 whitespace-pre-line break-words"><?php echo nl2br(htmlspecialchars($post['Message'])); ?></p>
+                                <div class="flex items-center text-xs text-gray-500 font-medium mt-2">
+            
+                                     <h3 class="font-bold"><?php echo htmlspecialchars($post['AuthorName']); ?> </h3>
+                                    <span class="mx-1">•</span>
+                                    <span><?php echo htmlspecialchars($post['AuthorRole']); ?></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -77,58 +84,41 @@ $conn->close();
     </div>
 </div>
 
-<!-- Pinboard Modal -->
-<div id="pinboardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 w-[500px] max-w-[90%]">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Post Announcement</h3>
-            <button onclick="closePinboardModal()" class="text-gray-500 hover:text-gray-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        </div>
-        <form method="POST" action="">
-            <div class="mb-4">
-                <label for="announcement_title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input type="text" id="announcement_title" name="announcement_title" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="mb-4">
-                <label for="announcement_message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea id="announcement_message" name="announcement_message" required rows="4"
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closePinboardModal()"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
-                    Cancel
-                </button>
-                <button type="submit" name="post_announcement"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                    Post Announcement
-                </button>
-            </div>
-        </form>
+<!-- Custom Post Announcement Modal -->
+<div id="pinboardModal" class="fixed inset-0 z-50 hidden  items-center justify-center">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-[500px] max-w-full mx-auto border-2 border-gray-400 font-onest modal-animate max-h-[90vh] flex flex-col relative">
+    <button onclick="closePinboardModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-3xl font-bold" title="Close">&times;</button>
+    <div class="flex-none">
+      <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800 flex items-center gap-2">
+        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Post Announcement
+      </h2>
+      <hr class="border-gray-400 mb-6">
     </div>
+    <form id="pinboardForm" method="POST" action="" class="flex-1 overflow-y-auto pr-2 flex flex-col gap-6">
+      <div class="space-y-2">
+        <label class="block text-lg font-semibold text-gray-700">Title:</label>
+        <input type="text" id="announcement_title" name="announcement_title" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="Enter announcement title">
+      </div>
+      <div class="space-y-2">
+        <label class="block text-lg font-semibold text-gray-700">Message:</label>
+        <textarea id="announcement_message" name="announcement_message" required rows="4" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="Type your message..."></textarea>
+      </div>
+      <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
+        <button type="button" onclick="closePinboardModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+        <button type="submit" name="post_announcement" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">Post Announcement</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>
-// Pinboard Modal Functions
 function openPinboardModal() {
-    document.getElementById('pinboardModal').classList.remove('hidden');
-    document.getElementById('pinboardModal').classList.add('flex');
+  document.getElementById('pinboardModal').classList.remove('hidden');
+  document.getElementById('pinboardModal').classList.add('flex');
 }
-
 function closePinboardModal() {
-    document.getElementById('pinboardModal').classList.add('hidden');
-    document.getElementById('pinboardModal').classList.remove('flex');
+  document.getElementById('pinboardModal').classList.add('hidden');
+  document.getElementById('pinboardModal').classList.remove('flex');
 }
-
-// Close modal when clicking outside
-document.getElementById('pinboardModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closePinboardModal();
-    }
-});
 </script> 
