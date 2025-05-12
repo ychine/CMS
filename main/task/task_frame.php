@@ -714,6 +714,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                 <div>
                                                     <span class="font-semibold text-gray-800"><?php echo htmlspecialchars($course['CourseCode']); ?></span>
                                                     <span class="text-gray-600">- <?php echo htmlspecialchars($course['CourseTitle']); ?></span>
+                                                    <br> 
                                                     <span class="ml-2 text-xs text-gray-500">Assigned to: <?php echo !empty($course['AssignedTo']) ? htmlspecialchars($course['AssignedTo']) : '<span class=\'text-red-500\'>No assigned professor</span>'; ?></span>
                                                 </div>
                                                 <div class="flex flex-col items-end gap-1">
