@@ -1,7 +1,7 @@
 <?php 
 session_start(); 
 if (!isset($_SESSION['Username'])) { 
-    header("Location: ../index.php"); 
+    header("Location: ../../index.php"); 
     exit(); 
 } 
 
@@ -138,6 +138,73 @@ $conn->close();
             background-color: #fee2e2;
             border-color: #fecaca;
             color: #dc2626;
+        }
+
+        body.dark {
+            background: #18181b !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .bg-white {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .shadow-lg, .dark .shadow-2xl {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+        }
+        .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
+            color: #e5e7eb !important;
+        }
+        .dark .text-gray-500 {
+            color: #a1a1aa !important;
+        }
+        .dark .border-gray-300, .dark .border {
+            border-color: #374151 !important;
+        }
+        .dark .bg-blue-50, .dark .bg-blue-100 {
+            background: #1e293b !important;
+        }
+        .dark .file-input-label {
+            background: #23232a !important;
+            border-color: #374151 !important;
+            color: #e5e7eb !important;
+        }
+        .dark .role-select {
+            background-color: #23232a !important;
+            color: #f3f4f6 !important;
+            border-color: #374151 !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .dark .role-select:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        .dark .delete-button {
+            background-color: #23232a !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .delete-button:hover {
+            background-color: #7f1d1d !important;
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+        .dark .delete-button svg {
+            color: #f87171 !important;
+        }
+        .dark .delete-button:hover svg {
+            color: #ef4444 !important;
+        }
+        .dark .bg-gray-100 {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .text-gray-800,
+        .dark .text-gray-500,
+        .dark .text-gray-400 {
+            color: #a1a1aa !important;
+        }
+        .dark .hover\:bg-gray-400:hover {
+            background: #374151 !important;
         }
     </style>
 </head>
@@ -394,6 +461,10 @@ function processRoleChange(accountId, newRole) {
             console.error('Failed to copy:', err);
         });
     }
-    </script>
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+    }
+</script>
 </body>
 </html>

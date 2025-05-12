@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['Username'])) {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit();
 }
 
@@ -328,6 +328,66 @@ $conn->close();
         
                 
 
+        /* DARK MODE STYLES */
+        body.dark {
+            background-color: #324f96;
+        }
+        .dark .bg-white {
+            background: #2d3036 !important;
+            color: #fff;
+        }
+        .dark #sidebar {
+            background: #23252b !important;
+            color: #e3e3e3;
+        }
+        .dark .flex-1 {
+            background: #1a1c20 !important;
+            color: #fff;
+        }
+        .dark .profile-dropdown {
+            background: #23252b !important;
+            border: 1px solid #35373c !important;
+            border-radius: 10px !important;
+        }
+        .dark .profile-dropdown-item {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-item:hover {
+            background: #35373c !important;
+            color: #fff !important;
+        }
+        .dark .profile-dropdown-item svg {
+            color: #e3e3e3 !important;
+        }
+        .dark .user-info {
+            background: transparent !important;
+        }
+        .dark .user-info:hover {
+            background: #23252b !important;
+        }
+        .dark .hover\:bg-gray-100:hover {
+            background: #35373c !important;
+        }
+        .dark .text-gray-600, .dark .text-gray-500 {
+            color: #e3e3e3 !important;
+        }
+        .dark .rounded-full.bg-\[\#1D387B\] {
+            background: #314f9b !important;
+        }
+
+        .dark .profile-dropdown-item.text-red-500 {
+            color: #ff6b6b !important;
+        }
+
+        .dark .profile-dropdown-bg {
+            background: #23252b !important;
+            border-color: #35373c !important;
+        }
+
+        .dark .link-text, .dark .font-onest, .dark .font-overpass {
+            color: #e3e3e3 !important;
+        }
+
     </style>
 </head>
 
@@ -358,7 +418,7 @@ $conn->close();
                 </a>
 
                 <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Tasks</span>
                 </a>
 
@@ -449,14 +509,14 @@ $conn->close();
                         
                     <!-- Dropdown Menu (Hidden by Default) -->
                     <div id="userMenu" class="hidden">
-                            <div class="py-1 border border-gray-200 rounded-md">
-                                <a href="profile/profile.php" class="profile-dropdown-item">
+                            <div class="py-1 border border-gray-200 rounded-md profile-dropdown-bg">
+                                <a href="../profile/profile.php" class="profile-dropdown-item">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                     View Profile
                                 </a>
-                                <a href="settings.php" class="profile-dropdown-item">
+                                <a href="../settings/settings.php" class="profile-dropdown-item">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -464,7 +524,7 @@ $conn->close();
                                     Settings
                                 </a>
                                 <hr class="my-1 border-gray-200" />
-                                <a href="../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
+                                <a href="../../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                     </svg>
@@ -623,5 +683,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   </script>
   <!-- hi -->
+  <script>
+    if (localStorage.getItem('darkMode') === 'enabled') {
+      document.body.classList.add('dark');
+    }
+  </script>
 </body>
 </html>

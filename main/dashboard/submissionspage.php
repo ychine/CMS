@@ -1,9 +1,9 @@
 <?php
 session_start();
 
-// Check if user is logged in
+
 if (!isset($_SESSION['Username'])) {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit();
 }
 
@@ -18,7 +18,6 @@ $userRole = "";
 $facultyID = null;
 $message = "";
 
-// Fetch the faculty name, faculty ID and role based on the logged-in user
 $sql = "SELECT personnel.PersonnelID, personnel.FacultyID, personnel.Role, faculties.Faculty 
         FROM personnel 
         JOIN faculties ON personnel.FacultyID = faculties.FacultyID
@@ -94,7 +93,7 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
 }
 
 // Handle task approval (Dean only)
-if (isset($_POST['approve_task']) && $userRole == 'Dean') {
+if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $taskAssignmentID = $_POST['task_assignment_id'];
     
     $approveSql = "UPDATE task_assignments 
@@ -152,14 +151,42 @@ if (isset($_POST['approve_task']) && $userRole == 'Dean') {
 // Fetch tasks based on user role
 $tasks = [];
 
-if ($userRole == 'Dean') {
-    // Dean sees all tasks in the faculty
+// Check if task_id is provided in URL
+if (isset($_GET['task_id'])) {
+    $taskID = $_GET['task_id'];
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
+                ta.RevisionReason
                 FROM tasks t
-                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
+                WHERE t.TaskID = ? AND t.FacultyID = ?";
+    
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
+        $tasksSql .= " AND pc.PersonnelID = ?";
+    }
+    
+    $tasksSql .= " GROUP BY t.TaskID ORDER BY t.CreatedAt DESC";
+    
+    $tasksStmt = $conn->prepare($tasksSql);
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
+        $tasksStmt->bind_param("iii", $taskID, $facultyID, $personnelID);
+    } else {
+        $tasksStmt->bind_param("ii", $taskID, $facultyID);
+    }
+} else if ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR') {
+    // Dean, Program Head, and Coordinator see all tasks in their faculty
+    $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
+                t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
+                SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
+                ta.RevisionReason
+                FROM tasks t
+                JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
                 WHERE t.FacultyID = ?
                 GROUP BY t.TaskID
@@ -167,7 +194,7 @@ if ($userRole == 'Dean') {
     $tasksStmt = $conn->prepare($tasksSql);
     $tasksStmt->bind_param("i", $facultyID);
 } else {
-    // Faculty members and professors see tasks assigned to them
+    // Regular faculty members see only tasks assigned to them
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
@@ -190,9 +217,10 @@ $tasksResult = $tasksStmt->get_result();
 while ($taskRow = $tasksResult->fetch_assoc()) {
     // For each task, get the courses and their assignment details
     $assignmentsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.Status as AssignmentStatus, 
-                    ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate,
+                    ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
                     CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
+                    per.PersonnelID as PersonnelID,
                     CONCAT(apr.FirstName, ' ', apr.LastName) as ApprovedBy
                     FROM task_assignments ta
                     JOIN courses c ON ta.CourseCode = c.CourseCode
@@ -202,8 +230,8 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                     LEFT JOIN personnel apr ON ta.ApprovedBy = apr.PersonnelID
                     WHERE ta.TaskID = ?";
     
-    if ($userRole != 'DN') {
-        // Non-deans only see their own assignments
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
+        // Regular faculty members only see their own assignments
         $assignmentsSql .= " AND pc.PersonnelID = ?";
     }
     
@@ -211,7 +239,7 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
     
     $assignmentsStmt = $conn->prepare($assignmentsSql);
     
-    if ($userRole != 'DN') {
+    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
         $assignmentsStmt->bind_param("ii", $taskRow['TaskID'], $personnelID);
     } else {
         $assignmentsStmt->bind_param("i", $taskRow['TaskID']);
@@ -261,8 +289,81 @@ $conn->close();
     
     .files-section {
       flex: 1;
-      padding: 20px;
-      background-color: #f9fafb;
+      padding: 40px;
+      background: #f8fafc;
+    }
+    
+    .files-section .bg-white {
+      background: white;
+      color: #1f2937;
+    }
+    
+    .files-section .text-gray-800 {
+      color: #1f2937;
+    }
+    
+    .files-section .text-gray-600 {
+      color: #4b5563;
+    }
+    
+    .files-section .text-gray-500 {
+      color: #6b7280;
+    }
+    
+    .files-section .border-gray-300 {
+      border-color: #d1d5db;
+    }
+    
+    .files-section .bg-blue-50 {
+      background: #eff6ff;
+    }
+    
+    .files-section .hover\:bg-blue-100:hover {
+      background: #dbeafe;
+    }
+    
+    .files-section .text-blue-500 {
+      color: #3b82f6;
+    }
+    
+    .files-section .bg-blue-100 {
+      background: #dbeafe;
+    }
+    
+    .files-section .bg-blue-600 {
+      background: #2563eb;
+    }
+    
+    .files-section .hover\:bg-blue-700:hover {
+      background: #1d4ed8;
+    }
+    
+    .files-section .border-blue-300 {
+      border-color: #93c5fd;
+    }
+    
+    .files-section .bg-green-100 {
+      background: #dcfce7;
+    }
+    
+    .files-section .text-green-500 {
+      color: #22c55e;
+    }
+    
+    .files-section .bg-yellow-50 {
+      background: #fefce8;
+    }
+    
+    .files-section .border-yellow-200 {
+      border-color: #fef08a;
+    }
+    
+    .files-section .text-yellow-800 {
+      color: #854d0e;
+    }
+    
+    .files-section .text-yellow-700 {
+      color: #a16207;
     }
     
     .section-header {
@@ -484,20 +585,25 @@ $conn->close();
     }
     
     .selected-file {
-      margin-top: 10px;
-      padding: 8px 12px;
-      background-color: #e0f2fe;
-      border-radius: 4px;
+      background: #dbeafe;
+      border-radius: 9999px;
+      padding: 0.5rem 1rem;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      max-width: 320px;
+      min-width: 220px;
+      width: 100%;
+      box-sizing: border-box;
     }
     
-    .file-name {
+    .selected-file .file-name {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 80%;
+      max-width: 180px;
+      display: inline-block;
     }
     
     .remove-file {
@@ -550,46 +656,291 @@ $conn->close();
       padding: 15px;
       text-align: center;
     }
+    
+    body.dark {
+      background: #18181b !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .bg-white,
+    .dark .files-section .bg-white {
+      background: #26272b !important;
+      color: #f3f4f6 !important;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.32) !important;
+      border: 1px solid #34343c !important;
+    }
+    .dark .shadow-lg, .dark .shadow-2xl {
+      box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+    }
+    .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
+      color: #e5e7eb !important;
+    }
+    .dark .text-gray-500 {
+      color: #a1a1aa !important;
+    }
+    .dark .border-gray-300, .dark .border {
+      border-color: #374151 !important;
+    }
+    .dark .bg-blue-50, .dark .bg-blue-100, .dark .files-section .bg-blue-50, .dark .files-section .bg-blue-100 {
+      background: #1e293b !important;
+    }
+    .dark .file-input-label, .dark .files-section .file-input-label {
+      background: #23232a !important;
+      border-color: #374151 !important;
+      color: #e5e7eb !important;
+    }
+    .dark .bg-gray-100,
+    .dark .bg-gray-200,
+    .dark .files-section .bg-gray-100,
+    .dark .files-section .bg-gray-200 {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .border,
+    .dark .border-gray-300,
+    .dark .border-gray-200,
+    .dark .files-section .border,
+    .dark .files-section .border-gray-300,
+    .dark .files-section .border-gray-200 {
+      border-color: #374151 !important;
+    }
+    .dark .text-gray-900,
+    .dark .text-gray-800,
+    .dark .text-gray-700,
+    .dark .text-gray-600,
+    .dark .text-gray-500,
+    .dark .text-sm,
+    .dark .text-xs,
+    .dark .files-section .text-gray-900,
+    .dark .files-section .text-gray-800,
+    .dark .files-section .text-gray-700,
+    .dark .files-section .text-gray-600,
+    .dark .files-section .text-gray-500,
+    .dark .files-section .text-sm,
+    .dark .files-section .text-xs {
+      color: #f3f4f6 !important;
+    }
+    .dark .hover\:bg-gray-200:hover,
+    .dark .files-section .hover\:bg-gray-200:hover {
+      background: #2d2d36 !important;
+    }
+    .dark .task-card,
+    .dark .bg-white,
+    .dark .bg-gray-100,
+    .dark .bg-gray-200,
+    .dark .file-placeholder,
+    .dark .files-section .task-card,
+    .dark .files-section .bg-white,
+    .dark .files-section .bg-gray-100,
+    .dark .files-section .bg-gray-200,
+    .dark .files-section .file-placeholder {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    .dark .course-card.completed {
+      background: #134e2e !important;
+      border-left-color: #22d3ee !important;
+      color: #bbf7d0 !important;
+    }
+    .dark .course-card.submitted {
+      background: #1e293b !important;
+      border-left-color: #60a5fa !important;
+      color: #bae6fd !important;
+    }
+    .dark .course-card.pending {
+      background: #3b2f0b !important;
+      border-left-color: #f59e0b !important;
+      color: #fde68a !important;
+    }
+    .dark .faculty-role,
+    .dark .deadline,
+    .dark .status-label,
+    .dark .signed-by,
+    .dark .text-xs,
+    .dark .text-sm,
+    .dark .files-section .faculty-role,
+    .dark .files-section .deadline,
+    .dark .files-section .status-label,
+    .dark .files-section .signed-by,
+    .dark .files-section .text-xs,
+    .dark .files-section .text-sm {
+      color: #f3f4f6 !important;
+    }
+    .dark .status-label.completed {
+      color: #6ee7b7 !important;
+    }
+    .dark .status-label.submitted {
+      color: #38bdf8 !important;
+    }
+    .dark .status-label.pending {
+      color: #fde68a !important;
+    }
+    .dark .submit-btn {
+      background: #2563eb !important;
+      color: #fff !important;
+    }
+    .dark .submit-btn:hover {
+      background: #1d4ed8 !important;
+    }
+    .dark .remove-file {
+      color: #f87171 !important;
+    }
+    .dark .fa-check-circle {
+      color: #22d3ee !important;
+    }
+    .dark .no-tasks {
+      background: transparent !important;
+      color: #a1a1aa !important;
+    }
+    .dark .files-section .bg-white {
+      background: #26272b !important;
+      color: #f3f4f6 !important;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.32) !important;
+      border: 1px solid #34343c !important;
+    }
+    .dark .text-gray-500,
+    .dark .text-gray-800,
+    .dark .files-section .text-gray-500,
+    .dark .files-section .text-gray-800 {
+      color: #a1a1aa !important;
+    }
+    .dark .text-blue-500,
+    .dark .files-section .text-blue-500 {
+      color: #38bdf8 !important;
+    }
+    /* Dark mode for select and option in files-section */
+    .dark .files-section select,
+    .dark .files-section select:focus {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+      border-color: #60a5fa !important;
+    }
+    .dark .files-section option {
+      background: #23232a !important;
+      color: #f3f4f6 !important;
+    }
+    /* --- Modern UI/UX Improvements --- */
+    .task-card, .files-section, .course-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    /* Only course-card has hover effect */
+    .course-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+      transform: translateY(-2px) scale(1.01);
+    }
+    .section-header h3 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+    }
+    .section-header .course-code {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #64748b;
+    }
+    .submit-btn, .approval-btn {
+      border-radius: 9999px;
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .submit-btn:focus, .approval-btn:focus {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+    input, select {
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px #2563eb33;
+    }
+    .file-input-label {
+      border-radius: 16px;
+      border-width: 2px;
+      border-style: dashed;
+      border-color: #60a5fa;
+      background: #f0f9ff;
+      padding: 2.5rem 1.5rem;
+      font-size: 1.1rem;
+    }
+    .file-input-label i {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .selected-file {
+      border-radius: 9999px;
+      background: #dbeafe;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+    }
+    @media (max-width: 900px) {
+      .content {
+        flex-direction: column;
+      }
+      .files-section {
+        padding: 20px;
+        margin-top: 2rem;
+      }
+    }
+    /* --- End Modern UI/UX Improvements --- */
+    .dark .files-section {
+      background: #18181b !important;
+    }
   </style>
 </head>
 <body>
+<?php if ($userRole == 'DN'): ?>
+<script>
+  if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark');
+  }
+</script>
+<?php endif; ?>
   <div class="content">
     <div class="tasks-section">
       <?php if (!empty($message)): ?>
-      <div class="bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded mb-4">
+      <div class="bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded mb-6">
           <?php echo $message; ?>
       </div>
       <?php endif; ?>
       
       <?php if (empty($tasks)): ?>
       <div class="no-tasks">
-        <p>No tasks available. <?php echo ($userRole == 'Dean') ? 'Create your first task!' : 'Tasks assigned to you will appear here.'; ?></p>
+        <p>No tasks available. <?php echo ($userRole == 'DN') ? 'Create your first task!' : 'Tasks assigned to you will appear here.'; ?></p>
       </div>
       <?php else: ?>
         <?php foreach ($tasks as $task): ?>
-        <div class="task-list">
-          <div class="section-header">
+        <div class="task-list mb-8">
+          <div class="section-header mb-4">
             <h3><?php echo htmlspecialchars($task['Title']); ?></h3>
             <span class="course-code">
               <?php echo htmlspecialchars($task['SchoolYear'] . ' ' . $task['Term']); ?>
             </span>
           </div>
           
-          <div class="task-card">
-            <div class="task-header">
+          <div class="task-card mb-4">
+            <div class="task-header mb-2">
               <div class="faculty-info">
                 <div class="faculty-avatar"></div>
                 <div class="faculty-details">
-                  <p class="faculty-name"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
-                  <p class="faculty-role"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
+                  <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
+                  <p class="faculty-role font-light"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
                 </div>
               </div>
               <div class="deadline">
                 <p>Deadline: <?php echo date("F j, g:i a", strtotime($task['DueDate'])); ?></p>
               </div>
             </div>
-            <div class="task-content">
-              <p>"<?php echo htmlspecialchars($task['Description']); ?>"</p>
+            <div class="task-content mb-2">
+              <p class="text-base font-light">"<?php echo htmlspecialchars($task['Description']); ?>"</p>
               <?php if (!empty($task['RevisionReason'])): ?>
                 <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <h4 class="font-medium text-yellow-800 mb-2">Revision Requested</h4>
@@ -600,22 +951,28 @@ $conn->close();
           </div>
           
           <div class="approval-section">
-            <div class="approval-header">
-              <h3>Approval Status</h3>
-              <div class="complete-label">Complete: <?php echo $task['CompletedAssignments']; ?>/<?php echo $task['TotalAssignments']; ?></div>
+            <div class="approval-header mb-2">
+              <h3 class="font-semibold">Approval Status</h3>
+              <div class="complete-label font-light">Complete: <?php echo $task['CompletedAssignments']; ?>/<?php echo $task['TotalAssignments']; ?></div>
             </div>
             
             <?php if (!empty($task['Assignments'])): ?>
               <?php foreach ($task['Assignments'] as $assignment): ?>
-                <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?>">
+                <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3">
                   <div class="course-info">
-                    <p class="course-name"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
+                    <p class="course-name font-semibold"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
                     <div class="course-badges">
                       <span class="badge"></span>
                       <span class="badge"></span>
                     </div>
-                    <p class="text-xs text-gray-600"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
-                    <p class="text-xs text-gray-600">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
+                    <p class="text-xs text-gray-600 font-light"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
+                    <p class="text-xs text-gray-600 font-light">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
+                    <?php if (!empty($assignment['RevisionReason'])): ?>
+                      <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                        <span class="font-medium text-yellow-800">Revision Requested:</span>
+                        <span class="text-yellow-700"><?php echo nl2br(htmlspecialchars($assignment['RevisionReason'])); ?></span>
+                      </div>
+                    <?php endif; ?>
                   </div>
                   <div class="status">
                     <span class="status-label <?php echo strtolower($assignment['AssignmentStatus']); ?>">
@@ -623,23 +980,25 @@ $conn->close();
                     </span>
                     
                     <?php if ($assignment['AssignmentStatus'] == 'Completed'): ?>
-                      <p class="signed-by">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
-                      <p class="text-xs text-gray-500"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
-                    <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'Dean'): ?>
-                      <form method="POST" action="" class="mt-1">
+                      <br>
+                      <p class="signed-by font-light">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
+                      <p class="text-xs text-gray-500 font-light"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
+                    <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
+                      <form method="POST" action="../task/task_actions.php" class="mt-1">
                         <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
-                        <button type="submit" name="approve_task" class="approval-btn">
+                        <input type="hidden" name="action" value="complete">
+                        <button type="submit" class="approval-btn">
                           Approve
                         </button>
                       </form>
                     <?php elseif ($assignment['AssignmentStatus'] == 'Submitted'): ?>
-                      <p class="text-xs text-gray-500">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
+                      <p class="text-xs text-gray-500 font-light">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
                     <?php endif; ?>
                   </div>
                 </div>
               <?php endforeach; ?>
             <?php else: ?>
-              <p class="text-center text-gray-500 my-4">No courses assigned to this task.</p>
+              <p class="text-center text-gray-500 my-4 font-light">No courses assigned to this task.</p>
             <?php endif; ?>
           </div>
         </div>
@@ -648,33 +1007,38 @@ $conn->close();
     </div>
     
     <div class="files-section">
-      <h3>Your files</h3>
-      
-      <?php if (!empty($tasks) && $userRole != 'Dean'): ?>
+      <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto mt-8">
+        <h3 class="text-2xl font-bold mb-8 text-gray-800">Your files</h3>
         <?php 
         $uploadableTasks = [];
-        foreach ($tasks as $task) {
-            foreach ($task['Assignments'] as $assignment) {
-                if ($assignment['AssignmentStatus'] != 'Completed') {
-                    $uploadableTasks[] = [
-                        'taskID' => $task['TaskID'],
-                        'taskTitle' => $task['Title'],
-                        'courseCode' => $assignment['CourseCode'],
-                        'courseTitle' => $assignment['CourseTitle'],
-                        'programID' => $assignment['ProgramID'],
-                        'status' => $assignment['AssignmentStatus'],
-                        'submissionPath' => $assignment['SubmissionPath']
-                    ];
+        if (!empty($tasks)) {
+            foreach ($tasks as $task) {
+                foreach ($task['Assignments'] as $assignment) {
+                    // Only include if assigned to the current user and not completed
+                    if (
+                        $assignment['AssignmentStatus'] != 'Completed' &&
+                        isset($assignment['PersonnelID']) &&
+                        $assignment['PersonnelID'] == $personnelID
+                    ) {
+                        $uploadableTasks[] = [
+                            'taskID' => $task['TaskID'],
+                            'taskTitle' => $task['Title'],
+                            'courseCode' => $assignment['CourseCode'],
+                            'courseTitle' => $assignment['CourseTitle'],
+                            'programID' => $assignment['ProgramID'],
+                            'status' => $assignment['AssignmentStatus'],
+                            'submissionPath' => $assignment['SubmissionPath']
+                        ];
+                    }
                 }
             }
         }
         ?>
-        
         <?php if (!empty($uploadableTasks)): ?>
           <form method="POST" action="" enctype="multipart/form-data" class="upload-form">
-            <div class="mb-3">
-              <label class="block mb-1 font-medium">Select Task:</label>
-              <select name="task_selector" id="taskSelector" class="w-full p-2 border rounded" onchange="updateTaskSelection()">
+            <div class="mb-6">
+              <label class="block mb-2 font-semibold text-gray-700">Select Task:</label>
+              <select name="task_selector" id="taskSelector" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition">
                 <option value="">-- Select Task --</option>
                 <?php foreach ($uploadableTasks as $index => $task): ?>
                   <option value="<?php echo $index; ?>">
@@ -683,190 +1047,54 @@ $conn->close();
                 <?php endforeach; ?>
               </select>
             </div>
-            
             <div id="uploadFormFields" class="hidden">
               <input type="hidden" name="task_id" id="taskID">
               <input type="hidden" name="course_code" id="courseCode">
               <input type="hidden" name="program_id" id="programID">
-              
-              <div class="file-input-container">
-                <label for="taskFile" class="file-input-label">
-                  <i class="fas fa-cloud-upload-alt text-2xl text-blue-500 mb-2"></i>
-                  <p>Drag and drop your file here or click to browse</p>
+              <div class="file-input-container mb-6">
+                <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
+                  <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
+                  <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
                 </label>
                 <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
               </div>
-              
-              <div id="selectedFile" class="selected-file hidden">
-                <span id="fileName" class="file-name"></span>
-                <span class="remove-file" onclick="removeFile()">
+              <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-file-alt text-blue-500"></i>
+                  <span id="fileName" class="file-name font-medium text-gray-800"></span>
+                </div>
+                <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
                   <i class="fas fa-times"></i>
                 </span>
               </div>
-              
               <div id="filePreview" class="file-preview hidden"></div>
-              
-              <button type="submit" name="submit_file" class="submit-btn" id="submitBtn" disabled>
+              <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
                 Submit and Sign
               </button>
             </div>
           </form>
-          
-          <script>
-  function updateTaskSelection() {
-    const selector = document.getElementById('taskSelector');
-    const uploadForm = document.getElementById('uploadFormFields');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    if (selector.value === '') {
-      uploadForm.classList.add('hidden');
-      return;
-    }
-    
-    // Get the selected task data
-    const taskData = <?php echo json_encode($uploadableTasks); ?>[selector.value];
-    
-    // Set hidden fields
-    document.getElementById('taskID').value = taskData.taskID;
-    document.getElementById('courseCode').value = taskData.courseCode;
-    document.getElementById('programID').value = taskData.programID;
-    
-    // If there's already a submission, show it
-    const filePreview = document.getElementById('filePreview');
-    if (taskData.submissionPath) {
-      // Extract file name from path
-      const pathParts = taskData.submissionPath.split('/');
-      const fileName = pathParts[pathParts.length - 1];
-      
-      document.getElementById('fileName').textContent = fileName;
-      document.getElementById('selectedFile').classList.remove('hidden');
-      
-      // Show file preview based on extension
-      const extension = fileName.split('.').pop().toLowerCase();
-      if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
-        filePreview.innerHTML = `<img src="${taskData.submissionPath}" class="image-preview">`;
-        filePreview.classList.remove('hidden');
-      } else if (extension === 'pdf') {
-        filePreview.innerHTML = `<embed src="${taskData.submissionPath}" type="application/pdf" class="pdf-preview">`;
-        filePreview.classList.remove('hidden');
-      } else {
-        filePreview.innerHTML = `<div class="doc-preview">
-          <i class="fas fa-file-alt text-4xl text-blue-500"></i>
-          <p class="mt-2">Preview not available for this file type</p>
-        </div>`;
-        filePreview.classList.remove('hidden');
-      }
-    } else {
-      document.getElementById('selectedFile').classList.add('hidden');
-      filePreview.classList.add('hidden');
-    }
-    
-    // Show upload form
-    uploadForm.classList.remove('hidden');
-  }
-  
-  function displayFileName() {
-    const fileInput = document.getElementById('taskFile');
-    const fileName = document.getElementById('fileName');
-    const selectedFile = document.getElementById('selectedFile');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    if (fileInput.files.length > 0) {
-      fileName.textContent = fileInput.files[0].name;
-      selectedFile.classList.remove('hidden');
-      submitBtn.disabled = false;
-      
-      // Preview file if possible
-      previewFile(fileInput.files[0]);
-    } else {
-      selectedFile.classList.add('hidden');
-      submitBtn.disabled = true;
-    }
-  }
-  
-  function removeFile() {
-    const fileInput = document.getElementById('taskFile');
-    const selectedFile = document.getElementById('selectedFile');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    selectedFile.classList.add('hidden');
-    fileInput.value = '';
-    document.getElementById('filePreview').classList.add('hidden');
-    submitBtn.disabled = true;
-  }
-  
-  function previewFile(file) {
-    const filePreview = document.getElementById('filePreview');
-    const fileType = file.type;
-    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
-    
-    if (validImageTypes.includes(fileType)) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview">`;
-        filePreview.classList.remove('hidden');
-      }
-      reader.readAsDataURL(file);
-    } else if (fileType === 'application/pdf') {
-      const objectUrl = URL.createObjectURL(file);
-      filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview">`;
-      filePreview.classList.remove('hidden');
-    } else {
-      filePreview.innerHTML = `<div class="doc-preview">
-        <i class="fas fa-file-alt text-4xl text-blue-500"></i>
-        <p class="mt-2">Preview not available for this file type</p>
-      </div>`;
-      filePreview.classList.remove('hidden');
-    }
-  }
-
-  // Add event listener for task selector change
-  document.addEventListener('DOMContentLoaded', function() {
-    // Check if there are tasks
-    const taskSelector = document.getElementById('taskSelector');
-    if (taskSelector) {
-      taskSelector.addEventListener('change', updateTaskSelection);
-    }
-  });
-</script>
         <?php else: ?>
           <div class="text-center py-8">
-            <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
-            <p>All your tasks are completed!</p>
+            <i class="fas fa-info-circle text-4xl text-blue-500 mb-3"></i>
+            <p>No tasks assigned to you yet.</p>
           </div>
         <?php endif; ?>
-      <?php else: ?>
-        <div class="text-center py-8">
-          <i class="fas fa-info-circle text-4xl text-blue-500 mb-3"></i>
-          <?php if ($userRole == 'Dean'): ?>
-            <p>As Dean, you can create tasks and approve them when submitted.</p>
-            <p class="mt-3 text-sm text-gray-600">Use the create task button to add new tasks.</p>
-          <?php else: ?>
-            <p>No tasks available yet.</p>
-            <p class="mt-3 text-sm text-gray-600">Tasks assigned to you will appear here.</p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
+      </div>
     </div>
   </div>
   
-  <?php if ($userRole == 'Dean'): ?>
-  <div class="task-floating-button">
-    <button onclick="location.href='create_task.php'">
-      <i class="fas fa-plus"></i> Create Task
-    </button>
-  </div>
-  <?php endif; ?>
-
   <script>
     // Add event listener for task selector change
     document.addEventListener('DOMContentLoaded', function() {
+      // Enable dark mode for all roles if set in localStorage
+      if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+      }
       // Check if there are tasks
       const taskSelector = document.getElementById('taskSelector');
       if (taskSelector) {
         taskSelector.addEventListener('change', updateTaskSelection);
       }
-      
       // Real-time status updates for tasks (for demonstration - in production, you'd use WebSockets or AJAX)
       setInterval(function() {
         // This would normally check for updates from the server
@@ -874,7 +1102,122 @@ $conn->close();
       }, 30000); // Every 30 seconds
     });
 
-    // Function to toggle task details
+    function updateTaskSelection() {
+      const selector = document.getElementById('taskSelector');
+      const uploadForm = document.getElementById('uploadFormFields');
+      const submitBtn = document.getElementById('submitBtn');
+      const fileInput = document.getElementById('taskFile');
+      const selectedFile = document.getElementById('selectedFile');
+      const filePreview = document.getElementById('filePreview');
+      const fileName = document.getElementById('fileName');
+
+      if (selector.value === '') {
+        uploadForm.classList.add('hidden');
+        if (fileInput) fileInput.value = '';
+        if (selectedFile) selectedFile.classList.add('hidden');
+        if (filePreview) filePreview.classList.add('hidden');
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+      }
+
+      // Get the selected task data
+      const taskData = <?php echo json_encode($uploadableTasks); ?>[selector.value];
+
+      // Set hidden fields
+      document.getElementById('taskID').value = taskData.taskID;
+      document.getElementById('courseCode').value = taskData.courseCode;
+      document.getElementById('programID').value = taskData.programID;
+
+      // If there's already a submission, show it
+      if (taskData.submissionPath) {
+        // Extract file name from path
+        const pathParts = taskData.submissionPath.split('/');
+        const file = pathParts[pathParts.length - 1];
+        fileName.textContent = file;
+        selectedFile.classList.remove('hidden');
+
+        // Show file preview based on extension
+        const extension = file.split('.').pop().toLowerCase();
+        if (["jpg", "jpeg", "png", "gif"].includes(extension)) {
+          filePreview.innerHTML = `<img src="${taskData.submissionPath}" class="image-preview">`;
+          filePreview.classList.remove('hidden');
+        } else if (extension === 'pdf') {
+          filePreview.innerHTML = `<embed src="${taskData.submissionPath}" type="application/pdf" class="pdf-preview">`;
+          filePreview.classList.remove('hidden');
+        } else {
+          filePreview.innerHTML = `<div class=\"doc-preview\">
+            <i class=\"fas fa-file-alt text-4xl text-blue-500\"></i>
+            <p class=\"mt-2\">Preview not available for this file type</p>
+          </div>`;
+          filePreview.classList.remove('hidden');
+        }
+        submitBtn.disabled = true;
+      } else {
+        selectedFile.classList.add('hidden');
+        filePreview.classList.add('hidden');
+        submitBtn.disabled = true;
+      }
+
+      // Show upload form
+      uploadForm.classList.remove('hidden');
+    }
+
+    function displayFileName() {
+      const fileInput = document.getElementById('taskFile');
+      const fileName = document.getElementById('fileName');
+      const selectedFile = document.getElementById('selectedFile');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (fileInput.files.length > 0) {
+        fileName.textContent = fileInput.files[0].name;
+        selectedFile.classList.remove('hidden');
+        submitBtn.disabled = false;
+        // Preview file if possible
+        previewFile(fileInput.files[0]);
+      } else {
+        selectedFile.classList.add('hidden');
+        submitBtn.disabled = true;
+        document.getElementById('filePreview').classList.add('hidden');
+      }
+    }
+
+    function removeFile() {
+      const fileInput = document.getElementById('taskFile');
+      const selectedFile = document.getElementById('selectedFile');
+      const submitBtn = document.getElementById('submitBtn');
+      const fileName = document.getElementById('fileName');
+      selectedFile.classList.add('hidden');
+      fileInput.value = '';
+      document.getElementById('filePreview').classList.add('hidden');
+      submitBtn.disabled = true;
+      if (fileName) fileName.textContent = '';
+    }
+
+    function previewFile(file) {
+      const filePreview = document.getElementById('filePreview');
+      const fileType = file.type;
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+      if (validImageTypes.includes(fileType)) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview">`;
+          filePreview.classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+      } else if (fileType === 'application/pdf') {
+        const objectUrl = URL.createObjectURL(file);
+        filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview">`;
+        filePreview.classList.remove('hidden');
+      } else {
+        filePreview.innerHTML = `<div class=\"doc-preview\">
+          <i class=\"fas fa-file-alt text-4xl text-blue-500\"></i>
+          <p class=\"mt-2\">Preview not available for this file type</p>
+        </div>`;
+        filePreview.classList.remove('hidden');
+      }
+    }
+
+    // Function to toggle task details (for future use)
     function toggleTaskDetails(taskId) {
       const detailsSection = document.getElementById('task-details-' + taskId);
       if (detailsSection.classList.contains('hidden')) {
@@ -891,7 +1234,6 @@ $conn->close();
       notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded';
       notification.innerText = `Task ${taskId} has been ${status}`;
       document.body.appendChild(notification);
-      
       setTimeout(function() {
         notification.remove();
       }, 3000);

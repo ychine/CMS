@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['Username'])) {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit();
 }
 
@@ -10,6 +10,14 @@ $conn = new mysqli("localhost", "root", "", "CMS");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+$notificationQuery = "SELECT COUNT(*) as count FROM notifications WHERE AccountID = ? AND is_read = 0";
+$notificationStmt = $conn->prepare($notificationQuery);
+$notificationStmt->bind_param("i", $accountID);
+$notificationStmt->execute();
+$notificationResult = $notificationStmt->get_result();
+$notificationCount = $notificationResult->fetch_assoc()['count'];
+$notificationStmt->close();
 
 if (isset($_SESSION['show_join_form'])) {
     $showFacultyPopup = true;
@@ -72,10 +80,10 @@ if ($row = $result->fetch_assoc()) {
             $dashboardPage = "dashboard/fm-dash.php";
             $userRole = "Faculty Member";
         } elseif ($row['Role'] === 'COR') {
-            $dashboardPage = "dashboard/ph-dash.php";
+            $dashboardPage = "dashboard/[ph-dash.php";
             $userRole = "Courseware Coordinator";
+        }
     }
-}
 }
 
 $stmt->close();
@@ -90,7 +98,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="../../src/styles.css" rel="stylesheet" />
-    <title>Profile | CourseDock</title>
+    <title>Faculty | CourseDock</title>
     <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -261,7 +269,7 @@ $conn->close();
         #userMenu.hidden {
         opacity: 0;
         transform: translateY(-10px) scale(0.95);
-        pointer-events: none; 
+        pointer-events: none; /* Make sure it's not clickable when hidden */
         }
 
         #userMenu:not(.hidden) {
@@ -320,6 +328,69 @@ $conn->close();
         
                 
 
+        /* DARK MODE STYLES */
+        body.dark {
+            background-color: #324f96;
+        }
+        .dark .bg-white {
+            background: #2d3036 !important;
+            color: #fff;
+        }
+        .dark #sidebar {
+            background: #23252b !important;
+            color: #e3e3e3;
+        }
+        .dark .flex-1 {
+            background: #1a1c20 !important;
+            color: #fff;
+        }
+        .dark .profile-dropdown {
+            background: #23252b !important;
+            border: 1px solid #35373c !important;
+            border-radius: 10px !important;
+        }
+        .dark .profile-dropdown-item {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-item:hover {
+            background: #35373c !important;
+            color: #fff !important;
+        }
+        .dark .user-info {
+            background: transparent !important;
+        }
+        .dark .user-info:hover {
+            background: #23252b !important;
+        }
+        .dark .profile-dropdown svg {
+            color: #e3e3e3 !important;
+        }
+        .dark .profile-dropdown-item svg {
+            color: #e3e3e3 !important;
+        }
+        .dark .hover\:bg-gray-100:hover {
+            background: #35373c !important;
+        }
+        .dark .profile-dropdown-item.text-red-500 {
+            color: #ff6b6b !important;
+        }
+
+        .dark .profile-dropdown-bg {
+            background: #23252b !important;
+            border-color: #35373c !important;
+        }
+
+        .dark .link-text, .dark .font-onest, .dark .font-overpass {
+            color: #e3e3e3 !important;
+        }
+        
+        .dark .text-gray-600, .dark .text-gray-500 {
+            color: #e3e3e3 !important;
+        }
+        .dark .rounded-full.bg-\[\#1D387B\] {
+            background: #314f9b !important;
+        }
+
     </style>
 </head>
 
@@ -350,7 +421,7 @@ $conn->close();
                 </a>
 
                 <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../../img/materials-icon.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Tasks</span>
                 </a>
 
@@ -372,7 +443,6 @@ $conn->close();
                 <?php endif; ?>
 
             </div>
-
 
             <button id="createButton" class=" mt-auto rounded-[10px] text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
               
@@ -397,62 +467,77 @@ $conn->close();
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
              
-                <div class="profile-container relative">
-                    <div class="user-info flex items-center">
-                        <div class="flex items-center cursor-pointer" onclick="toggleUserMenu(event)">
-                        <!-- User Avatar -->
-                        <div class="flex flex-col mr-2">
-                            <span class="font-onest text-[14px] font-medium text-[#333]">
-                            <?php echo htmlspecialchars($userInfo['FirstName'] . ' ' . $userInfo['LastName']); ?>
-                            </span>
-                            <span class="font-onest text-[12px] text-[#808080] -mt-[2px]">
-                            <?php echo htmlspecialchars($userRole); ?>
-                            </span>
-                        </div>
+                <div class="flex items-center gap-4">
+                    <!-- Notification Icon -->
+                    <div class="relative">
+                        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <!-- Notification Badge -->
+                            <?php if ($notificationCount > 0): ?>
+                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"><?php echo $notificationCount; ?></span>
+                            <?php endif; ?>
+                        </button>
+                    </div>
 
-                        <!-- User Avatar -->
-                        <div class="w-8 h-8 rounded-full bg-[#1D387B] text-white flex items-center justify-center ml-2">
-                            <?php 
-                            $initials = substr($userInfo['FirstName'], 0, 1) . substr($userInfo['LastName'], 0, 1);
-                            echo htmlspecialchars(strtoupper($initials)); 
-                            ?>
-                        </div>
-                        
-                        <!-- Dropdown Icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 ml-2 transition-transform duration-300" id="dropdown-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
+                    <div class="profile-container relative">
+                        <div class="user-info flex items-center">
+                            <div class="flex items-center cursor-pointer" onclick="toggleUserMenu(event)">
+                                <!-- User Avatar -->
+                                <div class="flex flex-col mr-2">
+                                    <span class="font-onest text-[14px] font-medium text-[#333]">
+                                        <?php echo htmlspecialchars($userInfo['FirstName'] . ' ' . $userInfo['LastName']); ?>
+                                    </span>
+                                    <span class="font-onest text-[12px] text-[#808080] -mt-[2px]">
+                                        <?php echo htmlspecialchars($userRole); ?>
+                                    </span>
+                                </div>
 
-                        </div>
+                                <!-- User Avatar -->
+                                <div class="w-8 h-8 rounded-full bg-[#1D387B] text-white flex items-center justify-center ml-2">
+                                    <?php 
+                                    $initials = substr($userInfo['FirstName'], 0, 1) . substr($userInfo['LastName'], 0, 1);
+                                    echo htmlspecialchars(strtoupper($initials)); 
+                                    ?>
+                                </div>
+                                
+                                <!-- Dropdown Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 ml-2 transition-transform duration-300" id="dropdown-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
                     </div>
                         
                     <!-- Dropdown Menu (Hidden by Default) -->
                     <div id="userMenu" class="hidden">
-                        <div class="py-1 border border-gray-200 rounded-md">
-                        <a href="profile.php" class="profile-dropdown-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            View Profile
-                        </a>
-                        <a href="settings.php" class="profile-dropdown-item">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            Settings
-                        </a>
-                        <hr class="my-1 border-gray-200" />
-                        <a href="../../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            Logout
-                        </a>
-                        </div>
+                            <div class="py-1 border border-gray-200 rounded-md profile-dropdown-bg">
+                                <a href="../profile/profile.php" class="profile-dropdown-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    View Profile
+                                </a>
+                                <a href="../settings/settings.php" class="profile-dropdown-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Settings
+                                </a>
+                                <hr class="my-1 border-gray-200" />
+                                <a href="../../index.php" class="profile-dropdown-item text-red-500 hover:bg-red-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Logout
+                                </a>
+                            </div>
+
+                       </div>
                     </div>
-                    </div>
-             </div>
+                </div>
+            </div>
             
 
             <!-- Dynamic Content -->
@@ -579,11 +664,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-
-
-
-  
-
   // Close menu when clicking outside
   document.addEventListener('click', function(event) {
     const menu = document.getElementById('userMenu');
@@ -600,6 +680,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
   </script>
-  <!-- hi -->
+
+<script>
+  if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark');
+  }
+</script>
 </body>
 </html>

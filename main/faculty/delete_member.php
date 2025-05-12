@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Check if user is authenticated
 if (!isset($_SESSION['Username']) || !isset($_SESSION['AccountID'])) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
@@ -28,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     try {
-        // Get current user's info (the user performing the removal)
+      
         $stmt = $conn->prepare("SELECT PersonnelID, CONCAT(FirstName, ' ', LastName) AS FullName 
                                FROM personnel WHERE AccountID = ?");
         $stmt->bind_param("i", $currentAccountId);

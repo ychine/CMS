@@ -223,6 +223,38 @@ INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'
 UNLOCK TABLES;
 
 --
+-- Table structure for table `pinboard`
+--
+
+DROP TABLE IF EXISTS `pinboard`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pinboard` (
+  `PinID` int(11) NOT NULL AUTO_INCREMENT,
+  `Title` varchar(255) NOT NULL,
+  `Message` text NOT NULL,
+  `CreatedBy` int(11) NOT NULL,
+  `CreatedAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `FacultyID` int(11) NOT NULL,
+  PRIMARY KEY (`PinID`),
+  KEY `CreatedBy` (`CreatedBy`),
+  KEY `FacultyID` (`FacultyID`),
+  CONSTRAINT `pinboard_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
+  CONSTRAINT `pinboard_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pinboard`
+--
+
+LOCK TABLES `pinboard` WRITE;
+/*!40000 ALTER TABLE `pinboard` DISABLE KEYS */;
+INSERT INTO `pinboard` VALUES (1,'ANNOUNCEMENT!!','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',12,'2025-05-11 18:08:27',2),(4,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',13,'2025-05-11 19:27:53',2),(5,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',18,'2025-05-11 19:29:41',2);
+/*!40000 ALTER TABLE `pinboard` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `program_courses`
 --
 
@@ -237,16 +269,17 @@ CREATE TABLE `program_courses` (
   `FacultyID` int(11) DEFAULT NULL,
   `PersonnelID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ProgramCourseID`),
-  UNIQUE KEY `uq_program_course` (`ProgramID`,`CourseCode`),
-  UNIQUE KEY `unique_program_course_faculty` (`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `CourseCode` (`CourseCode`),
   KEY `fk_program_courses_curriculum` (`CurriculumID`),
   KEY `fk_program_courses_personnel` (`PersonnelID`),
+  KEY `fk_program_courses_faculty` (`FacultyID`),
+  KEY `program_courses_ibfk_1` (`ProgramID`),
   CONSTRAINT `fk_program_courses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`),
+  CONSTRAINT `fk_program_courses_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
+  CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -379,14 +412,17 @@ CREATE TABLE `task_assignments` (
   `ApprovalDate` datetime DEFAULT NULL,
   `RevisionReason` text DEFAULT NULL,
   PRIMARY KEY (`TaskAssignmentID`),
-  UNIQUE KEY `task_assignment_unique` (`TaskID`,`ProgramID`,`CourseCode`,`FacultyID`),
   KEY `fk_task_assignments_tasks` (`TaskID`),
-  KEY `fk_task_assignments_program_courses` (`ProgramID`,`CourseCode`,`FacultyID`),
+  KEY `fk_task_assignments_program` (`ProgramID`),
+  KEY `fk_task_assignments_course` (`CourseCode`),
+  KEY `fk_task_assignments_faculty` (`FacultyID`),
   KEY `fk_task_assignments_approver` (`ApprovedBy`),
   CONSTRAINT `fk_task_assignments_approver` FOREIGN KEY (`ApprovedBy`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
-  CONSTRAINT `fk_task_assignments_program_courses` FOREIGN KEY (`ProgramID`, `CourseCode`, `FacultyID`) REFERENCES `program_courses` (`ProgramID`, `CourseCode`, `FacultyID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_course` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_assignments_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -395,7 +431,7 @@ CREATE TABLE `task_assignments` (
 
 LOCK TABLES `task_assignments` WRITE;
 /*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
-INSERT INTO `task_assignments` VALUES (1,1,1,'COMP 106',2,'Completed','Approved','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf','2025-05-09 00:34:30',12,'2025-05-09 00:34:43','E DI KA MARUNONG MAAM'),(2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL),(5,5,1,'IT 103',2,'Completed','Approved','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 03:04:24',12,'2025-05-09 03:04:58',NULL),(6,6,1,'COMP 104',2,'Completed','Approved','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf','2025-05-09 03:16:02',12,'2025-05-09 03:16:39',NULL),(7,7,2,'COMP 101',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(8,7,1,'IT 101',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(9,7,1,'IT 104',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(10,8,1,'COMP 106',2,'Completed','Approved','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 14:48:44',12,'2025-05-09 14:49:17',NULL);
+INSERT INTO `task_assignments` VALUES (1,1,1,'COMP 106',2,'Completed','Approved','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf','2025-05-09 00:34:30',12,'2025-05-09 00:34:43','E DI KA MARUNONG MAAM'),(2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL),(5,5,1,'IT 103',2,'Completed','Approved','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 03:04:24',12,'2025-05-09 03:04:58',NULL),(6,6,1,'COMP 104',2,'Completed','Approved','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf','2025-05-09 03:16:02',12,'2025-05-09 03:16:39',NULL),(10,8,1,'COMP 106',2,'Completed','Approved','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 14:48:44',12,'2025-05-09 14:49:17',NULL);
 /*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -431,7 +467,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-11','Completed','2024-2025','1st','2025-05-08 14:59:11'),(2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53'),(5,'sample 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-10','Completed','2024-2025','1st','2025-05-09 02:57:14'),(6,'FOR MAAM LAU','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-12','Completed','2024-2025','2nd','2025-05-09 03:14:27'),(7,'2526 2ND SEM SYLLABUS','Kindly Accomplish your syllabus by tomorrow! Thank you and God bless.',12,2,'2025-05-10','Pending','2025-2026','1st','2025-05-09 13:17:07'),(8,'daiowdawiodjaw','wdadawdaw',12,2,'2025-05-10','Completed','2025-2026','1st','2025-05-09 14:48:24');
+INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-11','Completed','2024-2025','1st','2025-05-08 14:59:11'),(2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53'),(5,'sample 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-10','Completed','2024-2025','1st','2025-05-09 02:57:14'),(6,'FOR MAAM LAU','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-12','Completed','2024-2025','2nd','2025-05-09 03:14:27'),(8,'daiowdawiodjaw','wdadawdaw',12,2,'2025-05-10','Completed','2025-2026','1st','2025-05-09 14:48:24');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -470,4 +506,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-09 20:59:03
+-- Dump completed on 2025-05-12  4:13:36

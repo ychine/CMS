@@ -3,7 +3,7 @@
 session_start();
 
 if (!isset($_SESSION['Username'])) {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit();
 }
 
@@ -119,8 +119,8 @@ $programQuery = "
     SELECT DISTINCT p.ProgramID, p.ProgramCode, p.ProgramName
     FROM programs p
     INNER JOIN curricula c ON p.ProgramID = c.ProgramID
-    INNER JOIN program_courses pc ON c.id = pc.CurriculumID
-    WHERE pc.FacultyID = ?
+    WHERE c.FacultyID = ?
+    ORDER BY p.ProgramCode
 ";
 
 $stmt = $conn->prepare($programQuery);
@@ -164,6 +164,22 @@ $conn->close();
         body { font-family: 'Inter', sans-serif; }
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
+
+        /* Modal animations */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-animate {
+            animation: modalFadeIn 0.2s ease-out forwards;
+        }
 
         .task-dropdown {
             max-height: 0;
@@ -235,56 +251,151 @@ $conn->close();
         }
 
         .x-delete-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 10%;
-        background-color: #f3f4f6;
-        color: #dc2626;
-        border: 1px solid #e5e7eb;
-        font-size: 25px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        margin-left: 8px;
-    }
-    
-    .x-delete-btn:hover {
-        background-color: #fee2e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10%;
+            background-color: #f3f4f6;
+            color: #dc2626;
+            border: 1px solid #e5e7eb;
+            font-size: 25px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        .x-delete-btn:hover {
+            background-color: #fee2e2;
             border-color: #fecaca;
             color: #dc2626;
-    }
+        }
 
-    /* Personnel dropdown styling similar to faculty_frame.php */
-    .assign-personnel-dropdown {
-        background-color: #f3f4f6;
-        border-radius: 6px;
-        padding: 8px 12px;
-        border: 1px solid #e5e7eb;
-        font-size: 14px;
-        font-weight: 500;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 0.5rem center;
-        background-size: 1em;
-        padding-right: 2.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #4b5563;
-    }
-    
-    .assign-personnel-dropdown:hover {
-        background-color: #e5e7eb; 
-        border-color: #4a84f1;
-    }
+        .x-delete-btn-sm {
+            width: 24px;
+            height: 24px;
+            font-size: 16px;
+            margin-left: 4px;
+            background-color: transparent;
+            border: none;
+            color: #9ca3af;
+        }
+        
+        .x-delete-btn-sm:hover {
+            background-color: transparent;
+            border: none;
+            color: #dc2626;
+        }
 
-    .assign-personnel-dropdown:focus {
-        outline: none;
-        border-color: #60a5fa;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    }
+        /* Personnel dropdown styling similar to faculty_frame.php */
+        .assign-personnel-dropdown {
+            background-color: #f3f4f6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            font-size: 14px;
+            font-weight: 500;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #4b5563;
+        }
+        
+        .assign-personnel-dropdown:hover {
+            background-color: #e5e7eb; 
+            border-color: #4a84f1;
+        }
+
+        .assign-personnel-dropdown:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        body.dark {
+            background: #18181b !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .bg-white {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .shadow-lg, .dark .shadow-2xl {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+        }
+        .dark .text-gray-800, .dark .text-gray-700, .dark .text-gray-600 {
+            color: #e5e7eb !important;
+        }
+        .dark .text-gray-500 {
+            color: #a1a1aa !important;
+        }
+        .dark .border-gray-300, .dark .border {
+            border-color: #374151 !important;
+        }
+        .dark .bg-blue-50, .dark .bg-blue-100 {
+            background: #1e293b !important;
+        }
+        .dark .file-input-label {
+            background: #23232a !important;
+            border-color: #374151 !important;
+            color: #e5e7eb !important;
+        }
+        .dark .assign-personnel-dropdown {
+            background-color: #23232a !important;
+            color: #f3f4f6 !important;
+            border-color: #374151 !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a1a1aa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        }
+        .dark .assign-personnel-dropdown:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        .dark .x-delete-btn,
+        .dark .x-delete-btn-sm {
+            background-color: #23232a !important;
+            color: #f87171 !important;
+            border-color: #374151 !important;
+        }
+        .dark .x-delete-btn:hover,
+        .dark .x-delete-btn-sm:hover {
+            background-color: #7f1d1d !important;
+            color: #ef4444 !important;
+            border-color: #ef4444 !important;
+        }
+        .dark .bg-white,
+        .dark .bg-gray-100,
+        .dark .bg-blue-100,
+        .dark .bg-blue-50 {
+            background: #23232a !important;
+            color: #f3f4f6 !important;
+        }
+        .dark .hover\:bg-blue-200:hover,
+        .dark .hover\:bg-gray-50:hover,
+        .dark .hover\:bg-gray-300:hover,
+        .dark .hover\:bg-gray-100:hover {
+            background: #374151 !important;
+        }
+        .dark .text-gray-700,
+        .dark .text-gray-900,
+        .dark .text-blue-800,
+        .dark .text-blue-700,
+        .dark .text-gray-400,
+        .dark .text-gray-500 {
+            color: #a1a1aa !important;
+        }
+        .dark .border-gray-300,
+        .dark .border {
+            border-color: #374151 !important;
+        }
+        .dark .shadow-lg, .dark .shadow-2xl {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.32) !important;
+        }
     </style>
 </head>
 <body>
@@ -293,7 +404,7 @@ $conn->close();
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1>
     <hr class="border-gray-400">
     <p class="text-gray-500 mt-3 mb-5 font-onest">
-        Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.
+        Manage academic programs and curricula. Create programs, add courses, and assign faculty members. Track curriculum changes over time.
     </p>
 
     <div class="w-[70%] space-y-2 font-onest">
@@ -321,27 +432,33 @@ $conn->close();
                 foreach ($curricula as $year => $courses) {
                     $yearId = 'year_' . md5($programName . $year);
                     echo "<div class='mt-2'>";
+                    echo "<div class='flex items-center justify-between'>";
                     echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">▶ $year</button>";
+                    if ($userRole === 'DN') {
+                        echo "<button onclick=\"confirmDeleteCurriculum('$programId', '$year')\" class=\"x-delete-btn x-delete-btn-sm\" title=\"Delete curriculum\">×</button>";
+                    }
+                    echo "</div>";
                     echo "<div id=\"$yearId\" class='ml-4 mt-1 hidden'>";
                     
                 
                     echo "<div class='overflow-x-auto'>";
                     echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
                     echo "<thead class='bg-gray-100 text-gray-900'>";
-                    echo "<tr><th class='px-4 py-2 border-b'>📚 Course</th>";
-                    echo "<th class='px-4 py-2 border-b text-left'>Assigned Prof.</th>";
+                    echo "<tr>";
+                    echo "<th class='px-4 py-2 border-b w-[70%]'>📚 Course</th>";
+                    echo "<th class='px-4 py-2 border-b text-left w-[30%]'>Assigned Prof.</th>";
                     echo "</tr>";
                     echo "</thead><tbody>";
         
                     foreach ($courses as $idx => $courseData) {
                         $courseTitle = $courseData['title'];
                         $assignedTo = $courseData['assigned_to'] ?? '';
-                        $courseCode = $courseData['code'] ?? $courseTitle; // fallback for legacy, but should use 'code'
+                        $courseCode = $courseData['code'] ?? $courseTitle;
                         $rowId = 'files_' . md5($programName . $year . $courseTitle . $idx);
                         echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
-                        echo "<td class='px-4 py-2 border-b'>" . htmlspecialchars($courseTitle) . "</td>";
+                        echo "<td class='px-4 py-2 border-b w-[70%]'>" . htmlspecialchars($courseTitle) . "</td>";
                     
-                        echo "<td class='px-4 py-2 border-b'>";
+                        echo "<td class='px-4 py-2 border-b w-[30%]'>";
                         
                         
                         if ($userRole === 'DN') {
@@ -420,7 +537,7 @@ $conn->close();
     </div>
 
     <!-- Floating Add Button -->
-    <?php if ($userRole === 'DN'): ?>
+    <?php if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR'): ?>
     <a href="javascript:void(0)" onclick="toggleTaskDropdown()" 
         class="task-button fixed bottom-8 right-10 w-13 h-13 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 z-50"
         title="Add Task">
@@ -430,90 +547,111 @@ $conn->close();
     </a>
 
     <!-- Dropdown -->
-    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-48 space-y-2 z-50">
+    <div id="task-dropdown" class="font-onest task-dropdown fixed bottom-24 right-10 w-80 space-y-2 z-50 flex flex-col items-end">
         <button onclick="openProgramModal()"
-            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150">
+            class="text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-blue-900 transition-all duration-300 slide-in delay-150 whitespace-nowrap">
             Add Program or Curriculum
         </button>
         <button onclick="openCourseModal()"
-            class="w-full text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
+            class="text-xl text-center text-white py-3 px-4 rounded-full bg-[#51D55A] hover:bg-green-800 active:bg-green-900 transition-all duration-600 slide-in delay-0">
             Add Course
         </button>
     </div>
     <?php endif; ?>
 
-    <div id="courseModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-green-500">
-        <h2 class="text-2xl font-overpass font-bold mb-4">Add New Course</h2>
-        <form id="addCourseForm" method="POST" action="../curriculum/add_course.php">
-            
-            <label class="block mb-1 font-semibold">Select Program:</label>
-            <select id="course_program" name="program_id" class="w-full mb-3 p-2 border rounded" required onchange="loadCurricula(this.value)">
-                <option value="">-- Select Program --</option>
-                <?php foreach ($existingPrograms as $program): ?>
-                    <option value="<?= $program['id'] ?>">
-                        <?= $program['code'] ?> - <?= $program['name'] ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-
-            <label class="block mb-1 font-semibold">Select Curriculum:</label>
-            <select id="course_curriculum" name="curriculum_id" class="w-full mb-3 p-2 border rounded" required>
-                <option value="">-- Select Program First --</option>
-            </select>
-
-            <label class="block mb-1 font-semibold">Course Code:</label>
-            <input type="text" id="course_code" name="course_code" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., COMP101" />
-
-            <label class="block mb-1 font-semibold">Course Title:</label>
-            <input type="text" id="course_title" name="course_title" class="w-full mb-3 p-2 border rounded" required placeholder="e.g., Introduction to Programming" />
-
-            <div class="mt-4 flex justify-end gap-2">
-                <button type="button" onclick="closeCourseModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Add Course</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-    <!-- Add Program Modal -->
-    <div id="programModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-[500px] border border-blue-500">
-            <h2 class="text-2xl font-overpass font-bold mb-4">Create Curriculum</h2>
-            <form method="POST" action="../curriculum/create_program.php">
+    <div id="courseModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Add New Course</h2>
+            <hr class="border-gray-400 mb-6">
+            <form id="addCourseForm" method="POST" action="../curriculum/add_course.php" class="space-y-4">
                 
-                <label class="block mb-1 font-semibold">Select Program:</label>
-                <select id="existing_program" name="existing_program" class="w-full mb-3 p-2 border rounded" onchange="toggleProgramFields(); updateCurriculumPreview();">
-                    <option value="">-- Select Program --</option>
-                    <?php foreach ($existingPrograms as $program): ?>
-                        <option value="<?= $program['code'] ?>" data-name="<?= $program['name'] ?>">
-                            <?= $program['code'] ?> - <?= $program['name'] ?>
-                        </option>
-                    <?php endforeach; ?>
-                    <option value="other">Other (Add New Program)</option>
-                </select>
-
-                <div id="new_program_fields" class="hidden">
-                    <label class="block mb-1 font-semibold">Program Code (e.g., BSIS):</label>
-                    <input type="text" id="program_code_input" name="program_code" class="w-full mb-3 p-2 border rounded" oninput="updateCurriculumPreview()" />
-
-                    <label class="block mb-1 font-semibold">Program Name:</label>
-                    <input type="text" id="program_name_input" name="program_name" class="w-full mb-3 p-2 border rounded" />
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Program:</label>
+                    <select id="course_program" name="program_id" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required onchange="loadCurricula(this.value)">
+                        <option value="">-- Select Program --</option>
+                        <?php foreach ($existingPrograms as $program): ?>
+                            <option value="<?= $program['id'] ?>">
+                                <?= $program['code'] ?> - <?= $program['name'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
 
-                <label class="block mb-1 font-semibold">Curriculum Year:</label>
-                <input type="number" id="curriculum_year_input" name="curriculum_year" value="<?= date('Y') ?>" required class="w-full mb-3 p-2 border rounded" oninput="updateCurriculumPreview()" />
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Curriculum:</label>
+                    <select id="course_curriculum" name="curriculum_id" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required>
+                        <option value="">-- Select Program First --</option>
+                    </select>
+                </div>
 
-                <p class="text-sm text-gray-600 mt-1 mb-3">
-                    <strong>Generated Curriculum Name:</strong>
-                    <span id="curriculum_preview" class="text-blue-700 font-semibold">—</span>
-                </p>
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Course Code:</label>
+                    <input type="text" id="course_code" name="course_code" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required placeholder="e.g., COMP101" />
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Course Title:</label>
+                    <input type="text" id="course_title" name="course_title" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required placeholder="e.g., Introduction to Programming" />
+                </div>
+
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" onclick="closeCourseModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">Add Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Program Modal -->
+    <div id="programModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Create Curriculum</h2>
+            <hr class="border-gray-400 mb-6">
+            <form id="createProgramForm" method="POST" action="../curriculum/create_program.php" class="space-y-4">
+                <input type="hidden" name="is_new_program" id="is_new_program" value="0">
+                
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Program:</label>
+                    <select id="existing_program" name="existing_program" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" onchange="toggleProgramFields(); updateCurriculumPreview();">
+                        <option value="">-- Select Program --</option>
+                        <?php foreach ($existingPrograms as $program): ?>
+                            <option value="<?= $program['id'] ?>" data-code="<?= $program['code'] ?>" data-name="<?= $program['name'] ?>">
+                                <?= $program['code'] ?> - <?= $program['name'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <option value="other">Other (Add New Program)</option>
+                    </select>
+                </div>
+
+                <div id="new_program_fields" class="hidden space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-gray-700">Program Code:</label>
+                        <input type="text" id="program_code_input" name="program_code" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="e.g., BSIS" oninput="updateCurriculumPreview()" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-gray-700">Program Name:</label>
+                        <input type="text" id="program_name_input" name="program_name" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="e.g., Bachelor of Science in Information Systems" />
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Curriculum Year:</label>
+                    <input type="number" id="curriculum_year_input" name="curriculum_year" value="<?= date('Y') ?>" required class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" oninput="updateCurriculumPreview()" />
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p class="text-gray-700">
+                        <span class="font-semibold">Generated Curriculum Name:</span>
+                        <span id="curriculum_preview" class="text-blue-700 font-bold ml-2">—</span>
+                    </p>
+                </div>
 
                 <input type="hidden" id="curriculum_name_input" name="curriculum_name" />
 
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" onclick="closeProgramModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Create</button>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" onclick="closeProgramModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">Create Curriculum</button>
                 </div>
             </form>
         </div>
@@ -522,23 +660,37 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
-        <p id="deleteMessage" class="mb-4">Are you sure you want to delete this program?</p>
-        <div class="flex justify-end gap-2">
-            <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">Cancel</button>
-            <button id="confirmDeleteBtn" class= "delete-btn ml-2 px-4 py-2"> Delete </button>
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Confirm Deletion</h2>
+            <hr class="border-gray-400 mb-6">
+            <p id="deleteMessage" class="text-lg text-gray-700 mb-6">Are you sure you want to delete this program?</p>
+            <div class="flex justify-end gap-4 pt-4">
+                <button onclick="closeDeleteModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                <button id="confirmDeleteBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-semibold">Delete</button>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- Delete Curriculum Confirmation Modal -->
+    <div id="deleteCurriculumModal" class="modal">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+            <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Confirm Deletion</h2>
+            <hr class="border-gray-400 mb-6">
+            <p id="deleteCurriculumMessage" class="text-lg text-gray-700 mb-6">Are you sure you want to delete this curriculum?</p>
+            <div class="flex justify-end gap-4 pt-4">
+                <button onclick="closeDeleteCurriculumModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                <button id="confirmDeleteCurriculumBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-semibold">Delete</button>
+            </div>
+        </div>
+    </div>
 
 </div>
 
-<div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 ml-[320px]">
+<div id="filePreviewModal" class="hidden fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white p-6 pr-12 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative">
     <button onclick="closeFilePreviewModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
     <div class="flex justify-center items-center mb-4" style="position:relative;">
-      <h2 class="text-2xl font-bold w-full text-center">File Preview</h2>
+      <h2 class="text-2xl font-bold w-full text-center font-overpass">File Preview</h2>
     </div>
     <div class="flex-1 overflow-hidden" id="filePreviewContent"></div>
   </div>
@@ -548,6 +700,8 @@ $conn->close();
     // Store user role in JavaScript for use in functions
     const userRole = "<?php echo $userRole; ?>";
     let programToDelete = null;
+    let curriculumToDelete = null;
+    let curriculumProgramId = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.assign-personnel-dropdown').forEach(dropdown => {
@@ -608,7 +762,7 @@ $conn->close();
     });
 
     function deleteProgram(programId) {
-    // Show loading state
+  
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     const originalText = confirmBtn.textContent;
     confirmBtn.textContent = 'Deleting...';
@@ -674,16 +828,19 @@ $conn->close();
     function toggleProgramFields() {
         const dropdown = document.getElementById("existing_program");
         const otherFields = document.getElementById("new_program_fields");
+        const isNewProgramInput = document.getElementById("is_new_program");
         const selectedOption = dropdown.options[dropdown.selectedIndex];
 
         if (dropdown.value === "other") {
             otherFields.classList.remove("hidden");
             document.getElementById("program_code_input").required = true;
             document.getElementById("program_name_input").required = true;
+            isNewProgramInput.value = "1";
         } else {
             otherFields.classList.add("hidden");
             document.getElementById("program_code_input").required = false;
             document.getElementById("program_name_input").required = false;
+            isNewProgramInput.value = "0";
         }
 
         updateCurriculumPreview();
@@ -695,13 +852,17 @@ $conn->close();
         const yearInput = document.getElementById("curriculum_year_input");
         const preview = document.getElementById("curriculum_preview");
         const hiddenInput = document.getElementById("curriculum_name_input");
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
 
         let code = "";
+        let name = "";
 
         if (dropdown.value === "other") {
             code = codeInput.value.trim();
+            name = document.getElementById("program_name_input").value.trim();
         } else if (dropdown.value !== "") {
-            code = dropdown.value;
+            code = selectedOption.dataset.code;
+            name = selectedOption.dataset.name;
         }
 
         const year = yearInput.value.trim();
@@ -869,9 +1030,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Determine file type
         const ext = fileUrl.split('.').pop().toLowerCase();
         if (["pdf"].includes(ext)) {
-            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" style="width:100vw;height:85vh;">`;
+            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" style="width:100%;height:85vh;">`;
         } else if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
-            content.innerHTML = `<img src="${fileUrl}" style="max-width:100vw;max-height:85vh;display:block;margin:auto;">`;
+            content.innerHTML = `<img src="${fileUrl}" style="max-width:100%;max-height:85vh;display:block;margin:auto;">`;
         } else {
             content.innerHTML = `<div class='text-center text-gray-500'>Preview not available for this file type.</div>`;
         }
@@ -883,9 +1044,131 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('filePreviewContent').innerHTML = '';
     }
 
+    // Add click outside functionality
+    document.getElementById('filePreviewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeFilePreviewModal();
+        }
+    });
+
     window.addEventListener('keydown', function(e) {
         if (e.key === "Escape") closeFilePreviewModal();
     });
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+    }
+
+    function confirmDeleteCurriculum(programId, curriculumYear) {
+        curriculumToDelete = curriculumYear;
+        curriculumProgramId = programId;
+        document.getElementById('deleteCurriculumMessage').textContent = `Are you sure you want to delete the curriculum "${curriculumYear}"? This will delete all associated courses.`;
+        document.getElementById('deleteCurriculumModal').style.display = 'flex';
+    }
+
+    function closeDeleteCurriculumModal() {
+        document.getElementById('deleteCurriculumModal').style.display = 'none';
+    }
+
+    document.getElementById('confirmDeleteCurriculumBtn').addEventListener('click', function() {
+        if (curriculumToDelete && curriculumProgramId) {
+            deleteCurriculum(curriculumProgramId, curriculumToDelete);
+        }
+    });
+
+    function deleteCurriculum(programId, curriculumYear) {
+        // Show loading state
+        const confirmBtn = document.getElementById('confirmDeleteCurriculumBtn');
+        const originalText = confirmBtn.textContent;
+        confirmBtn.textContent = 'Deleting...';
+        confirmBtn.disabled = true;
+        
+        // Close the modal
+        closeDeleteCurriculumModal();
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('program_id', programId);
+        formData.append('curriculum_year', curriculumYear);
+        formData.append('ajax', 'true');
+        
+        console.log('Deleting curriculum:', { programId, curriculumYear }); // Debug log
+        
+        fetch('../curriculum/remove_curriculum.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status); // Debug log
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data); // Debug log
+            if (data.success === true) {
+                // Show success message with SweetAlert2
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Curriculum deleted successfully',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Reload the page after the user clicks OK
+                    location.reload();
+                });
+            } else {
+                // Show error message with SweetAlert2
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to delete curriculum',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+                // Reset button
+                confirmBtn.textContent = originalText;
+                confirmBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error); // Debug log
+            // Show error message with SweetAlert2
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred while deleting the curriculum. Please check the console for details.',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+            // Reset button
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+        });
+    }
 </script>
+
+<?php if (isset($_SESSION['success'])): ?>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: '<?php echo $_SESSION['success']; ?>',
+        showConfirmButton: false,
+        timer: 1500
+    });
+</script>
+<?php unset($_SESSION['success']); endif; ?>
+
+<?php if (isset($_SESSION['error'])): ?>
+<script>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: '<?php echo $_SESSION['error']; ?>',
+        showConfirmButton: false,
+        timer: 1500
+    });
+</script>
+<?php unset($_SESSION['error']); endif; ?>
 </body>
 </html>

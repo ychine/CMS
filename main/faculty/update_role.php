@@ -5,7 +5,6 @@ session_start();
 
 header('Content-Type: application/json');
 
-// Check if user is authenticated
 if (!isset($_SESSION['Username']) || !isset($_SESSION['AccountID'])) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
