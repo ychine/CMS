@@ -210,10 +210,10 @@ $conn->close();
         <hr class="border-gray-300 py-[10px]">
         <div class="relative w-full">
             <div class="flex w-full gap-5 justify-between">
-                <!-- Left group: Submission + Faculty -->
+                
                 <div class="flex gap-5 flex-1 max-w-[900px]">
                     <!-- Submissions -->
-                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[250px]">
+                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[225px]">
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-lg font-bold">Submissions</h2>
                             <?php if ($ongoingTaskTitle): ?>
@@ -287,7 +287,7 @@ $conn->close();
                         <?php endif; ?>
                     </div>
                     <!-- Faculty -->
-                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[250px]">
+                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[225px]">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-bold">Faculty</h2>
                             <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">

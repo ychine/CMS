@@ -221,7 +221,7 @@ $tasksResult = $tasksStmt->get_result();
 
 $tasks = [];
 while ($taskRow = $tasksResult->fetch_assoc()) {
-    // Fetch the courses and assigned professors for each task
+
     $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                   p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
                   ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
@@ -248,7 +248,6 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
 }
 $tasksStmt->close();
 
-// After a file is submitted and task_assignment status is set to 'Submitted', update the parent task's status to 'In Progress' if it is currently 'Pending'.
 if (isset($_POST['submit_file'])) {
   
     $getTaskIdSql = "SELECT TaskID FROM task_assignments WHERE TaskAssignmentID = ?";
@@ -259,14 +258,14 @@ if (isset($_POST['submit_file'])) {
     if ($getTaskIdResult && $getTaskIdResult->num_rows > 0) {
         $taskIdRow = $getTaskIdResult->fetch_assoc();
         $taskId = $taskIdRow['TaskID'];
-        // Update the task status if currently 'Pending'
+  
         $updateTaskSql = "UPDATE tasks SET Status = 'In Progress' WHERE TaskID = ? AND Status = 'Pending'";
         $updateTaskStmt = $conn->prepare($updateTaskSql);
         $updateTaskStmt->bind_param("i", $taskId);
         $updateTaskStmt->execute();
         $updateTaskStmt->close();
 
-        // Add audit log entry for file submission
+     
         $logDesc = "Submitted file for task ID: " . $taskId;
         $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description) 
                    SELECT ?, ?, CONCAT(FirstName, ' ', LastName), ? 
@@ -819,8 +818,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     }
                     $assignedTasksStmt->close();
                     ?>
-                    <div class="mt-16">
-                        <h2 class="text-2xl font-bold text-gray-800 mt-15 pt-4 mb-4 font-overpass">Tasks Assigned to You</h2>
+                    <div class="mt-0">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Tasks Assigned to You</h2>
                         <?php if (empty($assignedTasks)): ?>
                             <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
                                 <p class="text-gray-500">No tasks have been assigned to you yet.</p>
