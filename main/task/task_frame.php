@@ -1,9 +1,9 @@
 <?php
 session_start();
 
-// Check if user is logged in
+
 if (!isset($_SESSION['Username'])) {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit();
 }
 
@@ -19,14 +19,14 @@ $facultyID = null;
 $facultyCoursePairs = [];
 $message = "";
 
-// Debug information
-$debug = false; // Set to true to see debug info
+
+$debug = false;
 if ($debug) {
     echo "AccountID: " . $accountID . "<br>";
     echo "UserRole: " . $userRole . "<br>";
 }
 
-// Fetch the faculty name and faculty ID based on the logged-in user
+
 $sql = "SELECT personnel.PersonnelID, personnel.FacultyID, faculties.Faculty 
         FROM personnel 
         JOIN faculties ON personnel.FacultyID = faculties.FacultyID
@@ -42,7 +42,7 @@ if ($result && $result->num_rows > 0) {
     $facultyName = $row['Faculty'];
     $personnelID = $row['PersonnelID'];
 
-    // Fetch the list of members within the same faculty
+ 
     $memberQuery = "SELECT FirstName, LastName, Role 
                     FROM personnel 
                     WHERE FacultyID = ?";
@@ -57,7 +57,6 @@ if ($result && $result->num_rows > 0) {
 
     $memberStmt->close();
     
-    // Fetch courses that have assignments in the faculty
     $coursesQuery = "SELECT pc.ProgramID, p.ProgramCode, p.ProgramName, 
                     pc.CourseCode, c.Title, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
                     per.PersonnelID
@@ -84,7 +83,6 @@ if ($result && $result->num_rows > 0) {
 
 $stmt->close();
 
-// Fetch user role
 $userRole = '';
 $userRoleQuery = "SELECT Role FROM personnel WHERE AccountID = ?";
 $roleStmt = $conn->prepare($userRoleQuery);
@@ -96,7 +94,6 @@ if ($roleResult && $roleResult->num_rows > 0) {
 }
 $roleStmt->close();
 
-// Process task creation form submission
 if (isset($_POST['create_task'])) {
     $title = $_POST['title'];
     $description = $_POST['description'];
@@ -104,7 +101,6 @@ if (isset($_POST['create_task'])) {
     $schoolYear = $_POST['school_year'];
     $term = $_POST['term'];
     
-    // Insert the task
     $taskInsertSql = "INSERT INTO tasks (Title, Description, CreatedBy, FacultyID, DueDate, Status, CreatedAt, SchoolYear, Term) 
                       VALUES (?, ?, ?, ?, ?, 'Pending', NOW(), ?, ?)";
     $taskStmt = $conn->prepare($taskInsertSql);
@@ -113,7 +109,6 @@ if (isset($_POST['create_task'])) {
     if ($taskStmt->execute()) {
         $taskID = $taskStmt->insert_id;
         
-        // Process assigned courses
         if (isset($_POST['assigned']) && is_array($_POST['assigned'])) {
             $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, Status) 
                                     VALUES (?, ?, ?, ?, 'Pending')";
@@ -133,7 +128,6 @@ if (isset($_POST['create_task'])) {
             $assignmentStmt->close();
         }
 
-        // Add audit log entry for task creation
         $logDesc = "Created new task: " . htmlspecialchars($title);
         $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description) 
                    SELECT ?, ?, CONCAT(FirstName, ' ', LastName), ? 
@@ -151,12 +145,10 @@ if (isset($_POST['create_task'])) {
     $taskStmt->close();
 }
 
-// Fetch tasks for display in the grid
 if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR') {
     $view = isset($_GET['view']) ? $_GET['view'] : 'all';
     
     if ($view === 'created') {
-        // Show only tasks created by the current user
         $tasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                     t.CreatedBy,
                     COUNT(ta.CourseCode) as AssignedCourses,
@@ -189,7 +181,6 @@ if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR') {
         $tasksStmt = $conn->prepare($tasksSql);
         $tasksStmt->bind_param("sii", $userRole, $facultyID, $personnelID);
     } else {
-        // Show all tasks (default view)
         $tasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                     t.CreatedBy,
                     COUNT(ta.CourseCode) as AssignedCourses,
@@ -258,8 +249,7 @@ $tasksStmt->close();
 
 // After a file is submitted and task_assignment status is set to 'Submitted', update the parent task's status to 'In Progress' if it is currently 'Pending'.
 if (isset($_POST['submit_file'])) {
-    // ... existing file submission logic ...
-    // Assume $taskAssignmentId is available
+  
     $getTaskIdSql = "SELECT TaskID FROM task_assignments WHERE TaskAssignmentID = ?";
     $getTaskIdStmt = $conn->prepare($getTaskIdSql);
     $getTaskIdStmt->bind_param("i", $taskAssignmentId);
@@ -591,7 +581,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+    <div class="flex-1 flex flex-col px-[50px]  pb-[15px] pt-[15px] overflow-y-auto">
         <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Tasks</h1> 
         <hr class="border-gray-400">
         <p class="text-gray-500 mt-3 mb-5 font-onest">Here you can view tasks, assign responsibilities, update statuses, and ensure your faculty members stay on track with their deliverables.</p>
