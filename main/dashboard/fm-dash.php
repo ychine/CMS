@@ -137,7 +137,7 @@ if ($userRole === 'DN') {
     $sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
         JOIN tasks t ON ta.TaskID = t.TaskID
         JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-        WHERE t.FacultyID = ? AND ta.Status = 'Pending' AND pc.PersonnelID = ?";
+        WHERE t.FacultyID = ? AND ta.Status = 'Pending' AND pc.PersonnelID = ? AND t.Status = 'Pending'";
     $stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
     $stmtUnaccomplished->bind_param("ii", $facultyId, $personnelId);
     $stmtUnaccomplished->execute();
@@ -169,7 +169,6 @@ $roleDataJSON = json_encode($formattedRoleData);
 $stmt->close();
 $roleStmt->close();
 $totalStmt->close();
-$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -235,91 +234,90 @@ $conn->close();
     </style>
 </head>
 <body>
-    <div class="flex-1 flex flex-col px-6 md:px-[50px] pt-[15px] overflow-y-auto">
+    <div class="flex-1 flex flex-col px-[50px] md:px-[50px] pt-px] overflow-y-auto">
         <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
-
+        <hr class="border-gray-300 py-[10px]">
         <div class="relative w-full">
             <div class="flex w-full gap-5 justify-between">
-                <!-- Left group: Submission + Faculty -->
+
+                
                 <div class="flex gap-5 flex-1 max-w-[900px]">
-                    <!-- Submissions -->
-                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[250px]">
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-lg font-bold">Submissions</h2>
-                            <?php if ($ongoingTaskTitle): ?>
-                                <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
-                            <?php else: ?>
-                                <span class="text-sm text-gray-500">No ongoing task</span>
-                            <?php endif; ?>
+                    <!-- Tasks -->
+                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[210px]">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-bold">Tasks</h2>
                         </div>
 
-                        <div class="flex space-x-4 mb-5">
-                            <a href="submissionspage.php?type=pending" class="flex-1">
-                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-                                    <div class="flex items-center">
-                                        <div class="text-2xl font-bold mr-3"><?php echo $pendingCount; ?></div>
-                                        <div class="text-sm">Pending Review</div>
-                                        <div class="ml-auto">
-                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div class="w-full bg-gray-300 h-1 mt-2">
-                                        <div class="bg-yellow-500 h-1" style="width: 50%"></div>
-                                    </div>
-                                </div>
-                            </a>
+                        <?php
+                        $taskQuery = "SELECT DISTINCT t.TaskID, t.Title, t.DueDate, ta.Status 
+                                    FROM tasks t 
+                                    JOIN task_assignments ta ON t.TaskID = ta.TaskID 
+                                    JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID 
+                                    WHERE pc.PersonnelID = ? 
+                                    AND ta.Status != 'Completed'
+                                    ORDER BY t.DueDate ASC";
+                        $taskStmt = $conn->prepare($taskQuery);
+                        $taskStmt->bind_param("i", $personnelId);
+                        $taskStmt->execute();
+                        $taskResult = $taskStmt->get_result();
+                        ?>
 
-                            <a href="submissionspage.php?type=unaccomplished" class="flex-1">
-                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-                                    <div class="flex items-center">
-                                        <div class="text-2xl font-bold mr-3"><?php echo $unaccomplishedCount; ?></div>
-                                        <div class="text-sm">Unaccomplished</div>
-                                        <div class="ml-auto">
-                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                            </svg>
+                        <?php if ($taskResult->num_rows > 0): ?>
+                            <div class="space-y-3">
+                                <?php while ($task = $taskResult->fetch_assoc()): ?>
+                                    <a href="submissionspage.php?task_id=<?php echo $task['TaskID']; ?>" class="block">
+                                        <?php
+                                        $borderColor = '';
+                                        switch ($task['Status']) {
+                                            case 'Submitted':
+                                                $borderColor = '#f59e0b'; // amber
+                                                break;
+                                            case 'Completed':
+                                                $borderColor = '#10b981'; // emerald
+                                                break;
+                                            default:
+                                                $borderColor = '#ef4444'; // rose
+                                        }
+                                        ?>
+                                        <div class="bg-gray-100 border border-gray-200 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid <?php echo $borderColor; ?>">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1">
+                                                    <div class="font-medium font-onest text-sm"><?php echo htmlspecialchars($task['Title']); ?></div>
+                                                    <div class="text-xs text-gray-500 mt-1">
+                                                        Due: <?php echo date('M d, Y', strtotime($task['DueDate'])); ?>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <?php
+                                                    $statusColor = '';
+                                                    switch ($task['Status']) {
+                                                        case 'Submitted':
+                                                            $statusColor = 'bg-amber-100 text-amber-800';
+                                                            break;
+                                                        case 'Completed':
+                                                            $statusColor = 'bg-emerald-100 text-emerald-800';
+                                                            break;
+                                                        default:
+                                                            $statusColor = 'bg-rose-100 text-rose-800';
+                                                    }
+                                                    ?>
+                                                    <span class="px-2 py-1 rounded-full text-xs font-medium <?php echo $statusColor; ?>">
+                                                        <?php echo $task['Status']; ?>
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="w-full bg-gray-300 h-1 mt-2">
-                                        <div class="bg-red-500 h-1" style="width: 30%"></div>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a href="submissionspage.php?type=complete" class="flex-1">
-                                <div class="bg-gray-100 border rounded-lg p-3 hover:bg-gray-200 transition-all duration-200 cursor-pointer">
-                                    <div class="flex items-center">
-                                        <div class="text-2xl font-bold mr-3"><?php echo $completeCount; ?></div>
-                                        <div class="text-sm">Complete</div>
-                                        <div class="ml-auto">
-                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div class="w-full bg-gray-300 h-1 mt-2">
-                                        <div class="bg-green-500 h-1" style="width: 100%"></div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-
-                        <div class="flex items-center">
-                            <div class="text-xs mr-2 font-medium"><?php echo $progress; ?>%</div>
-                            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                                <div class="bg-green-500 h-2" style="width: <?php echo $progress; ?>%"></div>
+                                    </a>
+                                <?php endwhile; ?>
                             </div>
-                            <div class="ml-2">
-                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
+                        <?php else: ?>
+                            <div class="h-[calc(100%-3rem)] flex items-center justify-center">
+                                <span class="text-lg text-gray-500">No active tasks</span>
                             </div>
-                        </div>
+                        <?php endif; ?>
                     </div>
                     <!-- Faculty -->
-                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[250px]">
+                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[210px]">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-bold">Faculty</h2>
                             <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
@@ -396,3 +394,6 @@ $conn->close();
     </script>
 </body>
 </html>
+<?php
+
+?>

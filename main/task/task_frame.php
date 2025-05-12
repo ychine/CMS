@@ -59,11 +59,12 @@ if ($result && $result->num_rows > 0) {
     
     $coursesQuery = "SELECT pc.ProgramID, p.ProgramCode, p.ProgramName, 
                     pc.CourseCode, c.Title, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-                    per.PersonnelID
+                    per.PersonnelID, pc.CurriculumID, cu.Name
                     FROM program_courses pc
                     JOIN courses c ON pc.CourseCode = c.CourseCode
                     JOIN programs p ON pc.ProgramID = p.ProgramID
                     LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                    LEFT JOIN curricula cu ON pc.CurriculumID = cu.ID
                     WHERE pc.FacultyID = ?
                     ORDER BY p.ProgramName, c.CourseCode";
     
@@ -353,7 +354,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         
         /* Course list styling */
         .course-list {
-            max-height: 250px;
+            max-height: 400px;
             overflow-y: auto;
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
@@ -670,7 +671,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             <?php echo $task['Status']; ?>
                                         </span>
                                     </div>
-                                    <div class="flex flex-col md:items-end text-sm text-gray-500 mr-12 md:mr-20">
+                                    <div class="flex flex-col md:items-end text-sm text-gray-500 mr-6 md:mr-10">
                                         <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
                                         <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
                                         <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
@@ -768,9 +769,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
                     <!-- Tasks Assigned to You for DN, PH, and COR -->
                     <?php
-                    // Show "Tasks Assigned to You" section for "For You" view or "All Tasks" view
+               
                     if (!isset($_GET['view']) || $_GET['view'] === 'all' || $_GET['view'] === 'foryou'):
-                    // Get tasks where the user is assigned as faculty member
                     $assignedTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                         t.CreatedBy,
                         COUNT(ta.CourseCode) as AssignedCourses,
@@ -820,7 +820,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     $assignedTasksStmt->close();
                     ?>
                     <div class="mt-16">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Tasks Assigned to You</h2>
+                        <h2 class="text-2xl font-bold text-gray-800 mt-15 pt-4 mb-4 font-overpass">Tasks Assigned to You</h2>
                         <?php if (empty($assignedTasks)): ?>
                             <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
                                 <p class="text-gray-500">No tasks have been assigned to you yet.</p>
@@ -1020,19 +1020,39 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         <div class="space-y-4">
                             <label class="block text-lg font-semibold text-gray-700">Assign to (Course + Assigned Professor):</label>
                             
-                            <div class="course-list bg-gray-50 p-4 rounded-lg border border-gray-200 h-[500px] flex flex-col">
+                            <div class="course-list bg-gray-50 p-4 rounded-lg border border-gray-200 h-[800px] flex flex-col">
                                 <div class="course-filter-container flex-none">
-                                    <div class="flex gap-2 mb-2">
-                                        <input type="text" id="courseSearch" placeholder="Search courses..." 
-                                            class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
-                                            oninput="filterCourses()">
-                                        
+                                    <input type="text" id="courseSearch" placeholder="Search courses..." 
+                                        class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500 mb-2" 
+                                        oninput="filterCourses()">
+                                    
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
                                         <select id="filterType" 
-                                            class="p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                            class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
                                             onchange="filterCourses()">
                                             <option value="all">All</option>
                                             <option value="assigned">With Professor</option>
                                             <option value="unassigned">Without Professor</option>
+                                        </select>
+
+                                        <select id="curriculumFilter" 
+                                            class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                            onchange="filterCourses()">
+                                            <option value="all">All Curricula</option>
+                                            <?php
+                                            $curriculaQuery = "SELECT DISTINCT cu.ID, cu.Name FROM curricula cu 
+                                                             JOIN program_courses pc ON cu.ID = pc.CurriculumID 
+                                                             WHERE pc.FacultyID = ? 
+                                                             ORDER BY cu.Name";
+                                            $curriculaStmt = $conn->prepare($curriculaQuery);
+                                            $curriculaStmt->bind_param("i", $facultyID);
+                                            $curriculaStmt->execute();
+                                            $curriculaResult = $curriculaStmt->get_result();
+                                            while ($curriculum = $curriculaResult->fetch_assoc()) {
+                                                echo '<option value="' . htmlspecialchars($curriculum['ID']) . '">' . htmlspecialchars($curriculum['Name']) . '</option>';
+                                            }
+                                            $curriculaStmt->close();
+                                            ?>
                                         </select>
                                     </div>
                                     
@@ -1063,14 +1083,16 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                         <div class="course-item p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200" 
                                              data-course-code="<?= strtolower(htmlspecialchars($pair['CourseCode'])) ?>"
                                              data-course-title="<?= strtolower(htmlspecialchars($pair['Title'])) ?>" 
-                                             data-has-professor="<?= empty($pair['AssignedTo']) ? 'no' : 'yes' ?>">
+                                             data-has-professor="<?= empty($pair['AssignedTo']) ? 'no' : 'yes' ?>"
+                                             data-curriculum-id="<?= htmlspecialchars($pair['CurriculumID']) ?>">
                                             <label class="flex items-center">
                                                 <input type="checkbox" name="assigned[]" value="<?= $pair['ProgramID'] . '|' . $pair['CourseCode'] ?>" 
-                                                    class="mr-2 course-checkbox" />
+                                                    class="mr-2 course-checkbox" <?= empty($pair['AssignedTo']) ? 'disabled' : '' ?> />
                                                 <span class="flex flex-col">
                                                     <span>
                                                         <span class="font-medium"><?= htmlspecialchars($pair['CourseCode']) ?></span> - 
                                                         <?= htmlspecialchars($pair['Title']) ?>
+                                                        <span class="text-sm text-gray-500">(<?= htmlspecialchars($pair['Name']) ?>)</span>
                                                     </span>
                                                     <?php if (!empty($pair['AssignedTo'])): ?>
                                                         <span class="text-sm text-gray-600">
@@ -1103,7 +1125,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                             class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
                             Cancel
                         </button>
-                        <button type="submit" name="create_task" 
+                        <button type="submit" name="create_task" onclick="return validateTaskForm()"
                             class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">
                             Create Task
                         </button>
@@ -1206,6 +1228,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             function filterCourses() {
                 const searchTerm = document.getElementById('courseSearch').value.toLowerCase();
                 const filterType = document.getElementById('filterType').value;
+                const curriculumFilter = document.getElementById('curriculumFilter').value;
                 const courseItems = document.querySelectorAll('.course-item');
                 let visibleCount = 0;
                 
@@ -1216,6 +1239,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     const courseCode = item.dataset.courseCode;
                     const courseTitle = item.dataset.courseTitle;
                     const hasProfessor = item.dataset.hasProfessor;
+                    const curriculumId = item.dataset.curriculumId;
                     const programSection = item.closest('.program-section');
                     const programId = programSection ? programSection.dataset.program : null;
                     
@@ -1229,8 +1253,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     } else if (filterType === 'unassigned' && hasProfessor === 'yes') {
                         matchesFilter = false;
                     }
+
+                    // Match curriculum filter
+                    let matchesCurriculum = true;
+                    if (curriculumFilter !== 'all' && curriculumId !== curriculumFilter) {
+                        matchesCurriculum = false;
+                    }
                     
-                    const isVisible = matchesSearch && matchesFilter;
+                    const isVisible = matchesSearch && matchesFilter && matchesCurriculum;
                     item.style.display = isVisible ? 'block' : 'none';
                     
                     if (isVisible) {
@@ -1263,7 +1293,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
             function toggleSelectAll() {
                 const btn = document.getElementById('selectAllBtn');
-                const checkboxes = document.querySelectorAll('.course-item:not([style*="display: none"]) .course-checkbox');
+                const checkboxes = document.querySelectorAll('.course-item:not([style*="display: none"]) .course-checkbox:not([disabled])');
                 
                 // Check if all visible checkboxes are checked
                 const allChecked = Array.from(checkboxes).every(cb => cb.checked);
@@ -1340,6 +1370,45 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     window.location.href = currentUrl.toString();
                 });
             });
+
+            function validateTaskForm() {
+                const title = document.querySelector('input[name="title"]').value.trim();
+                const description = document.querySelector('textarea[name="description"]').value.trim();
+                const dueDate = document.querySelector('input[name="due_date"]').value;
+                const schoolYear = document.querySelector('input[name="school_year"]').value.trim();
+                const term = document.querySelector('select[name="term"]').value;
+                const selectedCourses = document.querySelectorAll('input[name="assigned[]"]:checked');
+
+                // Validate required fields
+                if (!title) {
+                    alert('Please enter a task title');
+                    return false;
+                }
+                if (!description) {
+                    alert('Please enter a task description');
+                    return false;
+                }
+                if (!dueDate) {
+                    alert('Please select a due date');
+                    return false;
+                }
+                if (!schoolYear) {
+                    alert('Please enter a school year');
+                    return false;
+                }
+                if (!term) {
+                    alert('Please select a term');
+                    return false;
+                }
+
+                // Validate course selection
+                if (selectedCourses.length === 0) {
+                    alert('Please select at least one course to assign the task to');
+                    return false;
+                }
+
+                return true;
+            }
         </script>
     </div>
 </body>
