@@ -1,5 +1,5 @@
 <?php
-// Prevent any HTML output
+
 error_reporting(0);
 ini_set('display_errors', 0);
 

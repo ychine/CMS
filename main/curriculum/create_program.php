@@ -7,7 +7,7 @@ ini_set('display_errors', 1);
 
 if (!isset($_SESSION['Username'])) {
     $_SESSION['error'] = 'Not logged in';
-    header('Location: curriculum_frame.php');
+    header('Location: ../../index.php');
     exit();
 }
 

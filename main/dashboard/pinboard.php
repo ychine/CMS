@@ -1,11 +1,11 @@
 <?php
-// Pinboard functionality
+
 $conn = new mysqli("localhost", "root", "", "CMS");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle pinboard post submission
+
 if (isset($_POST['post_announcement']) && ($userData['Role'] === 'DN' || $userData['Role'] === 'PH' || $userData['Role'] === 'COR')) {
     $title = $_POST['announcement_title'];
     $message = $_POST['announcement_message'];
@@ -24,7 +24,6 @@ if (isset($_POST['post_announcement']) && ($userData['Role'] === 'DN' || $userDa
     $stmt->close();
 }
 
-// Fetch pinboard posts
 $pinboardSql = "SELECT p.*, CONCAT(per.FirstName, ' ', per.LastName) as AuthorName, per.Role as AuthorRole 
                 FROM pinboard p 
                 JOIN personnel per ON p.CreatedBy = per.PersonnelID 
