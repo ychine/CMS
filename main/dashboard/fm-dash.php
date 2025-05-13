@@ -265,7 +265,7 @@ $totalStmt->close();
                         <?php if ($taskResult->num_rows > 0): ?>
                             <div class="space-y-3">
                                 <?php while ($task = $taskResult->fetch_assoc()): ?>
-                                    <a href="submissionspage.php?task_id=<?php echo $task['TaskID']; ?>" class="block">
+                                    <a href="submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=fm-dash" class="block">
                                         <?php
                                         $borderColor = '';
                                         switch ($task['Status']) {

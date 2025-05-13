@@ -217,13 +217,13 @@ $conn->close();
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-lg font-bold">Submissions</h2>
                             <?php if ($ongoingTaskTitle): ?>
-                                <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
+                                <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>&from=ph-dash" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
                             <?php endif; ?>
                         </div>
 
                         <?php if ($ongoingTaskTitle): ?>
                             <div class="flex space-x-4 mb-5">
-                                <a href="submissionspage.php?type=pending" class="flex-1">
+                                <a href="submissionspage.php?type=pending&from=ph-dash" class="flex-1">
                                     <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #f59e0b;">
                                         <div class="flex items-center w-full">
                                             <div class="text-2xl font-bold mr-2 font-onest"><?php echo $pendingCount; ?></div>
@@ -237,7 +237,7 @@ $conn->close();
                                     </div>
                                 </a>
 
-                                <a href="submissionspage.php?type=unaccomplished" class="flex-1">
+                                <a href="submissionspage.php?type=unaccomplished&from=ph-dash" class="flex-1">
                                     <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #ef4444;">
                                         <div class="flex items-center w-full">
                                             <div class="text-2xl font-bold mr-2 font-onest"><?php echo $unaccomplishedCount; ?></div>
@@ -251,7 +251,7 @@ $conn->close();
                                     </div>
                                 </a>
 
-                                <a href="submissionspage.php?type=complete" class="flex-1">
+                                <a href="submissionspage.php?type=complete&from=ph-dash" class="flex-1">
                                     <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #10b981;">
                                         <div class="flex items-center w-full">
                                             <div class="text-2xl font-bold mr-2 font-onest"><?php echo $completeCount; ?></div>

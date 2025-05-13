@@ -635,7 +635,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         </h2>
                         <?php foreach ($tasks as $task): ?>
                             <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-20 relative cursor-pointer"
-                                 onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>'">
+                                 onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
                                     <form method="POST" action="task_actions.php" class="absolute top-4 right-4" onclick="event.stopPropagation();">
                                         <input type="hidden" name="task_id" value="<?php echo $task['TaskID']; ?>">
@@ -827,7 +827,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         <?php else: ?>
                             <?php foreach ($assignedTasks as $task): ?>
                                 <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
-                                     onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>'">
+                                     onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
                                         <div class="flex items-center gap-3">
                                             <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
@@ -881,7 +881,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Tasks Assigned to You</h2>
                         <?php foreach ($tasks as $task): ?>
                             <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
-                                 onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>'">
+                                 onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
                                     <div class="flex items-center gap-3">
                                         <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>

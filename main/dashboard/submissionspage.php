@@ -260,6 +260,24 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
 $tasksStmt->close();
 
 $conn->close();
+
+$backUrl = '../../main/dashboard/dn-dash.php';
+if (isset($_GET['from'])) {
+  switch ($_GET['from']) {
+    case 'task_frame':
+      $backUrl = '../../main/task/task_frame.php';
+      break;
+    case 'dn-dash':
+      $backUrl = '../../main/dashboard/dn-dash.php';
+      break;
+    case 'fm-dash':
+      $backUrl = '../../main/dashboard/fm-dash.php';
+      break;
+    case 'ph-dash':
+      $backUrl = '../../main/dashboard/ph-dash.php';
+      break;
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -894,9 +912,34 @@ $conn->close();
     .dark .files-section {
       background: #18181b !important;
     }
+    .back-arrow-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      margin: 24px 0 0 24px;
+      background: #f3f4f6;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      color: #2563eb;
+      font-size: 1.35rem;
+      transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+      border: none;
+      outline: none;
+      text-decoration: none;
+    }
+    .back-arrow-btn:hover {
+      background: #e0e7ff;
+      color: #1d4ed8;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.10);
+    }
   </style>
 </head>
 <body>
+<a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back">
+  <i class="fas fa-arrow-left"></i>
+</a>
 <?php if ($userRole == 'DN'): ?>
 <script>
   if (localStorage.getItem('darkMode') === 'enabled') {
