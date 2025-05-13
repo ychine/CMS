@@ -948,7 +948,7 @@ if (isset($_GET['from'])) {
     }
   </style>
 </head>
-<body>
+<body class="px-[50px]">
 <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back">
   <i class="fas fa-arrow-left"></i>
 </a>
