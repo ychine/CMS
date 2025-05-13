@@ -916,23 +916,24 @@ if (isset($_GET['from'])) {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 44px;
-      height: 44px;
-      margin: 24px 0 0 24px;
-      background: #f3f4f6;
-      border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      width: auto;
+      height: auto;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
       color: #2563eb;
-      font-size: 1.35rem;
-      transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+      font-size: 1.7rem;
+      transition: color 0.2s;
       border: none;
       outline: none;
       text-decoration: none;
+      cursor: pointer;
+      padding: 0;
     }
     .back-arrow-btn:hover {
-      background: #e0e7ff;
       color: #1d4ed8;
-      box-shadow: 0 4px 16px rgba(37,99,235,0.10);
+      background: none;
+      box-shadow: none;
     }
     .section-header .task-title {
       font-family: 'Overpass', 'Poppins', 'Inter', sans-serif;
@@ -940,7 +941,6 @@ if (isset($_GET['from'])) {
       font-weight: 800;
       color: black;
       letter-spacing: -1px;
-      
       line-height: 1.1;
     }
     .dark .section-header .task-title {
@@ -949,9 +949,6 @@ if (isset($_GET['from'])) {
   </style>
 </head>
 <body class="px-[50px]">
-<a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back">
-  <i class="fas fa-arrow-left"></i>
-</a>
 <?php if ($userRole == 'DN'): ?>
 <script>
   if (localStorage.getItem('darkMode') === 'enabled') {
@@ -974,9 +971,10 @@ if (isset($_GET['from'])) {
       <?php else: ?>
         <?php foreach ($tasks as $task): ?>
         <div class="task-list mb-8">
-          <div class="section-header mb-4">
-            <h3 class="task-title font-overpass" style="font-family: 'Overpass', sans-serif;"><?php echo htmlspecialchars($task['Title']); ?></h3>
-            <span class="course-code">
+          <div class="section-header mb-4" style="position: relative; min-height: 48px; display: flex; align-items: center;">
+            <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
+            <h3 class="task-title font-overpass" style="font-family: 'Overpass', sans-serif; margin-left: 0;"><?php echo htmlspecialchars($task['Title']); ?></h3>
+            <span class="course-code" style="margin-left: 1rem;">
               <?php echo htmlspecialchars($task['SchoolYear'] . ' ' . $task['Term']); ?>
             </span>
           </div>
