@@ -290,7 +290,7 @@ $conn->close();
     .files-section {
       flex: 1;
       padding: 40px;
-      background: #f8fafc;
+      background: transparent;
     }
     
     .files-section .bg-white {
@@ -819,7 +819,7 @@ $conn->close();
       color: #f3f4f6 !important;
     }
     /* --- Modern UI/UX Improvements --- */
-    .task-card, .files-section, .course-card {
+    .task-card, .course-card {
       border-radius: 16px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
       transition: box-shadow 0.2s, transform 0.2s;
