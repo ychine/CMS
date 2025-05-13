@@ -934,6 +934,18 @@ if (isset($_GET['from'])) {
       color: #1d4ed8;
       box-shadow: 0 4px 16px rgba(37,99,235,0.10);
     }
+    .section-header .task-title {
+      font-family: 'Overpass', 'Poppins', 'Inter', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: black;
+      letter-spacing: -1px;
+      
+      line-height: 1.1;
+    }
+    .dark .section-header .task-title {
+      color: #f3f4f6;
+    }
   </style>
 </head>
 <body>
@@ -963,7 +975,7 @@ if (isset($_GET['from'])) {
         <?php foreach ($tasks as $task): ?>
         <div class="task-list mb-8">
           <div class="section-header mb-4">
-            <h3><?php echo htmlspecialchars($task['Title']); ?></h3>
+            <h3 class="task-title font-overpass" style="font-family: 'Overpass', sans-serif;"><?php echo htmlspecialchars($task['Title']); ?></h3>
             <span class="course-code">
               <?php echo htmlspecialchars($task['SchoolYear'] . ' ' . $task['Term']); ?>
             </span>
@@ -1051,7 +1063,7 @@ if (isset($_GET['from'])) {
     
     <div class="files-section">
       <div class="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto mt-8">
-        <h3 class="text-2xl font-bold mb-8 text-gray-800">Your files</h3>
+        <h3 class="text-2xl font-bold mb-8 text-gray-800 font-overpass" style="font-family: 'Overpass', sans-serif;">Your files</h3>
         <?php 
         $uploadableTasks = [];
         if (!empty($tasks)) {
