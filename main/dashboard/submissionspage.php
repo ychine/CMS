@@ -969,92 +969,95 @@ if (isset($_GET['from'])) {
         <p>No tasks available. <?php echo ($userRole == 'DN') ? 'Create your first task!' : 'Tasks assigned to you will appear here.'; ?></p>
       </div>
       <?php else: ?>
-        <?php foreach ($tasks as $task): ?>
-        <div class="task-list mb-8">
-          <div class="section-header mb-4" style="position: relative; min-height: 48px; display: flex; align-items: center;">
+        <?php if (!empty($tasks)): ?>
+          <div class="section-header mb-8" style="position: relative; min-height: 48px; display: flex; align-items: center;">
             <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
-            <h3 class="task-title font-overpass" style="font-family: 'Overpass', sans-serif; margin-left: 0;"><?php echo htmlspecialchars($task['Title']); ?></h3>
+            <h3 class="task-title font-overpass" style="font-family: 'Overpass', sans-serif; margin-left: 0;">
+              <?php echo htmlspecialchars($tasks[0]['Title']); ?>
+            </h3>
             <span class="course-code" style="margin-left: 1rem;">
-              <?php echo htmlspecialchars($task['SchoolYear'] . ' ' . $task['Term']); ?>
+              <?php echo htmlspecialchars($tasks[0]['SchoolYear'] . ' ' . $tasks[0]['Term']); ?>
             </span>
           </div>
-          
-          <div class="task-card mb-4">
-            <div class="task-header mb-2">
-              <div class="faculty-info">
-                <div class="faculty-avatar"></div>
-                <div class="faculty-details">
-                  <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
-                  <p class="faculty-role font-light"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
+        <?php endif; ?>
+        <?php foreach ($tasks as $task): ?>
+          <div class="task-list mb-8">
+            <div class="task-card mb-4">
+              <div class="task-header mb-2">
+                <div class="faculty-info">
+                  <div class="faculty-avatar"></div>
+                  <div class="faculty-details">
+                    <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
+                    <p class="faculty-role font-light"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
+                  </div>
+                </div>
+                <div class="deadline">
+                  <p>Deadline: <?php echo date("F j, g:i a", strtotime($task['DueDate'])); ?></p>
                 </div>
               </div>
-              <div class="deadline">
-                <p>Deadline: <?php echo date("F j, g:i a", strtotime($task['DueDate'])); ?></p>
+              <div class="task-content mb-2">
+                <p class="text-base font-light">"<?php echo htmlspecialchars($task['Description']); ?>"</p>
+                <?php if (!empty($task['RevisionReason'])): ?>
+                  <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <h4 class="font-medium text-yellow-800 mb-2">Revision Requested</h4>
+                      <p class="text-yellow-700"><?php echo nl2br(htmlspecialchars($task['RevisionReason'])); ?></p>
+                  </div>
+                <?php endif; ?>
               </div>
             </div>
-            <div class="task-content mb-2">
-              <p class="text-base font-light">"<?php echo htmlspecialchars($task['Description']); ?>"</p>
-              <?php if (!empty($task['RevisionReason'])): ?>
-                <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h4 class="font-medium text-yellow-800 mb-2">Revision Requested</h4>
-                    <p class="text-yellow-700"><?php echo nl2br(htmlspecialchars($task['RevisionReason'])); ?></p>
-                </div>
+            
+            <div class="approval-section">
+              <div class="approval-header mb-2">
+                <h3 class="font-semibold">Approval Status</h3>
+                <div class="complete-label font-light">Complete: <?php echo $task['CompletedAssignments']; ?>/<?php echo $task['TotalAssignments']; ?></div>
+              </div>
+              
+              <?php if (!empty($task['Assignments'])): ?>
+                <?php foreach ($task['Assignments'] as $assignment): ?>
+                  <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3">
+                    <div class="course-info">
+                      <p class="course-name font-semibold"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
+                      <div class="course-badges">
+                        <span class="badge"></span>
+                        <span class="badge"></span>
+                      </div>
+                      <p class="text-xs text-gray-600 font-light"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
+                      <p class="text-xs text-gray-600 font-light">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
+                      <?php if (!empty($assignment['RevisionReason'])): ?>
+                        <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                          <span class="font-medium text-yellow-800">Revision Requested:</span>
+                          <span class="text-yellow-700"><?php echo nl2br(htmlspecialchars($assignment['RevisionReason'])); ?></span>
+                        </div>
+                      <?php endif; ?>
+                    </div>
+                    <div class="status">
+                      <span class="status-label <?php echo strtolower($assignment['AssignmentStatus']); ?>">
+                        <?php echo $assignment['AssignmentStatus']; ?>
+                      </span>
+                      
+                      <?php if ($assignment['AssignmentStatus'] == 'Completed'): ?>
+                        <br>
+                        <p class="signed-by font-light">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
+                        <p class="text-xs text-gray-500 font-light"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
+                      <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
+                        <form method="POST" action="../task/task_actions.php" class="mt-1">
+                          <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
+                          <input type="hidden" name="action" value="complete">
+                          <button type="submit" class="approval-btn">
+                            Approve
+                          </button>
+                        </form>
+                      <?php elseif ($assignment['AssignmentStatus'] == 'Submitted'): ?>
+                        <p class="text-xs text-gray-500 font-light">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <p class="text-center text-gray-500 my-4 font-light">No courses assigned to this task.</p>
               <?php endif; ?>
             </div>
           </div>
-          
-          <div class="approval-section">
-            <div class="approval-header mb-2">
-              <h3 class="font-semibold">Approval Status</h3>
-              <div class="complete-label font-light">Complete: <?php echo $task['CompletedAssignments']; ?>/<?php echo $task['TotalAssignments']; ?></div>
-            </div>
-            
-            <?php if (!empty($task['Assignments'])): ?>
-              <?php foreach ($task['Assignments'] as $assignment): ?>
-                <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3">
-                  <div class="course-info">
-                    <p class="course-name font-semibold"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
-                    <div class="course-badges">
-                      <span class="badge"></span>
-                      <span class="badge"></span>
-                    </div>
-                    <p class="text-xs text-gray-600 font-light"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
-                    <p class="text-xs text-gray-600 font-light">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
-                    <?php if (!empty($assignment['RevisionReason'])): ?>
-                      <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                        <span class="font-medium text-yellow-800">Revision Requested:</span>
-                        <span class="text-yellow-700"><?php echo nl2br(htmlspecialchars($assignment['RevisionReason'])); ?></span>
-                      </div>
-                    <?php endif; ?>
-                  </div>
-                  <div class="status">
-                    <span class="status-label <?php echo strtolower($assignment['AssignmentStatus']); ?>">
-                      <?php echo $assignment['AssignmentStatus']; ?>
-                    </span>
-                    
-                    <?php if ($assignment['AssignmentStatus'] == 'Completed'): ?>
-                      <br>
-                      <p class="signed-by font-light">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
-                      <p class="text-xs text-gray-500 font-light"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
-                    <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
-                      <form method="POST" action="../task/task_actions.php" class="mt-1">
-                        <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
-                        <input type="hidden" name="action" value="complete">
-                        <button type="submit" class="approval-btn">
-                          Approve
-                        </button>
-                      </form>
-                    <?php elseif ($assignment['AssignmentStatus'] == 'Submitted'): ?>
-                      <p class="text-xs text-gray-500 font-light">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
-                    <?php endif; ?>
-                  </div>
-                </div>
-              <?php endforeach; ?>
-            <?php else: ?>
-              <p class="text-center text-gray-500 my-4 font-light">No courses assigned to this task.</p>
-            <?php endif; ?>
-          </div>
-        </div>
         <?php endforeach; ?>
       <?php endif; ?>
     </div>
