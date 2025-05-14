@@ -38,6 +38,13 @@
         .eye-closed {
             display: none;
         }
+        
+        .account-warning {
+            color: #ff5252;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -61,6 +68,7 @@
                     
                     <div class="tf">
                         <input type="text" id="usernamelogin" name="username">
+                        <div id="account-warning" class="account-warning"></div>
                     </div>
                     <div class="fieldrow">
                         <div class="tfieldname">Password</div>
@@ -120,13 +128,63 @@ const passwordField = document.getElementById('passwordlogin');
 const togglePassword = document.getElementById('togglePassword');
 const eyeOpen = document.querySelector('.eye-open');
 const eyeClosed = document.querySelector('.eye-closed');
+const accountWarning = document.getElementById('account-warning');
+
+// Track login attempts - use localStorage for persistence
+let loginAttempts = JSON.parse(localStorage.getItem('loginAttempts')) || {};
+
+// Maximum allowed attempts before locking
+const MAX_ATTEMPTS = 3;
+
+// Function to show toast messages
+function showToast(message, type = 'error') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerText = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove(); 
+    }, 3000);
+}
+
+// Function to check if account is locked
+function isAccountLocked(username) {
+    if (!username) return false;
+    
+    // Check in loginAttempts object
+    if (loginAttempts[username] && loginAttempts[username].locked) {
+        return true;
+    }
+    
+    // Double-check in localStorage (for persistence across sessions)
+    return localStorage.getItem(`locked_${username}`) === 'true';
+}
+
+// Function to update account warning message
+function updateAccountWarning(username) {
+    if (!username) {
+        accountWarning.style.display = 'none';
+        return;
+    }
+    
+    if (isAccountLocked(username)) {
+        accountWarning.textContent = 'This account has been locked due to multiple failed login attempts. Please contact support.';
+        accountWarning.style.display = 'block';
+        usernameField.classList.add('error-border');
+    } else if (loginAttempts[username] && loginAttempts[username].count > 0) {
+        const attemptsLeft = MAX_ATTEMPTS - loginAttempts[username].count;
+        accountWarning.textContent = `Warning: ${attemptsLeft} login ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before account lockout.`;
+        accountWarning.style.display = 'block';
+    } else {
+        accountWarning.style.display = 'none';
+    }
+}
 
 togglePassword.addEventListener('click', function () {
-
     const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordField.setAttribute('type', type);
     
-
     eyeOpen.style.display = type === 'password' ? 'block' : 'none';
     eyeClosed.style.display = type === 'password' ? 'none' : 'block';
 });
@@ -136,52 +194,123 @@ form.addEventListener('submit', function(e) {
     const password = passwordField.value.trim();
     const captchaResponse = grecaptcha.getResponse();
 
+    // Check if account is locked
+    if (isAccountLocked(username)) {
+        e.preventDefault();
+        showToast('This account has been locked due to multiple failed login attempts. Please contact support.', 'error');
+        return;
+    }
+
     if (username === '' || password === '' || captchaResponse === '') {
         e.preventDefault();
 
         if (username === '') usernameField.classList.add('error-border');
         if (password === '') passwordField.classList.add('error-border');
         if (captchaResponse === '') {
-            const toast = document.createElement('div');
-            toast.className = 'toast error';
-            toast.innerText = 'Please complete the CAPTCHA.';
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove(); 
-            }, 3000);
+            showToast('Please complete the CAPTCHA.');
             return;
         }
 
-        const toast = document.createElement('div');
-        toast.className = 'toast error';
-        toast.innerText = 'Please fill in all fields.';
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.remove(); 
-        }, 3000);
-
+        showToast('Please fill in all fields.');
         return;
+    }
+    
+    // Add username to form data for tracking failed attempts
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = 'attempted_username';
+    hiddenInput.value = username;
+    form.appendChild(hiddenInput);
+});
+
+// Process URL parameters for login errors
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('error') === 'invalid') {
+    const username = urlParams.get('username') || '';
+    
+    // Initialize login attempts for this username if not exists
+    if (!loginAttempts[username]) {
+        loginAttempts[username] = {
+            count: 0,
+            locked: false,
+            timestamp: Date.now()
+        };
+    }
+    
+    // Increment failed attempts
+    loginAttempts[username].count++;
+    loginAttempts[username].timestamp = Date.now();
+    
+    // Update localStorage
+    localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
+    
+    // Check if account should be locked (3 failed attempts)
+    if (loginAttempts[username].count >= MAX_ATTEMPTS) {
+        loginAttempts[username].locked = true;
+        localStorage.setItem(`locked_${username}`, 'true');
+        localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
+        
+        showToast('Your account has been locked due to multiple failed login attempts. Please contact support.', 'error');
+        
+        // Pre-fill the username field
+        usernameField.value = username;
+        updateAccountWarning(username);
+    } else {
+        showToast(`Invalid username or password. ${MAX_ATTEMPTS - loginAttempts[username].count} attempts remaining before account lockout.`, 'warning');
+        
+        // Pre-fill the username field
+        usernameField.value = username;
+        updateAccountWarning(username);
+    }
+} else if (urlParams.get('locked') === 'true') {
+    const username = urlParams.get('username') || '';
+    showToast('This account has been locked due to multiple failed login attempts. Please contact support.', 'error');
+    
+    if (username) {
+        usernameField.value = username;
+        updateAccountWarning(username);
+    }
+}
+
+// Check localStorage for locked accounts on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Clean up old login attempts (older than 24 hours)
+    const now = Date.now();
+    const DAY_IN_MS = 24 * 60 * 60 * 1000;
+    
+    Object.keys(loginAttempts).forEach(username => {
+        if (loginAttempts[username].timestamp && (now - loginAttempts[username].timestamp > DAY_IN_MS)) {
+            // Reset if not locked or if locked more than 24 hours ago
+            if (!loginAttempts[username].locked) {
+                delete loginAttempts[username];
+                localStorage.removeItem(`locked_${username}`);
+            }
+        }
+    });
+    
+    localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
+    
+    // Check if current username is locked
+    const username = usernameField.value.trim();
+    if (username) {
+        updateAccountWarning(username);
     }
 });
 
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('error') === 'invalid') {
-    const toast = document.createElement('div');
-    toast.className = 'toast error';
-    toast.innerText = 'Invalid username or password.';
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
 usernameField.addEventListener('input', () => {
-    if (usernameField.value.trim() !== '') {
+    const username = usernameField.value.trim();
+    
+    if (username !== '') {
         usernameField.classList.remove('error-border');
     }
+    
+    // Update warning based on username
+    updateAccountWarning(username);
+});
+
+usernameField.addEventListener('blur', () => {
+    const username = usernameField.value.trim();
+    updateAccountWarning(username);
 });
 
 passwordField.addEventListener('input', () => {
