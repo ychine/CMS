@@ -110,19 +110,20 @@
 
 <body class="animated-bg">
 
-    <div class="header -mt-5 flex-col flex items-center justify-center">
+    <div class="header -mt-5  flex-col flex items-center justify-center">
         <img src="../img/COURSEDOCK.svg" class="fade-in">
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-    <div class="flex justify-center min-h-screen mt-20">
+    <div class="flex justify-center min-h-screen mt-25">
         <div class="w-full max-w-[700px] flex flex-col items-center px-6 relative z-10">
-            <div class="relative text-center mb-5 font-onest">
-                <div class="fade-in text-xl mt-10 mb-5 font-semibold text-[#E3E3E3] title-underline">Contact our Support Team</div>
-            </div>
             
             <div class="content-box fade-in filter blur-sm">
                 <div class="text-[#E3E3E3] text-lg font-onest font-light leading-relaxed space-y-4">
+
+                <div class="relative text-center mb-5 font-onest">
+                    <div class="fade-in text-xl font-semibold text-[#E3E3E3] title-underline">Contact our Support Team</div>
+                </div>
                 
                     <p class="mb-6">
                     For any inquiries or support, please submit a ticket using the form below:
