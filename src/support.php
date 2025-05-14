@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About | CourseDock</title>
+    <title>Support | CourseDock</title>
     <link href="../img/cdicon.svg" rel="icon">
     <link href="styles.css" rel="stylesheet">
     <link href="tailwind/output.css" rel="stylesheet" />
@@ -103,30 +103,37 @@
     </style>
 </head>
 
-<body class="flex items-center justify-center min-h-screen animated-bg">
-    <div class="w-full max-w-[800px] flex flex-col items-center px-6 -mt-32 relative z-10">
-        <div class="relative text-center mb-5 font-onest">
-            <div class="fade-in text-3xl mb-10 font-semibold text-[#E3E3E3] title-underline">About CourseDock</div>
-        </div>
-        
-        <div class="content-box fade-in">
-            <div class="text-[#E3E3E3] text-lg font-onest font-light leading-relaxed space-y-4">
-                <p class="mb-6">
-                    <b class="font-semibold">Course</b><b class="text-[#51D55A] font-semibold">Dock</b> is a web-based courseware monitoring system built to monitor and manage the submission of course syllabi by instructors. 
-                </p>
-                <p class="mb-6">
-                    It provides Deans, Program Heads, and Coordinators with tools to track syllabus progress—whether it's still in progress, under revision, or completed. 
-                </p>
-                <p>
-                    CourseDock helps ensure accountability, improves transparency in the workflow, and supports timely curriculum updates and compliance.
-                </p>
-                <p>
-                    <i>Developed by Proud PLPians 🤍</i>
-                </p>
-            </div>
-        </div>
+<body class="animated-bg">
 
-        <div onclick="history.back()" class="text-center text-[#E3E3E3] mt-7 text-sm font-overpass back-link">Go Back</div>
+    <div class="header -mt-5 flex-col flex items-center justify-center">
+        <img src="../img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
+
+    <div class="flex justify-center min-h-screen mt-30">
+        <div class="w-full max-w-[800px] flex flex-col items-center px-6 -mt-10 relative z-10">
+            <div class="relative text-center mb-5 font-onest">
+                <div class="fade-in text-3xl mb-10 font-semibold text-[#E3E3E3] title-underline">Contact our Support Team</div>
+            </div>
+            
+            <div class="content-box fade-in">
+                <div class="text-[#E3E3E3] text-lg font-onest font-light leading-relaxed space-y-4">
+                
+                    <p class="mb-6">
+                        For any inquiries or support, please contact us at:
+                    </p>
+                    <p>
+                        ----    
+                    </p>
+                    <p>
+                        <i>Developed by Proud PLPians 🤍</i>
+                    </p>
+                </div>
+            </div>
+
+            <div onclick="history.back()" class="text-center text-[#E3E3E3] mt-7 text-sm font-overpass back-link">Go Back</div>
+        </div>
     </div>
 </body>
+
 </html>

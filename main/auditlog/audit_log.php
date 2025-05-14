@@ -451,7 +451,7 @@ $conn->close();
                 © 2025 CourseDock. All rights reserved.
                 <span class="mt-1">
                     <br>
-                    <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
+                    <a href="../../src/about.php" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
                     <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
                 </span>
             </div>
