@@ -106,7 +106,7 @@
             <hr><br>
                 © 2025 PLP - TeamOG1E. All rights reserved.
                 
-                <a href="#">About CourseDock</a>
+                <a href="./src/about.php">About CourseDock</a>
                 <a href="#">Contact our Support</a>
 
             </div>
