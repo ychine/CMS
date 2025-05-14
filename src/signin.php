@@ -114,8 +114,8 @@
             <hr><br>
                 © 2025 CourseDock. All rights reserved.
                 
-                <a href="./src/about.php">About CourseDock</a>
-                <a href="#">Contact our Support</a>
+                <a href="../src/about.php">About CourseDock</a>
+                <a href="../src/support.php">Contact our Support</a>
 
             </div>
     </div>

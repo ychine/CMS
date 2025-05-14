@@ -110,24 +110,33 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-    <div class="flex justify-center min-h-screen mt-30">
-        <div class="w-full max-w-[800px] flex flex-col items-center px-6 -mt-10 relative z-10">
+    <div class="flex justify-center min-h-screen mt-20">
+        <div class="w-full max-w-[700px] flex flex-col items-center px-6 relative z-10">
             <div class="relative text-center mb-5 font-onest">
-                <div class="fade-in text-3xl mb-10 font-semibold text-[#E3E3E3] title-underline">Contact our Support Team</div>
+                <div class="fade-in text-3xl mb-5 font-semibold text-[#E3E3E3] title-underline">Contact our Support Team</div>
             </div>
             
             <div class="content-box fade-in">
                 <div class="text-[#E3E3E3] text-lg font-onest font-light leading-relaxed space-y-4">
                 
                     <p class="mb-6">
-                        For any inquiries or support, please contact us at:
+                    For any inquiries or support, please submit a ticket using the form below:
+                    <hr class="border-none border-t-0.2 border-gray-500">
+
                     </p>
-                    <p>
-                        ----    
-                    </p>
-                    <p>
-                        <i>Developed by Proud PLPians 🤍</i>
-                    </p>
+                    Email
+                    <div class="tf">
+                        <input type="text" class="tf ">
+                    </div>
+                    Subject
+                    <div class="tf">
+                        <input type="text" class="tf ">
+                    </div>
+                    Message
+                    <div class="tf">
+                        <input type="text" class="tf ">
+                    </div>
+                    
                 </div>
             </div>
 
