@@ -42,14 +42,14 @@
             }
         }
 
-        @keyframes popup {
+        @keyframes slideUpFade {
             0% {
                 opacity: 0;
-                transform: scale(0.5);
+                transform: translateY(20px);
             }
             100% {
                 opacity: 1;
-                transform: scale(1);
+                transform: translateY(0);
             }
         }
         
@@ -59,7 +59,7 @@
             border-radius: 10px;
             width: 100%;
             border: 0.5px solid #3d74ff;
-            animation: popup 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation: slideUpFade 0.8s ease-out forwards;
         }
 
         .back-link {
@@ -90,6 +90,11 @@
             animation: underlineAnim 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
+        .tf textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px #51D55A;
+        }
+
         @keyframes underlineAnim {
             0% {
                 transform: scaleX(0);
@@ -113,10 +118,10 @@
     <div class="flex justify-center min-h-screen mt-20">
         <div class="w-full max-w-[700px] flex flex-col items-center px-6 relative z-10">
             <div class="relative text-center mb-5 font-onest">
-                <div class="fade-in text-3xl mb-5 font-semibold text-[#E3E3E3] title-underline">Contact our Support Team</div>
+                <div class="fade-in text-xl mt-10 mb-5 font-semibold text-[#E3E3E3] title-underline">Contact our Support Team</div>
             </div>
             
-            <div class="content-box fade-in">
+            <div class="content-box fade-in filter blur-sm">
                 <div class="text-[#E3E3E3] text-lg font-onest font-light leading-relaxed space-y-4">
                 
                     <p class="mb-6">
@@ -126,7 +131,7 @@
                     </p>
                     Email
                     <div class="tf">
-                        <input type="text" class="tf ">
+                        <input type="email" class="tf ">
                     </div>
                     Subject
                     <div class="tf">
@@ -134,8 +139,10 @@
                     </div>
                     Message
                     <div class="tf">
-                        <input type="text" class="tf ">
+                        <textarea class="tf w-full min-h-[150px] resize-y" style="box-shadow: inset 0 2px 2px 2px rgba(0, 0, 0, 0.2); color: white; background-color: #13275B; padding: 10px; border-radius: 5px; border: 1px solid #304374; font-family: 'Onest', sans-serif;" placeholder="Type your message here..."></textarea>
                     </div>
+
+                    <button class="btnlogin mt-4">Submit</button>
                     
                 </div>
             </div>
