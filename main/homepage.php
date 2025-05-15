@@ -52,6 +52,7 @@ $result = $stmt->get_result();
 $dashboardPage = "";
 $showFacultyPopup = false;
 $facultyName = '';
+$userRole = '';
 
 if ($row = $result->fetch_assoc()) {
     if (empty($row['FacultyID'])) {
@@ -871,10 +872,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             const iframe = document.getElementById('contentIframe');
                             if (iframe) {
                                 let fromParam = '';
-                                if (userRole === 'FM') fromParam = 'fm-dash';
-                                else if (userRole === 'PH') fromParam = 'ph-dash';
-                                else if (userRole === 'DN') fromParam = 'dn-dash';
-                                else if (userRole === 'COR') fromParam = 'ph-dash';
+                                if (userRole === 'Faculty Member') fromParam = 'fm-dash';
+                                else if (userRole === 'Program Head') fromParam = 'ph-dash';
+                                else if (userRole === 'Dean') fromParam = 'dn-dash';
+                                else if (userRole === 'Coordinator') fromParam = 'ph-dash';
                                 iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
@@ -895,7 +896,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('notification_id', notificationId);
 
-        fetch('../src/scripts/mark_notification_read.php', {
+        fetch('src/scripts/mark_notification_read.php', {
             method: 'POST',
             body: formData
         })
@@ -923,7 +924,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-const userRole = "<?php echo isset($userRole) ? $userRole : ''; ?>";
+const userRole = "<?php echo $userRole; ?>";
+console.log('userRole:', userRole);
 </script>
 
 
