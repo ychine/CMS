@@ -277,6 +277,23 @@ if (isset($_GET['from'])) {
       $backUrl = '../../main/dashboard/ph-dash.php';
       break;
   }
+} else {
+  // Default based on user role
+  switch ($userRole) {
+    case 'FM':
+      $backUrl = '../../main/dashboard/fm-dash.php';
+      break;
+    case 'PH':
+      $backUrl = '../../main/dashboard/ph-dash.php';
+      break;
+    case 'COR':
+      $backUrl = '../../main/dashboard/ph-dash.php';
+      break;
+    case 'DN':
+    default:
+      $backUrl = '../../main/dashboard/dn-dash.php';
+      break;
+  }
 }
 ?>
 

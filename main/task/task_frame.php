@@ -114,18 +114,51 @@ if (isset($_POST['create_task'])) {
             $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, Status) 
                                     VALUES (?, ?, ?, ?, 'Pending')";
             $assignmentStmt = $conn->prepare($assignmentInsertSql);
-            
+
             foreach ($_POST['assigned'] as $assignment) {
                 $parts = explode('|', $assignment);
                 if (count($parts) == 2) {
                     $programID = $parts[0];
                     $courseCode = $parts[1];
-                    
+
                     $assignmentStmt->bind_param("iisi", $taskID, $programID, $courseCode, $facultyID);
                     $assignmentStmt->execute();
+
+                    // Get the assigned professor's PersonnelID for this course
+                    $profQuery = "SELECT PersonnelID FROM program_courses WHERE ProgramID = ? AND CourseCode = ? AND FacultyID = ?";
+                    $profStmt = $conn->prepare($profQuery);
+                    $profStmt->bind_param("isi", $programID, $courseCode, $facultyID);
+                    $profStmt->execute();
+                    $profResult = $profStmt->get_result();
+                    if ($profRow = $profResult->fetch_assoc()) {
+                        $assignedPersonnelID = $profRow['PersonnelID'];
+                        if ($assignedPersonnelID) {
+                            // Get the AccountID for this PersonnelID
+                            $accQuery = "SELECT AccountID FROM personnel WHERE PersonnelID = ?";
+                            $accStmt = $conn->prepare($accQuery);
+                            $accStmt->bind_param("i", $assignedPersonnelID);
+                            $accStmt->execute();
+                            $accResult = $accStmt->get_result();
+                            if ($accRow = $accResult->fetch_assoc()) {
+                                $assignedAccountID = $accRow['AccountID'];
+                                if ($assignedAccountID) {
+                                    // Insert notification for the assigned professor
+                                    $insertNotificationSql = "INSERT INTO notifications (AccountID, Title, Message, TaskID) 
+                                        VALUES (?, ?, ?, ?)";
+                                    $notificationTitle = "New Task Assigned";
+                                    $notificationMessage = "You have been assigned a new task: " . $title . " for " . $courseCode;
+                                    $insertNotificationStmt = $conn->prepare($insertNotificationSql);
+                                    $insertNotificationStmt->bind_param("issi", $assignedAccountID, $notificationTitle, $notificationMessage, $taskID);
+                                    $insertNotificationStmt->execute();
+                                    $insertNotificationStmt->close();
+                                }
+                            }
+                            $accStmt->close();
+                        }
+                    }
+                    $profStmt->close();
                 }
             }
-            
             $assignmentStmt->close();
         }
 
