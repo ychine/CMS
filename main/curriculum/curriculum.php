@@ -470,7 +470,7 @@ $conn->close();
                 <div class="flex items-center gap-4">
                     <!-- Notification Icon -->
                     <div class="relative">
-                        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+                        <button id="notificationButton" class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
@@ -479,6 +479,18 @@ $conn->close();
                             <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"><?php echo $notificationCount; ?></span>
                             <?php endif; ?>
                         </button>
+                        <!-- Notification Dropdown -->
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
+                            <div class="p-4 border-b">
+                                <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+                            </div>
+                            <div id="notificationList" class="max-h-96 overflow-y-auto">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                            <div class="p-4 border-t text-center">
+                                <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
+                            </div>
+                        </div>
                     </div>
              
              
@@ -683,6 +695,103 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('darkMode') === 'enabled') {
     document.body.classList.add('dark');
   }
+</script>
+
+<script>
+const userRole = "<?php echo $row['Role']; ?>";
+console.log('userRole:', userRole);
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationButton = document.getElementById('notificationButton');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationList = document.getElementById('notificationList');
+    // Toggle notification dropdown
+    notificationButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        notificationDropdown.classList.toggle('hidden');
+        if (!notificationDropdown.classList.contains('hidden')) {
+            loadNotifications();
+        }
+    });
+    document.addEventListener('click', function(e) {
+        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+            notificationDropdown.classList.add('hidden');
+        }
+    });
+    function loadNotifications() {
+        fetch('../src/scripts/get_notifications.php')
+            .then(response => response.json())
+            .then(data => {
+                notificationList.innerHTML = '';
+                if (data.notifications.length === 0) {
+                    notificationList.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
+                    return;
+                }
+                data.notifications.forEach(notification => {
+                    const notificationElement = document.createElement('div');
+                    notificationElement.className = `p-4 border-b hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
+                    notificationElement.innerHTML = `
+                        <div class="flex items-start">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">${notification.title}</p>
+                                <p class="text-sm text-gray-500">${notification.message}</p>
+                                <p class="text-xs text-gray-400 mt-1">${new Date(notification.created_at).toLocaleString()}</p>
+                            </div>
+                            ${!notification.is_read ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>' : ''}
+                        </div>
+                    `;
+                    notificationElement.addEventListener('click', () => {
+                        if (!notification.is_read) {
+                            markAsRead(notification.id);
+                        }
+                        if (notification.task_id) {
+                            const iframe = document.getElementById('contentIframe');
+                            if (iframe) {
+                                let fromParam = '';
+                                if (userRole === 'FM') fromParam = 'fm-dash';
+                                else if (userRole === 'PH') fromParam = 'ph-dash';
+                                else if (userRole === 'DN') fromParam = 'dn-dash';
+                                else if (userRole === 'COR') fromParam = 'ph-dash';
+                                iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                document.getElementById('notificationDropdown').classList.add('hidden');
+                            }
+                        }
+                    });
+                    notificationList.appendChild(notificationElement);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+                notificationList.innerHTML = '<div class="p-4 text-center text-red-500">Error loading notifications</div>';
+            });
+    }
+    function markAsRead(notificationId) {
+        const formData = new FormData();
+        formData.append('notification_id', notificationId);
+        fetch('../src/scripts/mark_notification_read.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const badge = notificationButton.querySelector('span');
+                if (badge) {
+                    const currentCount = parseInt(badge.textContent);
+                    if (currentCount > 1) {
+                        badge.textContent = currentCount - 1;
+                    } else {
+                        badge.remove();
+                    }
+                }
+            }
+        })
+        .catch(error => console.error('Error marking notification as read:', error));
+    }
+    setInterval(loadNotifications, 30000);
+});
 </script>
 </body>
 </html>
