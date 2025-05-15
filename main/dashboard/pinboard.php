@@ -1,16 +1,21 @@
 <?php
 
+// Ensure $userData is always defined and safe to use
+if (!isset($userData) || !is_array($userData)) {
+    $userData = [];
+}
+$role = isset($userData['Role']) ? $userData['Role'] : '';
+$facultyId = isset($userData['FacultyID']) ? $userData['FacultyID'] : null;
+
 $conn = new mysqli("localhost", "root", "", "CMS");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
-if (isset($_POST['post_announcement']) && ($userData['Role'] === 'DN' || $userData['Role'] === 'PH' || $userData['Role'] === 'COR')) {
+if (isset($_POST['post_announcement']) && in_array($role, ['DN', 'PH', 'COR'])) {
     $title = $_POST['announcement_title'];
     $message = $_POST['announcement_message'];
     $createdBy = $personnelId;
-    $facultyId = $userData['FacultyID'];
 
     $insertSql = "INSERT INTO pinboard (Title, Message, CreatedBy, FacultyID) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($insertSql);
@@ -24,21 +29,25 @@ if (isset($_POST['post_announcement']) && ($userData['Role'] === 'DN' || $userDa
     $stmt->close();
 }
 
-$pinboardSql = "SELECT p.*, CONCAT(per.FirstName, ' ', per.LastName) as AuthorName, per.Role as AuthorRole 
-                FROM pinboard p 
-                JOIN personnel per ON p.CreatedBy = per.PersonnelID 
-                WHERE p.FacultyID = ? 
-                ORDER BY p.CreatedAt DESC 
-                LIMIT 5";
-$pinboardStmt = $conn->prepare($pinboardSql);
-$pinboardStmt->bind_param("i", $facultyId);
-$pinboardStmt->execute();
-$pinboardResult = $pinboardStmt->get_result();
-$pinboardPosts = [];
-while ($row = $pinboardResult->fetch_assoc()) {
-    $pinboardPosts[] = $row;
+if (!empty($facultyId)) {
+    $pinboardSql = "SELECT p.*, CONCAT(per.FirstName, ' ', per.LastName) as AuthorName, per.Role as AuthorRole 
+                    FROM pinboard p 
+                    JOIN personnel per ON p.CreatedBy = per.PersonnelID 
+                    WHERE p.FacultyID = ? 
+                    ORDER BY p.CreatedAt DESC 
+                    LIMIT 5";
+    $pinboardStmt = $conn->prepare($pinboardSql);
+    $pinboardStmt->bind_param("i", $facultyId);
+    $pinboardStmt->execute();
+    $pinboardResult = $pinboardStmt->get_result();
+    $pinboardPosts = [];
+    while ($row = $pinboardResult->fetch_assoc()) {
+        $pinboardPosts[] = $row;
+    }
+    $pinboardStmt->close();
+} else {
+    $pinboardPosts = [];
 }
-$pinboardStmt->close();
 $conn->close();
 ?>
 
@@ -47,7 +56,7 @@ $conn->close();
     <div class="bg-white p-[30px] font-overpass rounded-lg shadow-md h-full">
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold">Pinboard</h2>
-            <?php if ($userData['Role'] === 'DN' || $userData['Role'] === 'PH' || $userData['Role'] === 'COR'): ?>
+            <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
             <button onclick="openPinboardModal()" class="text-xs text-blue-600 hover:underline">Post Announcement</button>
             <?php endif; ?>
         </div>
