@@ -473,7 +473,7 @@ $conn->close();
                 <div class="flex items-center gap-4">
                     <!-- Notification Icon -->
                     <div class="relative">
-                        <button id="notificationButton" class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
+                    <button id="notificationButton" class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200" style="position: relative;">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
@@ -481,6 +481,8 @@ $conn->close();
                             <?php if ($notificationCount > 0): ?>
                             <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"><?php echo $notificationCount; ?></span>
                             <?php endif; ?>
+                            <!-- Red Dot Indicator (always present, outside PHP if-block) -->
+                            <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50"></span>
                         </button>
                         <!-- Notification Dropdown -->
                         <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
@@ -711,6 +713,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationButton = document.getElementById('notificationButton');
     const notificationDropdown = document.getElementById('notificationDropdown');
     const notificationList = document.getElementById('notificationList');
+
+    // Load notifications immediately on page load
+    loadNotifications();
+
+    // Load notifications every 30 seconds
+    setInterval(loadNotifications, 30000);
+
     // Toggle notification dropdown
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -719,11 +728,14 @@ document.addEventListener('DOMContentLoaded', function() {
             loadNotifications();
         }
     });
+
+    // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
         if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
             notificationDropdown.classList.add('hidden');
         }
     });
+
     function loadNotifications() {
         fetch('../src/scripts/get_notifications.php')
             .then(response => response.json())
@@ -731,8 +743,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 notificationList.innerHTML = '';
                 if (data.notifications.length === 0) {
                     notificationList.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
+                    updateNotifDot();
                     return;
                 }
+
                 data.notifications.forEach(notification => {
                     const notificationElement = document.createElement('div');
                     notificationElement.className = `p-4 border-b hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
@@ -746,6 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${!notification.is_read ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>' : ''}
                         </div>
                     `;
+
                     notificationElement.addEventListener('click', () => {
                         if (!notification.is_read) {
                             markAsRead(notification.id);
@@ -754,27 +769,32 @@ document.addEventListener('DOMContentLoaded', function() {
                             const iframe = document.getElementById('contentIframe');
                             if (iframe) {
                                 let fromParam = '';
-                                if (userRole === 'FM') fromParam = 'fm-dash';
-                                else if (userRole === 'PH') fromParam = 'ph-dash';
-                                else if (userRole === 'DN') fromParam = 'dn-dash';
-                                else if (userRole === 'COR') fromParam = 'ph-dash';
+                                if (userRole === 'Faculty Member') fromParam = 'fm-dash';
+                                else if (userRole === 'Program Head') fromParam = 'ph-dash';
+                                else if (userRole === 'College Dean') fromParam = 'dn-dash';
+                                else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
                                 iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
                         }
                     });
+
                     notificationList.appendChild(notificationElement);
                 });
+                updateNotifDot();
             })
             .catch(error => {
                 console.error('Error loading notifications:', error);
                 notificationList.innerHTML = '<div class="p-4 text-center text-red-500">Error loading notifications</div>';
+                updateNotifDot();
             });
     }
+
     function markAsRead(notificationId) {
         const formData = new FormData();
         formData.append('notification_id', notificationId);
-        fetch('../src/scripts/mark_notification_read.php', {
+
+        fetch('../../src/scripts/mark_notification_read.php', {
             method: 'POST',
             body: formData
         })
@@ -790,11 +810,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         badge.remove();
                     }
                 }
+                updateNotifDot();
             }
         })
         .catch(error => console.error('Error marking notification as read:', error));
     }
-    setInterval(loadNotifications, 30000);
+
+    function updateNotifDot() {
+        let notifDot = document.getElementById('notifDot');
+        if (!notifDot) {
+            notifDot = document.createElement('span');
+            notifDot.id = 'notifDot';
+            notifDot.className = 'absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50';
+            notificationButton.appendChild(notifDot);
+        }
+        // Check for unread notifications in the list
+        const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
+        // Show the dot only if there are unread notifications
+        if (hasUnread) {
+            notifDot.style.display = '';
+        } else {
+            notifDot.style.display = 'none';
+        }
+    }
 });
 </script>
 </body>
