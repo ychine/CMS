@@ -66,7 +66,7 @@ CREATE TABLE `auditlog` (
   KEY `PersonnelID` (`PersonnelID`),
   CONSTRAINT `fk_auditlog_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
   CONSTRAINT `fk_auditlog_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,7 +75,7 @@ CREATE TABLE `auditlog` (
 
 LOCK TABLES `auditlog` WRITE;
 /*!40000 ALTER TABLE `auditlog` DISABLE KEYS */;
-INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32'),(13,2,12,'RIEGIE TAN','Assigned new role \'PH\' to REBECCA FAJARDO','2025-05-08 02:56:03'),(14,2,2,'ED RIAN','Joined the faculty','2025-05-08 03:03:36'),(15,2,12,'RIEGIE TAN','Removed ED RIAN from faculty','2025-05-08 03:12:45'),(16,2,12,'RIEGIE TAN','Assigned new role \'PH\' to NOREEN PEREZ','2025-05-09 19:12:28');
+INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32'),(13,2,12,'RIEGIE TAN','Assigned new role \'PH\' to REBECCA FAJARDO','2025-05-08 02:56:03'),(14,2,2,'ED RIAN','Joined the faculty','2025-05-08 03:03:36'),(15,2,12,'RIEGIE TAN','Removed ED RIAN from faculty','2025-05-08 03:12:45'),(16,2,12,'RIEGIE TAN','Assigned new role \'PH\' to NOREEN PEREZ','2025-05-09 19:12:28'),(17,2,12,'RIEGIE TAN','Created new task: TEST ULI','2025-05-13 00:01:11'),(18,2,12,'RIEGIE TAN','Created new task: 2526 ','2025-05-14 02:54:02'),(19,2,12,'RIEGIE TAN','Created new task: 2425','2025-05-14 03:02:27'),(20,2,12,'RIEGIE TAN','Created new task: TEST','2025-05-15 23:01:33'),(21,2,12,'RIEGIE TAN','Created new task: NOTIF TEST','2025-05-15 23:09:40');
 /*!40000 ALTER TABLE `auditlog` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -174,10 +174,14 @@ CREATE TABLE `notifications` (
   `Message` text NOT NULL,
   `is_read` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `link` varchar(255) DEFAULT NULL,
+  `TaskID` int(11) DEFAULT NULL,
   PRIMARY KEY (`NotificationID`),
   KEY `AccountID` (`AccountID`),
+  KEY `fk_notifications_taskid` (`TaskID`),
+  CONSTRAINT `fk_notifications_taskid` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE SET NULL,
   CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`AccountID`) REFERENCES `personnel` (`AccountID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -186,6 +190,7 @@ CREATE TABLE `notifications` (
 
 LOCK TABLES `notifications` WRITE;
 /*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
+INSERT INTO `notifications` VALUES (1,17,'','You have been assigned a new task: 2425',0,'2025-05-13 19:02:27','12',NULL),(24,14,'New Task Assigned','You have been assigned a new task: NOTIF TEST for IT 104',1,'2025-05-15 15:09:40',NULL,15);
 /*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -218,7 +223,7 @@ CREATE TABLE `personnel` (
 
 LOCK TABLES `personnel` WRITE;
 /*!40000 ALTER TABLE `personnel` DISABLE KEYS */;
-INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'ED','RIAN','Male','FM',NULL,2),(4,'TEST','TEST','Male','USER',NULL,4),(5,'LYANAH','PAULA','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'RIEGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','COR',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14),(16,'','',NULL,'USER',NULL,NULL),(17,'LAURA','ALTEA','Female','FM',2,17),(18,'REBECCA','FAJARDO','Female','PH',2,18),(19,'NOREEN','PEREZ','Female','PH',2,19),(20,'FEDERICO','NUEVA','Male','FM',2,20),(21,'RUBY JANE','DIOSA','Female','FM',2,21),(22,'RACQUEL','CORTEZ','Female','FM',2,22),(23,'RODOLFO','MIRABEL','Male','FM',2,23),(24,'JUANITO','ALVAREZ','Male','FM',2,24),(25,'GRETA','ROSARIO','Female','FM',2,25),(26,'RANDY','OTERO','Male','FM',2,26),(27,'BERILNNE','BOBIS','Female','FM',2,27),(28,'MARTHA ANDREA','DALUYON','Female','FM',2,28),(29,'JOSEPH WILFRED','DELA CRUZ','Male','FM',2,29),(30,'ALEXEN','ELACIO','Male','FM',2,30),(31,'NORMAN','ESPIRITU','Male','FM',2,31),(32,'MICHAEL','FERNANDEZ','Male','FM',2,32),(33,'RAMIL','MADRIAGA','Male','FM',2,33),(34,'DAWN BERNADETTE','MENOR','Female','FM',2,34),(35,'SAMANTHA','SIAO','Female','FM',2,35),(36,'JUAN','DELA CRUZ','Male','user',NULL,36);
+INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'ED','RIAN','Male','USER',NULL,2),(4,'TEST','TEST','Male','USER',NULL,4),(5,'LYANAH','PAULA','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'RIEGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','COR',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14),(16,'','',NULL,'USER',NULL,NULL),(17,'LAURA','ALTEA','Female','FM',2,17),(18,'REBECCA','FAJARDO','Female','PH',2,18),(19,'NOREEN','PEREZ','Female','PH',2,19),(20,'FEDERICO','NUEVA','Male','FM',2,20),(21,'RUBY JANE','DIOSA','Female','FM',2,21),(22,'RACQUEL','CORTEZ','Female','FM',2,22),(23,'RODOLFO','MIRABEL','Male','FM',2,23),(24,'JUANITO','ALVAREZ','Male','FM',2,24),(25,'GRETA','ROSARIO','Female','FM',2,25),(26,'RANDY','OTERO','Male','FM',2,26),(27,'BERILNNE','BOBIS','Female','FM',2,27),(28,'MARTHA ANDREA','DALUYON','Female','FM',2,28),(29,'JOSEPH WILFRED','DELA CRUZ','Male','FM',2,29),(30,'ALEXEN','ELACIO','Male','FM',2,30),(31,'NORMAN','ESPIRITU','Male','FM',2,31),(32,'MICHAEL','FERNANDEZ','Male','FM',2,32),(33,'RAMIL','MADRIAGA','Male','FM',2,33),(34,'DAWN BERNADETTE','MENOR','Female','FM',2,34),(35,'SAMANTHA','SIAO','Female','FM',2,35),(36,'JUAN','DELA CRUZ','Male','user',NULL,36);
 /*!40000 ALTER TABLE `personnel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -241,7 +246,7 @@ CREATE TABLE `pinboard` (
   KEY `FacultyID` (`FacultyID`),
   CONSTRAINT `pinboard_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `pinboard_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -250,7 +255,7 @@ CREATE TABLE `pinboard` (
 
 LOCK TABLES `pinboard` WRITE;
 /*!40000 ALTER TABLE `pinboard` DISABLE KEYS */;
-INSERT INTO `pinboard` VALUES (1,'ANNOUNCEMENT!!','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',12,'2025-05-11 18:08:27',2),(4,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',13,'2025-05-11 19:27:53',2),(5,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',18,'2025-05-11 19:29:41',2);
+INSERT INTO `pinboard` VALUES (1,'ANNOUNCEMENT!!','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',12,'2025-05-11 18:08:27',2),(4,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',13,'2025-05-11 19:27:53',2),(5,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',18,'2025-05-11 19:29:41',2),(6,'ANNOUNCEMENT','blabalbalbalba',12,'2025-05-15 11:37:41',2);
 /*!40000 ALTER TABLE `pinboard` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -387,7 +392,7 @@ CREATE TABLE `submissions` (
 
 LOCK TABLES `submissions` WRITE;
 /*!40000 ALTER TABLE `submissions` DISABLE KEYS */;
-INSERT INTO `submissions` VALUES (1,2,1,NULL,NULL,'2024-2025','1st','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf',22,'2025-05-09 00:34:30','COMP 106',1),(2,2,2,NULL,NULL,'2024-2025','2nd','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf',14,'2025-05-09 01:16:38','IT 104',1),(9,2,5,NULL,NULL,'2024-2025','1st','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf',18,'2025-05-09 03:04:24','IT 103',1),(10,2,6,NULL,NULL,'2024-2025','2nd','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf',17,'2025-05-09 03:16:02','COMP 104',1),(11,2,8,NULL,NULL,'2025-2026','1st','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf',22,'2025-05-09 14:48:44','COMP 106',1);
+INSERT INTO `submissions` VALUES (2,2,2,NULL,NULL,'2024-2025','2nd','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf',14,'2025-05-09 01:16:38','IT 104',1),(9,2,5,NULL,NULL,'2024-2025','1st','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf',18,'2025-05-09 03:04:24','IT 103',1),(10,2,6,NULL,NULL,'2024-2025','2nd','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf',17,'2025-05-09 03:16:02','COMP 104',1),(11,2,8,NULL,NULL,'2025-2026','1st','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf',22,'2025-05-09 14:48:44','COMP 106',1);
 /*!40000 ALTER TABLE `submissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -422,7 +427,7 @@ CREATE TABLE `task_assignments` (
   CONSTRAINT `fk_task_assignments_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -431,7 +436,7 @@ CREATE TABLE `task_assignments` (
 
 LOCK TABLES `task_assignments` WRITE;
 /*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
-INSERT INTO `task_assignments` VALUES (1,1,1,'COMP 106',2,'Completed','Approved','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf','2025-05-09 00:34:30',12,'2025-05-09 00:34:43','E DI KA MARUNONG MAAM'),(2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL),(5,5,1,'IT 103',2,'Completed','Approved','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 03:04:24',12,'2025-05-09 03:04:58',NULL),(6,6,1,'COMP 104',2,'Completed','Approved','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf','2025-05-09 03:16:02',12,'2025-05-09 03:16:39',NULL),(10,8,1,'COMP 106',2,'Completed','Approved','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 14:48:44',12,'2025-05-09 14:49:17',NULL);
+INSERT INTO `task_assignments` VALUES (2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL),(5,5,1,'IT 103',2,'Completed','Approved','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 03:04:24',12,'2025-05-09 03:04:58',NULL),(6,6,1,'COMP 104',2,'Completed','Approved','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf','2025-05-09 03:16:02',12,'2025-05-09 03:16:39',NULL),(10,8,1,'COMP 106',2,'Completed','Approved','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 14:48:44',12,'2025-05-09 14:49:17',NULL),(18,9,1,'COMP 104',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(21,12,1,'COMP 104',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(24,15,1,'IT 104',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -458,7 +463,7 @@ CREATE TABLE `tasks` (
   KEY `FacultyID` (`FacultyID`),
   CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -467,7 +472,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-11','Completed','2024-2025','1st','2025-05-08 14:59:11'),(2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53'),(5,'sample 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-10','Completed','2024-2025','1st','2025-05-09 02:57:14'),(6,'FOR MAAM LAU','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-12','Completed','2024-2025','2nd','2025-05-09 03:14:27'),(8,'daiowdawiodjaw','wdadawdaw',12,2,'2025-05-10','Completed','2025-2026','1st','2025-05-09 14:48:24');
+INSERT INTO `tasks` VALUES (2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53'),(5,'sample 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-10','Completed','2024-2025','1st','2025-05-09 02:57:14'),(6,'FOR MAAM LAU','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-12','Completed','2024-2025','2nd','2025-05-09 03:14:27'),(8,'daiowdawiodjaw','wdadawdaw',12,2,'2025-05-10','Completed','2025-2026','1st','2025-05-09 14:48:24'),(9,'TEST ULI','TEST',12,2,'2025-05-14','Pending','2026-2027','1st','2025-05-13 00:01:11'),(12,'2425','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-15','Pending','2024-2025','2nd','2025-05-14 03:02:27'),(15,'NOTIF TEST','NOTIF!',12,2,'2025-05-16','Pending','2026-2027','2nd','2025-05-15 23:09:40');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -506,4 +511,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-12  4:13:36
+-- Dump completed on 2025-05-16  0:49:51
