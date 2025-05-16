@@ -113,13 +113,31 @@ $conn->close();
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-       
-        .collapsed #logo, 
+        #logo {
+            transition: all 0.6s ease-in-out;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #logo-text {
+            transition: all 0.6s ease-in-out;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .collapsed #logo {
+            opacity: 0;
+            transform: scale(0.8);
+            visibility: hidden;
+        }
+
         .collapsed #logo-text {
-            visibility: hidden; 
-            transition: all 0s ease-in-out; 
+            opacity: 0;
+            transform: translateY(-10px);
+            visibility: hidden;
         }
 
       
@@ -135,18 +153,24 @@ $conn->close();
 
         #toggleSidebar {
             transition: all 0.5s ease-in-out;
+            position: relative;
+            margin-left: auto;
+            z-index: 10;
         }
 
         .collapsed #toggleSidebar {
             position: absolute;
-        
             width: 35px;
             height: 35px;
             background-color: #324f96;
             color: white;
             display: flex;            
             align-items: center;      
-            justify-content: center; 
+            justify-content: center;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 20px;
+            margin-left: 0;
         }
 
         .collapsed .menu-item {
@@ -157,14 +181,6 @@ $conn->close();
             margin: 0 auto;
             padding: 0; 
             border-radius: 20%; 
-         
-        }
-
-
-        .collapsed .menu-item img {
-            width: 24px;
-            height: 24px;
-            margin: 0;
         }
 
         .menu-item {
@@ -174,20 +190,31 @@ $conn->close();
             padding: 10px;
             border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            margin-right: 10px;
         }
 
         .menu-item:hover {
             background-color: #13275B;
         }
 
-    
+        .collapsed .menu-item {
+            margin-right: 0;
+        }
+
         .link-text {
             font-size: 16px;
             color: #E3E3E3;
             font-family: 'Onest', sans-serif;
             font-weight: 400;
             transition: opacity 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .collapsed .menu-item img {
+            width: 24px;
+            height: 24px;
+            margin: 0;
         }
 
 
@@ -637,16 +664,7 @@ $conn->close();
             
         </script>
 
-        <script>
-            const toggleBtn = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const chevronIcon = document.getElementById('chevronIcon');
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                chevronIcon.classList.toggle('rotate-180');
-            });
-        </script>
+<script src="../../src/sidebar.js"></script>
 
 
 <script>

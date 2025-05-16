@@ -98,6 +98,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="../../src/styles.css" rel="stylesheet" />
+    <link href="../../src/sidebar.css" rel="stylesheet" />
     <title>Tasks | CourseDock</title>
     <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -107,27 +108,42 @@ $conn->close();
         .font-onest { font-family: 'Onest', sans-serif; }
 
         /* Sidebar */
-
         #sidebar {
             transition: width 0.6s ease-in-out;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
-       
-        .collapsed #logo, 
+        #logo {
+            transition: all 0.6s ease-in-out;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #logo-text {
+            transition: all 0.6s ease-in-out;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .collapsed #logo {
+            opacity: 0;
+            transform: scale(0.8);
+            visibility: hidden;
+        }
+
         .collapsed #logo-text {
-            visibility: hidden; 
-            transition: all 0s ease-in-out; 
+            opacity: 0;
+            transform: translateY(-10px);
+            visibility: hidden;
         }
 
-      
         .collapsed .link-text {
             display: none;      
         }
 
-       
         .collapsed {
             width: 80px;
             align-items: center;
@@ -135,18 +151,24 @@ $conn->close();
 
         #toggleSidebar {
             transition: all 0.5s ease-in-out;
+            position: relative;
+            margin-left: auto;
+            z-index: 10;
         }
 
         .collapsed #toggleSidebar {
             position: absolute;
-        
             width: 35px;
             height: 35px;
             background-color: #324f96;
             color: white;
             display: flex;            
             align-items: center;      
-            justify-content: center; 
+            justify-content: center;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 20px;
+            margin-left: 0;
         }
 
         .collapsed .menu-item {
@@ -157,14 +179,6 @@ $conn->close();
             margin: 0 auto;
             padding: 0; 
             border-radius: 20%; 
-         
-        }
-
-
-        .collapsed .menu-item img {
-            width: 24px;
-            height: 24px;
-            margin: 0;
         }
 
         .menu-item {
@@ -174,22 +188,32 @@ $conn->close();
             padding: 10px;
             border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            margin-right: 10px;
         }
 
         .menu-item:hover {
             background-color: #13275B;
         }
 
-    
+        .collapsed .menu-item {
+            margin-right: 0;
+        }
+
         .link-text {
             font-size: 16px;
             color: #E3E3E3;
             font-family: 'Onest', sans-serif;
             font-weight: 400;
             transition: opacity 0.3s ease;
+            margin-left: 10px;
         }
 
+        .collapsed .menu-item img {
+            width: 24px;
+            height: 24px;
+            margin: 0;
+        }
 
         .user-info {
         text-align: right;
@@ -326,65 +350,7 @@ $conn->close();
         }
 
         
-                
-
-        /* DARK MODE STYLES */
-        body.dark {
-            background-color: #324f96;
-        }
-        .dark .bg-white {
-            background: #2d3036 !important;
-            color: #fff;
-        }
-        .dark #sidebar {
-            background: #23252b !important;
-            color: #e3e3e3;
-        }
-        .dark .flex-1 {
-            background: #1a1c20 !important;
-            color: #fff;
-        }
-        .dark .profile-dropdown {
-            background: #23252b !important;
-            border: 1px solid #35373c !important;
-            border-radius: 10px !important;
-        }
-        .dark .profile-dropdown-item {
-            color: #e3e3e3 !important;
-        }
-        .dark .profile-dropdown-item:hover {
-            background: #35373c !important;
-            color: #fff !important;
-        }
-        .dark .profile-dropdown-item svg {
-            color: #e3e3e3 !important;
-        }
-        .dark .profile-dropdown-item.text-red-500 {
-            color: #ff6b6b !important;
-        }
-        .dark .user-info {
-            background: transparent !important;
-        }
-        .dark .user-info:hover {
-            background: #23252b !important;
-        }
-        .dark .hover\:bg-gray-100:hover {
-            background: #35373c !important;
-        }
-        .dark .text-gray-600, .dark .text-gray-500 {
-            color: #e3e3e3 !important;
-        }
-        .dark .rounded-full.bg-\[\#1D387B\] {
-            background: #314f9b !important;
-        }
-
-        .dark .link-text, .dark .font-onest, .dark .font-overpass {
-            color: #e3e3e3 !important;
-        }
-        .dark .profile-dropdown-bg {
-            background: #23252b !important;
-            border-color: #35373c !important;
-        }
+      
 
     </style>
 </head>
@@ -635,16 +601,7 @@ $conn->close();
             
         </script>
 
-        <script>
-            const toggleBtn = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const chevronIcon = document.getElementById('chevronIcon');
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                chevronIcon.classList.toggle('rotate-180');
-            });
-        </script>
+    <script src="../../src/sidebar.js"></script>
 
 
 <script>

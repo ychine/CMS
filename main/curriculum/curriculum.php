@@ -98,6 +98,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="../../src/styles.css" rel="stylesheet" />
+    <link href="../../src/sidebar.css" rel="stylesheet" />
     <title>Curricula | CourseDock</title>
     <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -105,90 +106,6 @@ $conn->close();
         body { font-family: 'Inter', sans-serif; }
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
-
-        /* Sidebar */
-
-        #sidebar {
-            transition: width 0.6s ease-in-out;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-       
-        .collapsed #logo, 
-        .collapsed #logo-text {
-            visibility: hidden; 
-            transition: all 0s ease-in-out; 
-        }
-
-      
-        .collapsed .link-text {
-            display: none;      
-        }
-
-       
-        .collapsed {
-            width: 80px;
-            align-items: center;
-        }
-
-        #toggleSidebar {
-            transition: all 0.5s ease-in-out;
-        }
-
-        .collapsed #toggleSidebar {
-            position: absolute;
-        
-            width: 35px;
-            height: 35px;
-            background-color: #324f96;
-            color: white;
-            display: flex;            
-            align-items: center;      
-            justify-content: center; 
-        }
-
-        .collapsed .menu-item {
-            width: 50px; 
-            height: 50px;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto;
-            padding: 0; 
-            border-radius: 20%; 
-         
-        }
-
-
-        .collapsed .menu-item img {
-            width: 24px;
-            height: 24px;
-            margin: 0;
-        }
-
-        .menu-item {
-            user-select: none;
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .menu-item:hover {
-            background-color: #13275B;
-        }
-
-    
-        .link-text {
-            font-size: 16px;
-            color: #E3E3E3;
-            font-family: 'Onest', sans-serif;
-            font-weight: 400;
-            transition: opacity 0.3s ease;
-        }
 
 
         .user-info {
@@ -305,19 +222,6 @@ $conn->close();
             transform: scale(1.1);
         }
 
-        .collapsed .create-text {
-            display: none;
-        }
-
-    
-        .collapsed #createButton {
-            justify-content: center;
-            gap: 0;
-            padding: 14px; 
-            border-radius: 30%;
-            transition: all 0.5s ease-in-out;
-            transition: all 1s ease-in-out;
-        }
 
       
         .collapsed .sidebar-footer {
@@ -325,67 +229,6 @@ $conn->close();
             transition: all 1s ease-in-out;
         }
 
-        
-                
-
-        /* DARK MODE STYLES */
-        body.dark {
-            background-color: #324f96;
-        }
-        .dark .bg-white {
-            background: #2d3036 !important;
-            color: #fff;
-        }
-        .dark #sidebar {
-            background: #23252b !important;
-            color: #e3e3e3;
-        }
-        .dark .flex-1 {
-            background: #1a1c20 !important;
-            color: #fff;
-        }
-        .dark .profile-dropdown {
-            background: #23252b !important;
-            border: 1px solid #35373c !important;
-            border-radius: 10px !important;
-        }
-        .dark .profile-dropdown-item {
-            color: #e3e3e3 !important;
-        }
-        .dark .profile-dropdown-item:hover {
-            background: #35373c !important;
-            color: #fff !important;
-        }
-        .dark .profile-dropdown-item svg {
-            color: #e3e3e3 !important;
-        }
-        .dark .user-info {
-            background: transparent !important;
-        }
-        .dark .user-info:hover {
-            background: #23252b !important;
-        }
-        .dark .hover\:bg-gray-100:hover {
-            background: #35373c !important;
-        }
-        .dark .text-gray-600, .dark .text-gray-500 {
-            color: #e3e3e3 !important;
-        }
-        .dark .rounded-full.bg-\[\#1D387B\] {
-            background: #314f9b !important;
-        }
-        .dark .profile-dropdown-item.text-red-500 {
-            color: #ff6b6b !important;
-        }
-
-        .dark .profile-dropdown-bg {
-            background: #23252b !important;
-            border-color: #35373c !important;
-        }
-
-        .dark .link-text, .dark .font-onest, .dark .font-overpass {
-            color: #e3e3e3 !important;
-        }
         
 
     </style>
@@ -640,16 +483,7 @@ $conn->close();
             
         </script>
 
-        <script>
-            const toggleBtn = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const chevronIcon = document.getElementById('chevronIcon');
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                chevronIcon.classList.toggle('rotate-180');
-            });
-        </script>
+<script src="../../src/sidebar.js"></script>
 
 
 <script>
