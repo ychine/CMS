@@ -661,8 +661,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         
         <!-- Task Grid -->
         <?php
-        // Only show the main grid if not FM, or if FM and not viewing FM tabs
-        if ($userRole !== 'FM' || ($userRole === 'FM' && !isset($_GET['fmview'])) ) :
+        // Only show the main grid if NOT FM
+        if ($userRole !== 'FM') :
         ?>
             <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
                 <?php if (empty($tasks)): ?>
@@ -1225,7 +1225,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         <!-- Add Completed Tasks Section -->
         <?php if (isset($_GET['view']) && $_GET['view'] === 'completed'): ?>
         <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Completed Tasks</h2>
             <?php
             $completedTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                 t.CreatedBy,
@@ -1287,6 +1286,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                     Completed
                                 </span>
                             </div>
+                            
                             <div class="flex flex-col md:items-end text-sm text-gray-500">
                                 <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
                                 <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
@@ -1383,7 +1383,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <?php if (empty($completedTasks)): ?>
                         <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
                             <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
-                                <p class="text-gray-500">No tasks available. Create your first task!</p>
+                                <p class="text-gray-500">No completed tasks found. Keep going, you're almost there!</p>
                             </div>
                         </div>
                     <?php else: ?>
