@@ -42,14 +42,16 @@
             }
         }
 
-        @keyframes popup {
+        @keyframes slideUpFade {
             0% {
                 opacity: 0;
-                transform: scale(0.5);
+                transform: translateY(20px);
+                filter: blur(20px);
             }
             100% {
                 opacity: 1;
-                transform: scale(1);
+                transform: translateY(0);
+                filter: blur(0px);
             }
         }
         
@@ -59,7 +61,7 @@
             border-radius: 10px;
             width: 100%;
             border: 0.5px solid #3d74ff;
-            animation: popup 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation: slideUpFade 1s ease-out forwards;
         }
 
         .back-link {
@@ -100,17 +102,33 @@
                 opacity: 1;
             }
         }
+
+        .thin-hr {
+            border: none; /* Reset default border */
+            border-top: 0.5px solid #555; /* Adjust thickness and color as needed */
+            margin-top: 1rem; /* Optional: adjust spacing */
+            margin-bottom: 1rem; /* Optional: adjust spacing */
+        }
+
     </style>
 </head>
 
-<body class="flex items-center justify-center min-h-screen animated-bg">
-    <div class="w-full max-w-[800px] flex flex-col items-center px-6 -mt-32 relative z-10">
-        <div class="relative text-center mb-5 font-onest">
-            <div class="fade-in text-3xl mb-10 font-semibold text-[#E3E3E3] title-underline">About CourseDock</div>
-        </div>
+
+<body class="animated-bg">
+    <div class="header -mt-5  flex-col flex items-center justify-center">
+        <img src="../img/COURSEDOCK.svg" class="fade-in">
+        <div class="cmstitle">Courseware Monitoring System</div>
+    </div>
+<div class="flex justify-center min-h-screen">
+    <div class="w-full max-w-[800px] flex flex-col items-center px-6 mt-10 relative z-10">
+        
         
         <div class="content-box fade-in">
             <div class="text-[#E3E3E3] text-lg font-onest font-light leading-relaxed space-y-4">
+
+                <div class="relative text-center mb-5 font-onest">
+                    <div class="fade-in text-xl font-semibold text-[#E3E3E3] title-underline">About CourseDock</div>
+                </div>
                 <p class="mb-6">
                     <b class="font-semibold">Course</b><b class="text-[#51D55A] font-semibold">Dock</b> is a web-based courseware monitoring system built to monitor and manage the submission of course syllabi by instructors. 
                 </p>
@@ -120,13 +138,16 @@
                 <p>
                     CourseDock helps ensure accountability, improves transparency in the workflow, and supports timely curriculum updates and compliance.
                 </p>
+
+                <hr class="thin-hr">
                 <p>
-                    <i>Developed by Proud PLPians 🤍</i>
+                    <i>Developed by Proud PLPians 💚💙🤍</i>
                 </p>
             </div>
         </div>
 
         <div onclick="history.back()" class="text-center text-[#E3E3E3] mt-7 text-sm font-overpass back-link">Go Back</div>
     </div>
+</div>
 </body>
 </html>

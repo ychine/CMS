@@ -46,10 +46,12 @@
             0% {
                 opacity: 0;
                 transform: translateY(20px);
+                filter: blur(20px);
             }
             100% {
                 opacity: 1;
                 transform: translateY(0);
+                filter: blur(0px);
             }
         }
         
@@ -59,7 +61,7 @@
             border-radius: 10px;
             width: 100%;
             border: 0.5px solid #3d74ff;
-            animation: slideUpFade 0.8s ease-out forwards;
+            animation: slideUpFade 1s ease-out forwards;
         }
 
         .back-link {
@@ -115,10 +117,10 @@
         <div class="cmstitle">Courseware Monitoring System</div>
     </div>
 
-    <div class="flex justify-center min-h-screen mt-25">
+    <div class="flex justify-center min-h-screen mt-10">
         <div class="w-full max-w-[700px] flex flex-col items-center px-6 relative z-10">
             
-            <div class="content-box fade-in filter blur-sm">
+            <div class="content-box fade-in">
                 <div class="text-[#E3E3E3] text-lg font-onest font-light leading-relaxed space-y-4">
 
                 <div class="relative text-center mb-5 font-onest">
