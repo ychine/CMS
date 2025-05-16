@@ -16,6 +16,32 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `academic_years`
+--
+
+DROP TABLE IF EXISTS `academic_years`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `academic_years` (
+  `YearID` int(11) NOT NULL AUTO_INCREMENT,
+  `YearName` varchar(20) NOT NULL,
+  `YearOrder` int(11) NOT NULL,
+  PRIMARY KEY (`YearID`),
+  UNIQUE KEY `YearName` (`YearName`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `academic_years`
+--
+
+LOCK TABLES `academic_years` WRITE;
+/*!40000 ALTER TABLE `academic_years` DISABLE KEYS */;
+INSERT INTO `academic_years` VALUES (1,'1st Year',1),(2,'2nd Year',2),(3,'3rd Year',3),(4,'4th Year',4);
+/*!40000 ALTER TABLE `academic_years` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `accounts`
 --
 
@@ -66,7 +92,7 @@ CREATE TABLE `auditlog` (
   KEY `PersonnelID` (`PersonnelID`),
   CONSTRAINT `fk_auditlog_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
   CONSTRAINT `fk_auditlog_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,7 +101,7 @@ CREATE TABLE `auditlog` (
 
 LOCK TABLES `auditlog` WRITE;
 /*!40000 ALTER TABLE `auditlog` DISABLE KEYS */;
-INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32'),(13,2,12,'RIEGIE TAN','Assigned new role \'PH\' to REBECCA FAJARDO','2025-05-08 02:56:03'),(14,2,2,'ED RIAN','Joined the faculty','2025-05-08 03:03:36'),(15,2,12,'RIEGIE TAN','Removed ED RIAN from faculty','2025-05-08 03:12:45'),(16,2,12,'RIEGIE TAN','Assigned new role \'PH\' to NOREEN PEREZ','2025-05-09 19:12:28'),(17,2,12,'RIEGIE TAN','Created new task: TEST ULI','2025-05-13 00:01:11'),(18,2,12,'RIEGIE TAN','Created new task: 2526 ','2025-05-14 02:54:02'),(19,2,12,'RIEGIE TAN','Created new task: 2425','2025-05-14 03:02:27'),(20,2,12,'RIEGIE TAN','Created new task: TEST','2025-05-15 23:01:33'),(21,2,12,'RIEGIE TAN','Created new task: NOTIF TEST','2025-05-15 23:09:40');
+INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32'),(13,2,12,'RIEGIE TAN','Assigned new role \'PH\' to REBECCA FAJARDO','2025-05-08 02:56:03'),(14,2,2,'ED RIAN','Joined the faculty','2025-05-08 03:03:36'),(15,2,12,'RIEGIE TAN','Removed ED RIAN from faculty','2025-05-08 03:12:45'),(16,2,12,'RIEGIE TAN','Assigned new role \'PH\' to NOREEN PEREZ','2025-05-09 19:12:28');
 /*!40000 ALTER TABLE `auditlog` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -174,14 +200,10 @@ CREATE TABLE `notifications` (
   `Message` text NOT NULL,
   `is_read` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `link` varchar(255) DEFAULT NULL,
-  `TaskID` int(11) DEFAULT NULL,
   PRIMARY KEY (`NotificationID`),
   KEY `AccountID` (`AccountID`),
-  KEY `fk_notifications_taskid` (`TaskID`),
-  CONSTRAINT `fk_notifications_taskid` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE SET NULL,
   CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`AccountID`) REFERENCES `personnel` (`AccountID`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +212,6 @@ CREATE TABLE `notifications` (
 
 LOCK TABLES `notifications` WRITE;
 /*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
-INSERT INTO `notifications` VALUES (1,17,'','You have been assigned a new task: 2425',0,'2025-05-13 19:02:27','12',NULL),(24,14,'New Task Assigned','You have been assigned a new task: NOTIF TEST for IT 104',1,'2025-05-15 15:09:40',NULL,15);
 /*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -223,7 +244,7 @@ CREATE TABLE `personnel` (
 
 LOCK TABLES `personnel` WRITE;
 /*!40000 ALTER TABLE `personnel` DISABLE KEYS */;
-INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'ED','RIAN','Male','USER',NULL,2),(4,'TEST','TEST','Male','USER',NULL,4),(5,'LYANAH','PAULA','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'RIEGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','COR',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14),(16,'','',NULL,'USER',NULL,NULL),(17,'LAURA','ALTEA','Female','FM',2,17),(18,'REBECCA','FAJARDO','Female','PH',2,18),(19,'NOREEN','PEREZ','Female','PH',2,19),(20,'FEDERICO','NUEVA','Male','FM',2,20),(21,'RUBY JANE','DIOSA','Female','FM',2,21),(22,'RACQUEL','CORTEZ','Female','FM',2,22),(23,'RODOLFO','MIRABEL','Male','FM',2,23),(24,'JUANITO','ALVAREZ','Male','FM',2,24),(25,'GRETA','ROSARIO','Female','FM',2,25),(26,'RANDY','OTERO','Male','FM',2,26),(27,'BERILNNE','BOBIS','Female','FM',2,27),(28,'MARTHA ANDREA','DALUYON','Female','FM',2,28),(29,'JOSEPH WILFRED','DELA CRUZ','Male','FM',2,29),(30,'ALEXEN','ELACIO','Male','FM',2,30),(31,'NORMAN','ESPIRITU','Male','FM',2,31),(32,'MICHAEL','FERNANDEZ','Male','FM',2,32),(33,'RAMIL','MADRIAGA','Male','FM',2,33),(34,'DAWN BERNADETTE','MENOR','Female','FM',2,34),(35,'SAMANTHA','SIAO','Female','FM',2,35),(36,'JUAN','DELA CRUZ','Male','user',NULL,36);
+INSERT INTO `personnel` VALUES (1,'EDRIAN','MARTINEZ','Male','USER',NULL,1),(2,'ED','RIAN','Male','FM',NULL,2),(4,'TEST','TEST','Male','USER',NULL,4),(5,'LYANAH','PAULA','Female','DN',1,5),(10,'MILAN FRANCO','SANTOS','Male','DN',3,10),(11,'REX','NAVARRO JR.','Male','FM',1,11),(12,'RIEGIE','TAN','Male','DN',2,12),(13,'CATHERINE','SORBITO','Female','COR',2,13),(14,'JAYSON','DALUYON','Male','FM',2,14),(16,'','',NULL,'USER',NULL,NULL),(17,'LAURA','ALTEA','Female','FM',2,17),(18,'REBECCA','FAJARDO','Female','PH',2,18),(19,'NOREEN','PEREZ','Female','PH',2,19),(20,'FEDERICO','NUEVA','Male','FM',2,20),(21,'RUBY JANE','DIOSA','Female','FM',2,21),(22,'RACQUEL','CORTEZ','Female','FM',2,22),(23,'RODOLFO','MIRABEL','Male','FM',2,23),(24,'JUANITO','ALVAREZ','Male','FM',2,24),(25,'GRETA','ROSARIO','Female','FM',2,25),(26,'RANDY','OTERO','Male','FM',2,26),(27,'BERILNNE','BOBIS','Female','FM',2,27),(28,'MARTHA ANDREA','DALUYON','Female','FM',2,28),(29,'JOSEPH WILFRED','DELA CRUZ','Male','FM',2,29),(30,'ALEXEN','ELACIO','Male','FM',2,30),(31,'NORMAN','ESPIRITU','Male','FM',2,31),(32,'MICHAEL','FERNANDEZ','Male','FM',2,32),(33,'RAMIL','MADRIAGA','Male','FM',2,33),(34,'DAWN BERNADETTE','MENOR','Female','FM',2,34),(35,'SAMANTHA','SIAO','Female','FM',2,35),(36,'JUAN','DELA CRUZ','Male','user',NULL,36);
 /*!40000 ALTER TABLE `personnel` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -246,7 +267,7 @@ CREATE TABLE `pinboard` (
   KEY `FacultyID` (`FacultyID`),
   CONSTRAINT `pinboard_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `pinboard_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -255,7 +276,7 @@ CREATE TABLE `pinboard` (
 
 LOCK TABLES `pinboard` WRITE;
 /*!40000 ALTER TABLE `pinboard` DISABLE KEYS */;
-INSERT INTO `pinboard` VALUES (1,'ANNOUNCEMENT!!','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',12,'2025-05-11 18:08:27',2),(4,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',13,'2025-05-11 19:27:53',2),(5,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',18,'2025-05-11 19:29:41',2),(6,'ANNOUNCEMENT','blabalbalbalba',12,'2025-05-15 11:37:41',2);
+INSERT INTO `pinboard` VALUES (1,'ANNOUNCEMENT!!','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',12,'2025-05-11 18:08:27',2),(4,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',13,'2025-05-11 19:27:53',2),(5,'ANNOUNCEMENT','“Kindly accomplish your course syllabus by tomorrow. Thank you!”',18,'2025-05-11 19:29:41',2);
 /*!40000 ALTER TABLE `pinboard` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -273,18 +294,24 @@ CREATE TABLE `program_courses` (
   `CurriculumID` int(11) DEFAULT NULL,
   `FacultyID` int(11) DEFAULT NULL,
   `PersonnelID` int(11) DEFAULT NULL,
+  `YearID` int(11) DEFAULT NULL,
+  `SemesterID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ProgramCourseID`),
   KEY `CourseCode` (`CourseCode`),
   KEY `fk_program_courses_curriculum` (`CurriculumID`),
   KEY `fk_program_courses_personnel` (`PersonnelID`),
   KEY `fk_program_courses_faculty` (`FacultyID`),
   KEY `program_courses_ibfk_1` (`ProgramID`),
+  KEY `fk_program_courses_year` (`YearID`),
+  KEY `fk_program_courses_semester` (`SemesterID`),
   CONSTRAINT `fk_program_courses_curriculum` FOREIGN KEY (`CurriculumID`) REFERENCES `curricula` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_program_courses_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
   CONSTRAINT `fk_program_courses_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL,
+  CONSTRAINT `fk_program_courses_semester` FOREIGN KEY (`SemesterID`) REFERENCES `semesters` (`SemesterID`),
+  CONSTRAINT `fk_program_courses_year` FOREIGN KEY (`YearID`) REFERENCES `academic_years` (`YearID`),
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=164 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -293,7 +320,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL),(2,1,'COMP 102',2,2,NULL),(3,1,'COMP 103',2,2,NULL),(4,1,'COMP 104',2,2,17),(5,1,'COMP 105',2,2,NULL),(6,1,'COMP 106',2,2,22),(7,1,'IT 101',2,2,17),(8,1,'IT 102',2,2,NULL),(9,1,'IT 103',2,2,18),(10,1,'IT 104',2,2,14),(11,1,'IT 105',2,2,NULL),(12,1,'IT 106',2,2,NULL),(13,1,'IT 107',2,2,NULL),(14,1,'IT 108',2,2,NULL),(15,1,'IT 109',2,2,NULL),(16,1,'IT 110',2,2,NULL),(17,1,'IT 111',2,2,NULL),(18,1,'IT 112',2,2,NULL),(19,1,'IT 113',2,2,NULL),(20,1,'IT 114',2,2,NULL),(21,1,'IT 115',2,2,NULL),(22,1,'IT 201',2,2,NULL),(23,1,'IT 202',2,2,NULL),(24,1,'IT 203',2,2,NULL),(25,1,'IT 204',2,2,NULL),(26,1,'IT 301',2,2,NULL),(27,1,'IT 302',2,2,NULL),(28,1,'IT 303',2,2,NULL),(29,1,'IT 304',2,2,NULL),(30,1,'IT 305',2,2,NULL),(31,1,'IT 306',2,2,NULL),(32,2,'COMP 101',3,2,NULL),(33,2,'COMP 102',3,2,NULL),(34,2,'COMP 103',3,2,NULL),(35,2,'COMP 104',3,2,NULL),(36,2,'COMP 105',3,2,NULL),(37,2,'CS 101',3,2,NULL),(38,2,'CS 102',3,2,NULL),(39,2,'CS 103',3,2,NULL),(40,2,'CS 104',3,2,NULL),(41,2,'CS 105',3,2,NULL),(42,2,'CS 106',3,2,NULL),(43,2,'CS 107',3,2,NULL),(44,2,'CS 108',3,2,NULL),(45,2,'CS 109',3,2,NULL),(46,2,'CS 110',3,2,NULL),(47,2,'CS 111',3,2,NULL),(48,2,'CS 112',3,2,NULL),(49,2,'CS 113',3,2,NULL),(50,2,'CS 114',3,2,NULL),(51,2,'CS 115',3,2,NULL),(52,2,'CS 116',3,2,NULL),(53,2,'CS 117',3,2,NULL),(54,2,'CS 201',3,2,NULL),(55,2,'CS 202',3,2,NULL),(56,2,'CS 203',3,2,NULL),(57,2,'CS 301',3,2,NULL),(58,2,'CS 401',3,2,NULL),(59,2,'CS 402',3,2,NULL),(60,2,'CS 403',3,2,NULL),(61,2,'CS 404',3,2,NULL),(62,2,'CS 405',3,2,NULL),(63,2,'CS 406',3,2,NULL);
+INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL,NULL,NULL),(2,1,'COMP 102',2,2,NULL,NULL,NULL),(3,1,'COMP 103',2,2,NULL,NULL,NULL),(4,1,'COMP 104',2,2,17,NULL,NULL),(5,1,'COMP 105',2,2,NULL,NULL,NULL),(6,1,'COMP 106',2,2,22,NULL,NULL),(7,1,'IT 101',2,2,17,NULL,NULL),(8,1,'IT 102',2,2,NULL,NULL,NULL),(9,1,'IT 103',2,2,18,NULL,NULL),(10,1,'IT 104',2,2,14,NULL,NULL),(11,1,'IT 105',2,2,NULL,NULL,NULL),(12,1,'IT 106',2,2,NULL,NULL,NULL),(13,1,'IT 107',2,2,NULL,NULL,NULL),(14,1,'IT 108',2,2,NULL,NULL,NULL),(15,1,'IT 109',2,2,NULL,NULL,NULL),(16,1,'IT 110',2,2,NULL,NULL,NULL),(17,1,'IT 111',2,2,NULL,NULL,NULL),(18,1,'IT 112',2,2,NULL,NULL,NULL),(19,1,'IT 113',2,2,NULL,NULL,NULL),(20,1,'IT 114',2,2,NULL,NULL,NULL),(21,1,'IT 115',2,2,NULL,NULL,NULL),(22,1,'IT 201',2,2,NULL,NULL,NULL),(23,1,'IT 202',2,2,NULL,NULL,NULL),(24,1,'IT 203',2,2,NULL,NULL,NULL),(25,1,'IT 204',2,2,NULL,NULL,NULL),(26,1,'IT 301',2,2,NULL,NULL,NULL),(27,1,'IT 302',2,2,NULL,NULL,NULL),(28,1,'IT 303',2,2,NULL,NULL,NULL),(29,1,'IT 304',2,2,NULL,NULL,NULL),(30,1,'IT 305',2,2,NULL,NULL,NULL),(31,1,'IT 306',2,2,NULL,NULL,NULL),(32,2,'COMP 101',3,2,NULL,NULL,NULL),(33,2,'COMP 102',3,2,NULL,NULL,NULL),(34,2,'COMP 103',3,2,NULL,NULL,NULL),(35,2,'COMP 104',3,2,NULL,NULL,NULL),(36,2,'COMP 105',3,2,NULL,NULL,NULL),(37,2,'CS 101',3,2,NULL,NULL,NULL),(38,2,'CS 102',3,2,NULL,NULL,NULL),(39,2,'CS 103',3,2,NULL,NULL,NULL),(40,2,'CS 104',3,2,NULL,NULL,NULL),(41,2,'CS 105',3,2,NULL,NULL,NULL),(42,2,'CS 106',3,2,NULL,NULL,NULL),(43,2,'CS 107',3,2,NULL,NULL,NULL),(44,2,'CS 108',3,2,NULL,NULL,NULL),(45,2,'CS 109',3,2,NULL,NULL,NULL),(46,2,'CS 110',3,2,NULL,NULL,NULL),(47,2,'CS 111',3,2,NULL,NULL,NULL),(48,2,'CS 112',3,2,NULL,NULL,NULL),(49,2,'CS 113',3,2,NULL,NULL,NULL),(50,2,'CS 114',3,2,NULL,NULL,NULL),(51,2,'CS 115',3,2,NULL,NULL,NULL),(52,2,'CS 116',3,2,NULL,NULL,NULL),(53,2,'CS 117',3,2,NULL,NULL,NULL),(54,2,'CS 201',3,2,NULL,NULL,NULL),(55,2,'CS 202',3,2,NULL,NULL,NULL),(56,2,'CS 203',3,2,NULL,NULL,NULL),(57,2,'CS 301',3,2,NULL,NULL,NULL),(58,2,'CS 401',3,2,NULL,NULL,NULL),(59,2,'CS 402',3,2,NULL,NULL,NULL),(60,2,'CS 403',3,2,NULL,NULL,NULL),(61,2,'CS 404',3,2,NULL,NULL,NULL),(62,2,'CS 405',3,2,NULL,NULL,NULL),(63,2,'CS 406',3,2,NULL,NULL,NULL),(67,1,'COMP 101',2,NULL,NULL,1,1),(68,1,'COMP 102',2,NULL,NULL,1,1),(69,1,'COMP 103',2,NULL,NULL,1,2),(70,1,'IT 101',2,NULL,NULL,1,2),(71,1,'COMP 104',2,NULL,NULL,2,1),(72,1,'COMP 105',2,NULL,NULL,2,1),(73,1,'IT 102',2,NULL,NULL,2,1),(74,1,'IT 201',2,NULL,NULL,2,1),(75,1,'IT 202',2,NULL,NULL,2,1),(76,1,'IT 103',2,NULL,NULL,2,2),(77,1,'IT 104',2,NULL,NULL,2,2),(78,1,'IT 105',2,NULL,NULL,2,2),(79,1,'IT 301',2,NULL,NULL,2,2),(80,1,'COMP 106',2,NULL,NULL,2,2),(81,1,'IT 106',2,NULL,NULL,3,1),(82,1,'IT 107',2,NULL,NULL,3,1),(83,1,'IT 302',2,NULL,NULL,3,1),(84,1,'IT 303',2,NULL,NULL,3,1),(85,1,'IT 304',2,NULL,NULL,3,1),(86,1,'IT 305',2,NULL,NULL,3,1),(87,1,'IT 108',2,NULL,NULL,3,2),(88,1,'IT 109',2,NULL,NULL,3,2),(89,1,'IT 110',2,NULL,NULL,3,2),(90,1,'IT 203',2,NULL,NULL,3,2),(91,1,'IT 306',2,NULL,NULL,3,2),(92,1,'IT 111',2,NULL,NULL,3,2),(93,1,'IT 112',2,NULL,NULL,3,2),(94,1,'IT 113',2,NULL,NULL,4,1),(95,1,'IT 114',2,NULL,NULL,4,1),(96,1,'IT 204',2,NULL,NULL,4,1),(97,1,'IT 115',2,NULL,NULL,4,2),(98,2,'COMP 101',3,NULL,NULL,1,1),(99,2,'COMP 102',3,NULL,NULL,1,1),(100,2,'COMP 103',3,NULL,NULL,1,2),(101,2,'CS 101',3,NULL,NULL,1,2),(102,2,'COMP 104',3,NULL,NULL,2,1),(103,2,'COMP 105',3,NULL,NULL,2,1),(104,2,'CS 102',3,NULL,NULL,2,1),(105,2,'CS 103',3,NULL,NULL,2,1),(106,2,'CS 104',3,NULL,NULL,2,2),(107,2,'CS 105',3,NULL,NULL,2,2),(108,2,'CS 301',3,NULL,NULL,2,2),(109,2,'CS 401',3,NULL,NULL,2,2),(110,2,'CS 402',3,NULL,NULL,2,2),(111,2,'COMP 106',3,NULL,NULL,2,2),(112,2,'CS 106',3,NULL,NULL,3,1),(113,2,'CS 107',3,NULL,NULL,3,1),(114,2,'CS 108',3,NULL,NULL,3,1),(115,2,'CS 109',3,NULL,NULL,3,1),(116,2,'CS 201',3,NULL,NULL,3,1),(117,2,'CS 403',3,NULL,NULL,3,1),(118,2,'CS 110',3,NULL,NULL,3,2),(119,2,'CS 111',3,NULL,NULL,3,2),(120,2,'CS 112',3,NULL,NULL,3,2),(121,2,'CS 202',3,NULL,NULL,3,2),(122,2,'CS 405',3,NULL,NULL,3,2),(123,2,'CS 404',3,NULL,NULL,3,2),(124,2,'CS 113',3,NULL,NULL,3,2),(125,2,'CS 114',3,NULL,NULL,4,1),(126,2,'CS 115',3,NULL,NULL,4,1),(127,2,'CS 203',3,NULL,NULL,4,1),(128,2,'CS 406',3,NULL,NULL,4,1),(129,2,'CS 116',3,NULL,NULL,4,2),(130,2,'CS 117',3,NULL,NULL,4,2),(131,2,'COMP 101',3,NULL,NULL,1,1),(132,2,'COMP 102',3,NULL,NULL,1,1),(133,2,'COMP 103',3,NULL,NULL,1,2),(134,2,'CS 101',3,NULL,NULL,1,2),(135,2,'COMP 104',3,NULL,NULL,2,1),(136,2,'COMP 105',3,NULL,NULL,2,1),(137,2,'CS 102',3,NULL,NULL,2,1),(138,2,'CS 103',3,NULL,NULL,2,1),(139,2,'CS 104',3,NULL,NULL,2,2),(140,2,'CS 105',3,NULL,NULL,2,2),(141,2,'CS 301',3,NULL,NULL,2,2),(142,2,'CS 401',3,NULL,NULL,2,2),(143,2,'CS 402',3,NULL,NULL,2,2),(144,2,'COMP 106',3,NULL,NULL,2,2),(145,2,'CS 106',3,NULL,NULL,3,1),(146,2,'CS 107',3,NULL,NULL,3,1),(147,2,'CS 108',3,NULL,NULL,3,1),(148,2,'CS 109',3,NULL,NULL,3,1),(149,2,'CS 201',3,NULL,NULL,3,1),(150,2,'CS 403',3,NULL,NULL,3,1),(151,2,'CS 110',3,NULL,NULL,3,2),(152,2,'CS 111',3,NULL,NULL,3,2),(153,2,'CS 112',3,NULL,NULL,3,2),(154,2,'CS 202',3,NULL,NULL,3,2),(155,2,'CS 405',3,NULL,NULL,3,2),(156,2,'CS 404',3,NULL,NULL,3,2),(157,2,'CS 113',3,NULL,NULL,3,2),(158,2,'CS 114',3,NULL,NULL,4,1),(159,2,'CS 115',3,NULL,NULL,4,1),(160,2,'CS 203',3,NULL,NULL,4,1),(161,2,'CS 406',3,NULL,NULL,4,1),(162,2,'CS 116',3,NULL,NULL,4,2),(163,2,'CS 117',3,NULL,NULL,4,2);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -320,6 +347,32 @@ LOCK TABLES `programs` WRITE;
 /*!40000 ALTER TABLE `programs` DISABLE KEYS */;
 INSERT INTO `programs` VALUES (1,'BSIT','Bachelor of Science in Information Technology'),(2,'BSCS','Bachelor of Science in Computer Science'),(12,'BSA','Bachelor of Science in Accountancy');
 /*!40000 ALTER TABLE `programs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `semesters`
+--
+
+DROP TABLE IF EXISTS `semesters`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `semesters` (
+  `SemesterID` int(11) NOT NULL AUTO_INCREMENT,
+  `SemesterName` varchar(20) NOT NULL,
+  `SemesterOrder` int(11) NOT NULL,
+  PRIMARY KEY (`SemesterID`),
+  UNIQUE KEY `SemesterName` (`SemesterName`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `semesters`
+--
+
+LOCK TABLES `semesters` WRITE;
+/*!40000 ALTER TABLE `semesters` DISABLE KEYS */;
+INSERT INTO `semesters` VALUES (1,'1st Semester',1),(2,'2nd Semester',2);
+/*!40000 ALTER TABLE `semesters` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -392,7 +445,7 @@ CREATE TABLE `submissions` (
 
 LOCK TABLES `submissions` WRITE;
 /*!40000 ALTER TABLE `submissions` DISABLE KEYS */;
-INSERT INTO `submissions` VALUES (2,2,2,NULL,NULL,'2024-2025','2nd','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf',14,'2025-05-09 01:16:38','IT 104',1),(9,2,5,NULL,NULL,'2024-2025','1st','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf',18,'2025-05-09 03:04:24','IT 103',1),(10,2,6,NULL,NULL,'2024-2025','2nd','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf',17,'2025-05-09 03:16:02','COMP 104',1),(11,2,8,NULL,NULL,'2025-2026','1st','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf',22,'2025-05-09 14:48:44','COMP 106',1);
+INSERT INTO `submissions` VALUES (1,2,1,NULL,NULL,'2024-2025','1st','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf',22,'2025-05-09 00:34:30','COMP 106',1),(2,2,2,NULL,NULL,'2024-2025','2nd','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf',14,'2025-05-09 01:16:38','IT 104',1),(9,2,5,NULL,NULL,'2024-2025','1st','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf',18,'2025-05-09 03:04:24','IT 103',1),(10,2,6,NULL,NULL,'2024-2025','2nd','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf',17,'2025-05-09 03:16:02','COMP 104',1),(11,2,8,NULL,NULL,'2025-2026','1st','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf',22,'2025-05-09 14:48:44','COMP 106',1);
 /*!40000 ALTER TABLE `submissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -427,7 +480,7 @@ CREATE TABLE `task_assignments` (
   CONSTRAINT `fk_task_assignments_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assignments_tasks` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -436,7 +489,7 @@ CREATE TABLE `task_assignments` (
 
 LOCK TABLES `task_assignments` WRITE;
 /*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
-INSERT INTO `task_assignments` VALUES (2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL),(5,5,1,'IT 103',2,'Completed','Approved','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 03:04:24',12,'2025-05-09 03:04:58',NULL),(6,6,1,'COMP 104',2,'Completed','Approved','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf','2025-05-09 03:16:02',12,'2025-05-09 03:16:39',NULL),(10,8,1,'COMP 106',2,'Completed','Approved','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 14:48:44',12,'2025-05-09 14:49:17',NULL),(18,9,1,'COMP 104',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(21,12,1,'COMP 104',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(24,15,1,'IT 104',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `task_assignments` VALUES (1,1,1,'COMP 106',2,'Completed','Approved','uploads/tasks/1/2D-Group3-Courseware-Monitoring-Progress-Part1 (1).pdf','2025-05-09 00:34:30',12,'2025-05-09 00:34:43','E DI KA MARUNONG MAAM'),(2,2,1,'IT 104',2,'Completed','Approved','uploads/tasks/2/22619 -  Web Based Application development with PHP.pdf','2025-05-09 01:16:38',12,'2025-05-09 01:17:36',NULL),(5,5,1,'IT 103',2,'Completed','Approved','uploads/tasks/5/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 03:04:24',12,'2025-05-09 03:04:58',NULL),(6,6,1,'COMP 104',2,'Completed','Approved','uploads/tasks/6/COMP304 - Data Structures and Algorithms.pdf','2025-05-09 03:16:02',12,'2025-05-09 03:16:39',NULL),(10,8,1,'COMP 106',2,'Completed','Approved','uploads/tasks/8/DATABASE MANAGEMENT SYSTEMS.pdf','2025-05-09 14:48:44',12,'2025-05-09 14:49:17',NULL);
 /*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -463,7 +516,7 @@ CREATE TABLE `tasks` (
   KEY `FacultyID` (`FacultyID`),
   CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`CreatedBy`) REFERENCES `personnel` (`PersonnelID`),
   CONSTRAINT `tasks_ibfk_2` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -472,7 +525,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53'),(5,'sample 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-10','Completed','2024-2025','1st','2025-05-09 02:57:14'),(6,'FOR MAAM LAU','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-12','Completed','2024-2025','2nd','2025-05-09 03:14:27'),(8,'daiowdawiodjaw','wdadawdaw',12,2,'2025-05-10','Completed','2025-2026','1st','2025-05-09 14:48:24'),(9,'TEST ULI','TEST',12,2,'2025-05-14','Pending','2026-2027','1st','2025-05-13 00:01:11'),(12,'2425','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-15','Pending','2024-2025','2nd','2025-05-14 03:02:27'),(15,'NOTIF TEST','NOTIF!',12,2,'2025-05-16','Pending','2026-2027','2nd','2025-05-15 23:09:40');
+INSERT INTO `tasks` VALUES (1,'SAMPLE','SAMPLE SAMPLE',12,2,'2025-05-11','Completed','2024-2025','1st','2025-05-08 14:59:11'),(2,'TEST 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-11','Completed','2024-2025','2nd','2025-05-09 01:11:53'),(5,'sample 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-10','Completed','2024-2025','1st','2025-05-09 02:57:14'),(6,'FOR MAAM LAU','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',12,2,'2025-05-12','Completed','2024-2025','2nd','2025-05-09 03:14:27'),(8,'daiowdawiodjaw','wdadawdaw',12,2,'2025-05-10','Completed','2025-2026','1st','2025-05-09 14:48:24');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -511,4 +564,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-16  0:49:51
+-- Dump completed on 2025-05-16 14:10:39
