@@ -376,7 +376,7 @@ $conn->close();
 <body id="mainBody" class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
-    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
+    <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg" >
 
         <!-- Sidebar -->
         <div id="sidebar" class="sidebar w-[290px] bg-[#1D387B] text-white p-3 pt-5 flex flex-col transition-all duration-300 ease-in-out">

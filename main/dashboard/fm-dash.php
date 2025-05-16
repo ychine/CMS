@@ -234,7 +234,7 @@ $totalStmt->close();
     </style>
 </head>
 <body>
-    <div class="flex-1 flex flex-col px-[50px] md:px-[50px] pt-px] overflow-y-auto">
+    <div class="flex-1 flex flex-col px-[50px] md:px-[50px] pt-[15px]  overflow-y-auto">
         <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
         <hr class="border-gray-300 py-[10px]">
         <div class="relative w-full">
