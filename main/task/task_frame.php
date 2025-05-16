@@ -95,6 +95,98 @@ if ($roleResult && $roleResult->num_rows > 0) {
 }
 $roleStmt->close();
 
+// FM: Fetch ongoing tasks BEFORE HTML
+if ($userRole === 'FM') {
+    $ongoingTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
+        t.CreatedBy,
+        COUNT(ta.CourseCode) as AssignedCourses,
+        SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
+        p.Role as UserRole,
+        CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName
+        FROM tasks t
+        JOIN task_assignments ta ON t.TaskID = ta.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        LEFT JOIN personnel p ON p.AccountID = ?
+        LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
+        WHERE pc.PersonnelID = ? AND ta.Status != 'Completed'
+        GROUP BY t.TaskID
+        ORDER BY t.CreatedAt DESC";
+    $ongoingTasksStmt = $conn->prepare($ongoingTasksSql);
+    $ongoingTasksStmt->bind_param("ii", $accountID, $personnelID);
+    $ongoingTasksStmt->execute();
+    $ongoingTasksResult = $ongoingTasksStmt->get_result();
+    $ongoingTasks = [];
+    while ($taskRow = $ongoingTasksResult->fetch_assoc()) {
+        $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
+            p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
+            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+            FROM task_assignments ta
+            JOIN courses c ON ta.CourseCode = c.CourseCode
+            JOIN programs p ON ta.ProgramID = p.ProgramID
+            LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+            LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+            WHERE ta.TaskID = ?
+            ORDER BY p.ProgramName, ta.CourseCode";
+        $coursesStmt = $conn->prepare($coursesSql);
+        $coursesStmt->bind_param("i", $taskRow['TaskID']);
+        $coursesStmt->execute();
+        $coursesResult = $coursesStmt->get_result();
+        $courses = [];
+        while ($courseRow = $coursesResult->fetch_assoc()) {
+            $courses[] = $courseRow;
+        }
+        $coursesStmt->close();
+        $taskRow['Courses'] = $courses;
+        $ongoingTasks[] = $taskRow;
+    }
+    $ongoingTasksStmt->close();
+
+    // Fetch completed tasks for FM
+    $completedTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
+        t.CreatedBy,
+        COUNT(ta.CourseCode) as AssignedCourses,
+        SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
+        p.Role as UserRole,
+        CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName
+        FROM tasks t
+        JOIN task_assignments ta ON t.TaskID = ta.TaskID
+        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+        LEFT JOIN personnel p ON p.AccountID = ?
+        LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
+        WHERE pc.PersonnelID = ? AND ta.Status = 'Completed'
+        GROUP BY t.TaskID
+        ORDER BY t.CreatedAt DESC";
+    $completedTasksStmt = $conn->prepare($completedTasksSql);
+    $completedTasksStmt->bind_param("ii", $accountID, $personnelID);
+    $completedTasksStmt->execute();
+    $completedTasksResult = $completedTasksStmt->get_result();
+    $completedTasks = [];
+    while ($taskRow = $completedTasksResult->fetch_assoc()) {
+        $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
+            p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
+            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+            FROM task_assignments ta
+            JOIN courses c ON ta.CourseCode = c.CourseCode
+            JOIN programs p ON ta.ProgramID = p.ProgramID
+            LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+            LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+            WHERE ta.TaskID = ?
+            ORDER BY p.ProgramName, ta.CourseCode";
+        $coursesStmt = $conn->prepare($coursesSql);
+        $coursesStmt->bind_param("i", $taskRow['TaskID']);
+        $coursesStmt->execute();
+        $coursesResult = $coursesStmt->get_result();
+        $courses = [];
+        while ($courseRow = $coursesResult->fetch_assoc()) {
+            $courses[] = $courseRow;
+        }
+        $coursesStmt->close();
+        $taskRow['Courses'] = $courses;
+        $completedTasks[] = $taskRow;
+    }
+    $completedTasksStmt->close();
+}
+
 if (isset($_POST['create_task'])) {
     $title = $_POST['title'];
     $description = $_POST['description'];
@@ -663,9 +755,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         <?php
         // Only show the main grid if NOT FM
         if ($userRole !== 'FM') :
+            // Only show the default message if not on the completed tab
+            $onCompletedTab = (isset($_GET['view']) && $_GET['view'] === 'completed');
         ?>
             <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
-                <?php if (empty($tasks)): ?>
+                <?php if (empty($tasks) && !$onCompletedTab): ?>
                     <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
                         <p class="text-gray-500">No tasks available. Create your first task!</p>
                     </div>
@@ -1272,6 +1366,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             $completedTasksStmt->close();
             ?>
             <?php if (!empty($completedTasks)): ?>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Completed Tasks</h2>
                 <?php foreach ($completedTasks as $task): ?>
                     <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
@@ -1321,7 +1416,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                
+                <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
+                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                        <p class="text-gray-500">No completed tasks found. Keep going, you're almost there!</p>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
         <?php endif; ?>
