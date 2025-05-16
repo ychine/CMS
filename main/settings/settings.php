@@ -304,7 +304,7 @@ $conn->close();
 
             </div>
 
-            <button id="createButton" class=" mt-auto rounded-[10px] text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+            <button id="createButton" class=" mt-auto text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
               
             </button>
 
@@ -329,28 +329,27 @@ $conn->close();
              
                 <div class="flex items-center gap-4">
                     <!-- Notification Icon -->
-                    <div class="relative">
-                    <button id="notificationButton" class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200" style="position: relative;">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="relative border p-[2px] border-gray-200 rounded-lg">
+                    <button id="notificationButton" class="p-2 hover:bg-gray-100 transition-all duration-300 ease-in-out focus:outline-none focus:border-[#51D55A] focus:rounded-lg focus:border-2 flex items-center justify-center active:scale-95" style="position: relative; width: 40px; height: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
                             <!-- Notification Badge -->
                             <?php if ($notificationCount > 0): ?>
-                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"><?php echo $notificationCount; ?></span>
+                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full transition-all duration-300"><?php echo $notificationCount; ?></span>
                             <?php endif; ?>
                             <!-- Red Dot Indicator (always present, outside PHP if-block) -->
-                            <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50"></span>
-                        </button>   
-
+                            <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50 transition-all duration-300"></span>
+                        </button> 
                         <!-- Notification Dropdown -->
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
-                            <div class="p-4 border-b">
-                                <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                            <div class="p-4 shadow-md">
+                                <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
                             </div>
                             <div id="notificationList" class="max-h-96 overflow-y-auto">
                                 <!-- Notifications will be loaded here -->
                             </div>
-                            <div class="p-4 border-t text-center">
+                            <div class="p-4 border-t border-gray-200 text-center">
                                 <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
                             </div>
                         </div>
@@ -568,27 +567,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationDropdown = document.getElementById('notificationDropdown');
     const notificationList = document.getElementById('notificationList');
 
-    // Load notifications immediately on page load
     loadNotifications();
 
-    // Load notifications every 30 seconds
+
     setInterval(loadNotifications, 30000);
 
-    // Toggle notification dropdown
+   
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
-        notificationDropdown.classList.toggle('hidden');
+        if (notificationDropdown.classList.contains('hidden')) {
+      
+            notificationDropdown.classList.remove('hidden');
+     
+            setTimeout(() => {
+                notificationDropdown.classList.remove('opacity-0', 'scale-95');
+                notificationDropdown.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        } else {
+   
+            notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            notificationDropdown.classList.add('opacity-0', 'scale-95');
+         
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+            }, 300);
+        }
         if (!notificationDropdown.classList.contains('hidden')) {
             loadNotifications();
         }
     });
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
-            notificationDropdown.classList.add('hidden');
-        }
-    });
 
     function loadNotifications() {
         fetch('../src/scripts/get_notifications.php')

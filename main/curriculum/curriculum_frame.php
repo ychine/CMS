@@ -57,7 +57,7 @@ $sql = "
     LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
     LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
     WHERE c.FacultyID = ?
-    ORDER BY p.ProgramCode, c.name, co.Title
+    ORDER BY p.ProgramCode, c.name, co.CourseCode, co.Title
 ";
 
 $stmt = $conn->prepare($sql);
@@ -96,6 +96,15 @@ while ($row = $res->fetch_assoc()) {
             'code' => $row['CourseCode'],
             'assigned_to' => $assignedPersonnel
         ];
+    }
+}
+
+// Sort courses within each curriculum by course code
+foreach ($programs as $programId => $programData) {
+    foreach ($programData['curricula'] as $curriculum => $courses) {
+        usort($programs[$programId]['curricula'][$curriculum], function($a, $b) {
+            return strcmp($a['code'], $b['code']);
+        });
     }
 }
 
@@ -407,7 +416,7 @@ $conn->close();
         Manage academic programs and curricula. Create programs, add courses, and assign faculty members. Track curriculum changes over time.
     </p>
 
-    <div class="w-[70%] space-y-2 font-onest">
+    <div class="w-[75%] space-y-2 font-onest">
         <?php
         
         function renderProgramTree($programs, $userRole, $facultyID, $currentSchoolYear, $currentTerm) {
@@ -445,8 +454,9 @@ $conn->close();
                     echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
                     echo "<thead class='bg-gray-100 text-gray-900'>";
                     echo "<tr>";
-                    echo "<th class='px-4 py-2 border-b w-[70%]'>📚 Course</th>";
-                    echo "<th class='px-4 py-2 border-b text-left w-[30%]'>Assigned Prof.</th>";
+                    echo "<th class='text-right px-4 py-2 border-b w-[5%]'> Code</th>";
+                    echo "<th class='px-4 py-2 border-b w-[60%]'>📚 Course</th>";
+                    echo "<th class='px-4 py-2 border-b text-left w-[35%]'>Assigned Prof.</th>";
                     echo "</tr>";
                     echo "</thead><tbody>";
         
@@ -456,7 +466,8 @@ $conn->close();
                         $courseCode = $courseData['code'] ?? $courseTitle;
                         $rowId = 'files_' . md5($programName . $year . $courseTitle . $idx);
                         echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
-                        echo "<td class='px-4 py-2 border-b w-[70%]'>" . htmlspecialchars($courseTitle) . "</td>";
+                        echo "<td class='text-right px-4 py-2 border-b w-[15%]'>" . htmlspecialchars($courseCode) . "</td>";
+                        echo "<td class='px-4 py-2 border-b w-[55%]'>" . htmlspecialchars($courseTitle) . "</td>";
                     
                         echo "<td class='px-4 py-2 border-b w-[30%]'>";
                         
@@ -468,6 +479,11 @@ $conn->close();
                                 data-program='" . htmlspecialchars($programId) . "'>";
                             echo "<option value=''>-- Assign Personnel --</option>";
                         
+                            // Sort personnel list alphabetically by name
+                            usort($GLOBALS['personnelList'], function($a, $b) {
+                                return strcasecmp($a['name'], $b['name']);
+                            });
+                            
                             foreach ($GLOBALS['personnelList'] as $person) {
                                 $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
                                 echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
@@ -482,7 +498,7 @@ $conn->close();
                         echo "</td>";
                         // Collapsible row for approved files
                         echo "<tr id='$rowId' class='hidden'>";
-                        echo "<td colspan='2' class='bg-gray-50 px-6 py-3 border-b'>";
+                        echo "<td colspan='3' class='bg-gray-50 px-6 py-3 border-b'>";
                         // Fetch all submissions for this course, current year/term
                         $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
                                     FROM submissions s
@@ -516,7 +532,7 @@ $conn->close();
                             }
                             echo "</ul>";
                         } else {
-                            echo "<span class='text-gray-400 italic'>No approved files</span>";
+                            echo "<div class=' text-gray-400 italic'>No approved files</div>";
                         }
                         $fileStmt->close();
                         echo "</td></tr>";
@@ -705,7 +721,13 @@ $conn->close();
 
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.assign-personnel-dropdown').forEach(dropdown => {
-            dropdown.addEventListener('change', function() {
+            // Add click event to stop propagation
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            dropdown.addEventListener('change', function(e) {
+                e.stopPropagation();
                 const personnelId = this.value;
                 const courseTitle = this.dataset.courseCode;
                 const curriculumName = this.dataset.curriculum;
