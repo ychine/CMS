@@ -649,6 +649,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-700'; ?>">
                 For You
             </a>
+            <a href="?view=completed" 
+               class="px-4 py-2 rounded-lg font-medium transition-all duration-300 ease-in-out border-2
+                    <?php echo (isset($_GET['view']) && $_GET['view'] === 'completed') 
+                        ? 'border-blue-600 text-blue-600 hover:bg-blue-50' 
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-700'; ?>">
+                Completed
+            </a>
         </div>
         <?php endif; ?>
         
@@ -1209,6 +1216,115 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 </form>
             </div>
         </div>
+
+        <!-- Add Completed Tasks Section -->
+        <?php if (isset($_GET['view']) && $_GET['view'] === 'completed'): ?>
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Completed Tasks</h2>
+            <?php
+            $completedTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
+                t.CreatedBy,
+                COUNT(ta.CourseCode) as AssignedCourses,
+                SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
+                ? as UserRole,
+                CONCAT(p.FirstName, ' ', p.LastName) as CreatorName
+                FROM tasks t
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
+                WHERE t.FacultyID = ? AND t.Status = 'Completed'
+                GROUP BY t.TaskID
+                ORDER BY t.CreatedAt DESC";
+            $completedTasksStmt = $conn->prepare($completedTasksSql);
+            $completedTasksStmt->bind_param("si", $userRole, $facultyID);
+            $completedTasksStmt->execute();
+            $completedTasksResult = $completedTasksStmt->get_result();
+            
+            $completedTasks = [];
+            while ($taskRow = $completedTasksResult->fetch_assoc()) {
+                $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
+                            p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
+                            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+                            FROM task_assignments ta
+                            JOIN courses c ON ta.CourseCode = c.CourseCode
+                            JOIN programs p ON ta.ProgramID = p.ProgramID
+                            LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                            LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                            WHERE ta.TaskID = ?
+                            ORDER BY p.ProgramName, ta.CourseCode";
+                $coursesStmt = $conn->prepare($coursesSql);
+                $coursesStmt->bind_param("i", $taskRow['TaskID']);
+                $coursesStmt->execute();
+                $coursesResult = $coursesStmt->get_result();
+                
+                $courses = [];
+                while ($courseRow = $coursesResult->fetch_assoc()) {
+                    $courses[] = $courseRow;
+                }
+                $coursesStmt->close();
+                
+                $taskRow['Courses'] = $courses;
+                $completedTasks[] = $taskRow;
+            }
+            $completedTasksStmt->close();
+            ?>
+
+            <?php if (empty($completedTasks)): ?>
+                <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
+                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                        <p class="text-gray-500">No completed tasks found. Keep going, you're almost there!</p>
+                    </div>
+                </div>
+            <?php else: ?>
+                <?php foreach ($completedTasks as $task): ?>
+                    <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
+                                    <!-- History Icon -->
+                                    <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+                                        <circle cx="12" cy="12" r="9" />
+                                    </svg>
+                                    Completed
+                                </span>
+                            </div>
+                            <div class="flex flex-col md:items-end text-sm text-gray-500">
+                                <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
+                                <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
+                                <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                        <div class="mt-2">
+                            <span class="font-medium text-gray-700">Completed Courses (<?php echo $task['AssignedCourses']; ?>):</span>
+                            <?php if (!empty($task['Courses'])): ?>
+                                <div class="mt-1 pl-2 border-l-2 border-gray-100 max-h-[120px] overflow-y-auto">
+                                    <?php foreach ($task['Courses'] as $course): ?>
+                                        <div class="flex items-center justify-between py-1 px-2 rounded-lg mb-1 course-card completed bg-green-50">
+                                            <div>
+                                                <span class="font-semibold text-gray-800"><?php echo htmlspecialchars($course['CourseCode']); ?></span>
+                                                <span class="text-gray-600">- <?php echo htmlspecialchars($course['CourseTitle']); ?></span>
+                                                <br>
+                                                <span class="ml-2 text-xs text-gray-500">Completed by: <?php echo htmlspecialchars($course['AssignedTo']); ?></span>
+                                            </div>
+                                            <div class="flex flex-col items-end gap-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold status-badge completed bg-green-100 text-green-700">
+                                                    Completed
+                                                </span>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <p class="text-gray-400 italic pl-3">No courses assigned</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
 
         <script>
 
