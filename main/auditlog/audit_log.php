@@ -668,22 +668,19 @@ $conn->close();
 
 
 <script>
-// Place this at the end of your document, outside any conditional blocks
 document.addEventListener('DOMContentLoaded', function() {
-  // First make sure our functions are defined
   window.toggleUserMenu = function(event) {
     if (event) {
-      event.stopPropagation(); // Prevent the event from bubbling up to document
+      event.stopPropagation(); 
     }
     
     const menu = document.getElementById('userMenu');
     const icon = document.getElementById('dropdown-icon');
     
-    if (!menu) return; // Safety check
+    if (!menu) return; 
     
     menu.classList.toggle('hidden');
     
-    // Rotate icon when menu is open
     if (icon) {
       if (menu.classList.contains('hidden')) {
         icon.classList.remove('rotate-180');
@@ -694,11 +691,6 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
 
-
-
-  
-
-  // Close menu when clicking outside
   document.addEventListener('click', function(event) {
     const menu = document.getElementById('userMenu');
     const profileContainer = document.querySelector('.profile-container');
@@ -730,13 +722,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationDropdown = document.getElementById('notificationDropdown');
     const notificationList = document.getElementById('notificationList');
 
-    // Load notifications immediately on page load
     loadNotifications();
 
-    // Load notifications every 30 seconds
     setInterval(loadNotifications, 30000);
 
-    // Toggle notification dropdown
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
         notificationDropdown.classList.toggle('hidden');
@@ -745,7 +734,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
         if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
             notificationDropdown.classList.add('hidden');
@@ -840,9 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
             notifDot.className = 'absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50';
             notificationButton.appendChild(notifDot);
         }
-        // Check for unread notifications in the list
         const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
-        // Show the dot only if there are unread notifications
         if (hasUnread) {
             notifDot.style.display = '';
         } else {

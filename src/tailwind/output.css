@@ -1089,6 +1089,9 @@
   .pb-\[50px\] {
     padding-bottom: 50px;
   }
+  .pb-\[100px\] {
+    padding-bottom: 100px;
+  }
   .pl-2 {
     padding-left: calc(var(--spacing) * 2);
   }
