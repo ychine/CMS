@@ -389,7 +389,7 @@ $conn->close();
                                 <!-- Notifications will be loaded here -->
                             </div>
                             <div class="p-4 border-t border-gray-200 text-center">
-                                <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
+                                <a href="task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
                             </div>
                         </div>
                     </div>
