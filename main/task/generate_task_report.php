@@ -1,7 +1,8 @@
 <?php
 session_start();
 if (!isset($_SESSION['Username'])) {
-    die("Unauthorized");
+    header("Location: ../../index.php");
+    exit();
 }
 $conn = new mysqli("localhost", "root", "", "cms");
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
