@@ -748,6 +748,21 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             background: #f1f5f9;
             color: #2563eb;
         }
+        .three-dot-btn {
+            border-radius: 50%;
+            transition: background 0.15s, color 0.15s;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .three-dot-btn:hover {
+            background: #f3f4f6;
+        }
+        .three-dot-btn:hover svg {
+            color: #334155;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -822,7 +837,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                     <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
                                         <!-- 3-dot menu trigger -->
                                         <div class="absolute top-4 right-4">
-                                            <button type="button" class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="event.stopPropagation(); toggleTaskMenu(this)">
+                                            <button type="button" class="three-dot-btn p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="event.stopPropagation(); toggleTaskMenu(this)">
                                                 <!-- 3-dot vertical ellipsis SVG -->
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <circle cx="12" cy="5" r="1.5"/>
