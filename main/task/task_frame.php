@@ -703,6 +703,51 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         body.dark .dean-action-btn.preview { color: #60a5fa !important; }
         body.dark .dean-action-btn.revision { color: #fde68a !important; }
         body.dark .dean-action-btn.complete { color: #6ee7b7 !important; }
+        .task-menu-dropdown {
+            min-width: 180px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.10);
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            padding: 0;
+        }
+        .task-menu-dropdown ul {
+            list-style: none;
+            margin: 0;
+            padding: 0.5rem 0;
+        }
+        .task-menu-dropdown li {
+            margin: 0;
+            padding: 0;
+        }
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 12px 22px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            text-align: left;
+            border-radius: 8px;
+        }
+        .dropdown-item:active {
+            background: #f3f4f6;
+        }
+        .dropdown-item.text-red-600 {
+            color: #dc2626;
+        }
+        .dropdown-item.text-red-600:hover, .dropdown-item.text-red-600:focus {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+        .dropdown-item:hover, .dropdown-item:focus {
+            background: #f1f5f9;
+            color: #2563eb;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -775,15 +820,44 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-20 relative cursor-pointer"
                                      onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
-                                        <form method="POST" action="task_actions.php" class="absolute top-4 right-4" onclick="event.stopPropagation();">
-                                            <input type="hidden" name="task_id" value="<?php echo $task['TaskID']; ?>">
-                                            <input type="hidden" name="action" value="discard">
-                                            <button type="submit" class="p-2 text-gray-500 hover:text-red-600 transition-colors duration-200" onclick="return confirm('Are you sure you want to discard this task?')" title="Discard Task">
+                                        <!-- 3-dot menu trigger -->
+                                        <div class="absolute top-4 right-4">
+                                            <button type="button" class="p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="event.stopPropagation(); toggleTaskMenu(this)">
+                                                <!-- 3-dot vertical ellipsis SVG -->
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    <circle cx="12" cy="5" r="1.5"/>
+                                                    <circle cx="12" cy="12" r="1.5"/>
+                                                    <circle cx="12" cy="19" r="1.5"/>
                                                 </svg>
                                             </button>
-                                        </form>
+                                            <!-- Dropdown menu (hidden by default) -->
+                                            <div class="hidden task-menu-dropdown absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50" onclick="event.stopPropagation();">
+                                                <ul class="py-2">
+                                                    <li>
+                                                        <button type="button" class="dropdown-item text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left" style="display:flex;align-items:center;gap:10px;" onclick="openDiscardTaskModal(<?php echo $task['TaskID']; ?>)">
+                                                            <span style="display:inline-flex;align-items:center;">
+                                                                <!-- Trash Icon -->
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </span>
+                                                            Discard Task
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item hover:bg-blue-50 hover:text-blue-700 w-full text-left" style="display:flex;align-items:center;gap:10px;" onclick="generateTaskReport(<?php echo $task['TaskID']; ?>)">
+                                                            <span style="display:inline-flex;align-items:center;">
+                                                                <!-- Document/Report Icon -->
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6a2 2 0 002-2V7a2 2 0 00-2-2h-1.5a1 1 0 01-1-1V3.5a.5.5 0 00-.5-.5h-3a.5.5 0 00-.5.5V4a1 1 0 01-1 1H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </span>
+                                                            Generate Report
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
                                     <?php endif; ?>
                                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
                                         <div class="flex items-center gap-3">
@@ -1516,6 +1590,32 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             <?php endif; ?>
         <?php endif; ?>
 
+        <!-- Report Modal -->
+        <div id="reportModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background: rgba(0,0,0,0.15);">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative" onclick="event.stopPropagation();">
+                <button onclick="closeReportModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
+                <h2 class="text-2xl font-bold w-full text-center font-overpass mb-4">Task Report</h2>
+                <iframe id="reportFrame" src="" style="width:100%;height:80vh;border:none;"></iframe>
+            </div>
+        </div>
+
+        <!-- Discard Task Confirmation Modal -->
+        <div id="discardTaskModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background: rgba(0,0,0,0.15);">
+            <div class="bg-white p-8 rounded-xl shadow-2xl w-[400px] border-2 border-gray-400 font-onest modal-animate relative">
+                <h2 class="text-2xl font-overpass font-bold mb-2 text-blue-800">Confirm Deletion</h2>
+                <hr class="border-gray-400 mb-6">
+                <p class="text-lg text-gray-700 mb-6" id="discardTaskMessage">Are you sure you want to discard this task?</p>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" onclick="closeDiscardTaskModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                    <button id="confirmDiscardTaskBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-semibold">Delete</button>
+                </div>
+                <form id="discardTaskForm" method="POST" action="task_actions.php" class="hidden">
+                    <input type="hidden" name="task_id" id="discardTaskId" value="">
+                    <input type="hidden" name="action" value="discard">
+                </form>
+            </div>
+        </div>
+
         <script>
 
         if (localStorage.getItem('darkMode') === 'enabled') {
@@ -1747,6 +1847,67 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
                 return true;
             }
+
+            // Toggle the 3-dot menu
+            function toggleTaskMenu(btn) {
+                // Close any other open menus
+                document.querySelectorAll('.task-menu-dropdown').forEach(menu => {
+                    if (menu !== btn.nextElementSibling) menu.classList.add('hidden');
+                });
+                // Toggle this menu
+                const menu = btn.nextElementSibling;
+                menu.classList.toggle('hidden');
+            }
+
+            // Close menu when clicking outside
+            window.addEventListener('click', function(event) {
+                document.querySelectorAll('.task-menu-dropdown').forEach(menu => {
+                    if (!menu.contains(event.target) && !event.target.closest('button[onclick^="toggleTaskMenu"]')) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Generate report function
+            function generateTaskReport(taskId) {
+                // Show the modal
+                document.getElementById('reportModal').classList.remove('hidden');
+                // Set the iframe source
+                document.getElementById('reportFrame').src = 'generate_task_report.php?task_id=' + taskId;
+            }
+
+            function closeReportModal() {
+                document.getElementById('reportModal').classList.add('hidden');
+                document.getElementById('reportFrame').src = '';
+            }
+
+            // Optional: Close modal when clicking outside the modal content
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('reportModal');
+                if (event.target === modal) {
+                    closeReportModal();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "Escape") {
+                    closeReportModal();
+                }
+            });
+
+            let discardTaskId = null;
+            function openDiscardTaskModal(taskId) {
+                discardTaskId = taskId;
+                document.getElementById('discardTaskId').value = taskId;
+                document.getElementById('discardTaskModal').classList.remove('hidden');
+            }
+            function closeDiscardTaskModal() {
+                document.getElementById('discardTaskModal').classList.add('hidden');
+                discardTaskId = null;
+            }
+            document.getElementById('confirmDiscardTaskBtn').onclick = function() {
+                document.getElementById('discardTaskForm').submit();
+            };
         </script>
     </div>
 </body>
