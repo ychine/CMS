@@ -387,6 +387,9 @@
   .mr-6 {
     margin-right: calc(var(--spacing) * 6);
   }
+  .mr-\[12px\] {
+    margin-right: 12px;
+  }
   .mr-\[22px\] {
     margin-right: 22px;
   }
@@ -1134,6 +1137,9 @@
   }
   .pl-5 {
     padding-left: calc(var(--spacing) * 5);
+  }
+  .pl-7 {
+    padding-left: calc(var(--spacing) * 7);
   }
   .text-center {
     text-align: center;

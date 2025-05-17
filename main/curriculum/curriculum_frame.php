@@ -208,6 +208,16 @@ $conn->close();
             transform: rotate(45deg);
         }
 
+        /* Add arrow rotation styles */
+        .collapse-arrow {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        .collapsed .collapse-arrow {
+            transform: rotate(90deg);
+        }
+
         .slide-in {
             opacity: 0;
             transform: translateX(20px);
@@ -427,7 +437,7 @@ $conn->close();
                 $progId = 'prog_' . md5($programName);
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
-                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">▶ $programName</button>";
+                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\"><span class='collapse-arrow'>▶</span> $programName</button>";
                 
                 
                 if ($userRole === 'DN') {
@@ -442,20 +452,27 @@ $conn->close();
                     $yearId = 'year_' . md5($programName . $year);
                     echo "<div class='mt-2'>";
                     echo "<div class='flex items-center justify-between'>";
-                    echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">▶ $year</button>";
+                    echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\"><span class='collapse-arrow'>▶</span> $year</button>";
                     if ($userRole === 'DN') {
                         echo "<button onclick=\"confirmDeleteCurriculum('$programId', '$year')\" class=\"x-delete-btn x-delete-btn-sm\" title=\"Delete curriculum\">×</button>";
                     }
                     echo "</div>";
                     echo "<div id=\"$yearId\" class='ml-4 mt-1 hidden'>";
                     
-                
                     echo "<div class='overflow-x-auto'>";
                     echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
                     echo "<thead class='bg-gray-100 text-gray-900'>";
                     echo "<tr>";
                     echo "<th class='text-right px-4 py-2 border-b w-[5%]'> Code</th>";
-                    echo "<th class='px-4 py-2 border-b w-[60%]'>📚 Course</th>";
+                    echo "<th class='px-4 py-2 border-b w-[60%]'>";
+                    echo "<div class='flex items-center justify-between'>";
+                    echo "<span>📚 Course</span>";
+                    echo "<input type='text' 
+                        class='w-48 p-2 min-h-[32px] text-sm border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all duration-200 text-gray-500 search-course-input' 
+                        placeholder='Search courses...' 
+                        data-curriculum-id='$yearId'>";
+                    echo "</div>";
+                    echo "</th>";
                     echo "<th class='px-4 py-2 border-b text-left w-[35%]'>Assigned Prof.</th>";
                     echo "</tr>";
                     echo "</thead><tbody>";
@@ -1043,7 +1060,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function toggleCollapse(id) {
         const el = document.getElementById(id);
-        if (el) el.classList.toggle('hidden');
+        if (el) {
+            el.classList.toggle('hidden');
+            // Find the button that triggered this collapse
+            const button = document.querySelector(`button[onclick="toggleCollapse('${id}')"]`);
+            if (button) {
+                button.classList.toggle('collapsed');
+            }
+        }
     }
 
     function openFilePreviewModal(fileUrl) {
@@ -1167,6 +1191,31 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmBtn.disabled = false;
         });
     }
+
+    // Course search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInputs = document.querySelectorAll('.search-course-input');
+        
+        searchInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const curriculumId = this.dataset.curriculumId;
+                const curriculumSection = document.getElementById(curriculumId);
+                const courseRows = curriculumSection.querySelectorAll('tbody tr:not([id^="files_"])');
+                
+                courseRows.forEach(row => {
+                    const courseCode = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const courseTitle = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    
+                    if (courseCode.includes(searchTerm) || courseTitle.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
 </script>
 
 <?php if (isset($_SESSION['success'])): ?>
