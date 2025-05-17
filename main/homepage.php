@@ -388,8 +388,8 @@ $conn->close();
                             <div id="notificationList" class="max-h-96 overflow-y-auto bg-white relative" style="z-index: 1;">
                                 <!-- Notifications will be loaded here -->
                             </div>
-                            <div class="p-4 border-t border-gray-200 text-center bg-white rounded-b-lg relative" style="z-index: 2;">
-                                <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
+                            <div class="p-4 border-t border-gray-200 text-center">
+                                <a href="task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
                             </div>
                         </div>
                     </div>
