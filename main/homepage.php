@@ -382,13 +382,13 @@ $conn->close();
                         </button> 
                         <!-- Notification Dropdown -->
                         <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                            <div class="p-4 shadow-md">
+                            <div class="p-4 bg-white rounded-t-lg relative" style="z-index: 2;">
                                 <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
                             </div>
-                            <div id="notificationList" class="max-h-96 overflow-y-auto">
+                            <div id="notificationList" class="max-h-96 overflow-y-auto bg-white relative" style="z-index: 1;">
                                 <!-- Notifications will be loaded here -->
                             </div>
-                            <div class="p-4 border-t border-gray-200 text-center">
+                            <div class="p-4 border-t border-gray-200 text-center bg-white rounded-b-lg relative" style="z-index: 2;">
                                 <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
                             </div>
                         </div>
