@@ -834,19 +834,15 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             <div class="hidden task-menu-dropdown absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50" onclick="event.stopPropagation();">
                                                 <ul class="py-2">
                                                     <li>
-                                                        <form method="POST" action="task_actions.php" onsubmit="return confirm('Are you sure you want to discard this task?')">
-                                                            <input type="hidden" name="task_id" value="<?php echo $task['TaskID']; ?>">
-                                                            <input type="hidden" name="action" value="discard">
-                                                            <button type="submit" class="dropdown-item text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left" style="display:flex;align-items:center;gap:10px;">
-                                                                <span style="display:inline-flex;align-items:center;">
-                                                                    <!-- Trash Icon -->
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                    </svg>
-                                                                </span>
-                                                                Discard Task
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" class="dropdown-item text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left" style="display:flex;align-items:center;gap:10px;" onclick="openDiscardTaskModal(<?php echo $task['TaskID']; ?>)">
+                                                            <span style="display:inline-flex;align-items:center;">
+                                                                <!-- Trash Icon -->
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                </svg>
+                                                            </span>
+                                                            Discard Task
+                                                        </button>
                                                     </li>
                                                     <li>
                                                         <button type="button" class="dropdown-item hover:bg-blue-50 hover:text-blue-700 w-full text-left" style="display:flex;align-items:center;gap:10px;" onclick="generateTaskReport(<?php echo $task['TaskID']; ?>)">
@@ -1600,6 +1596,23 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             </div>
         </div>
 
+        <!-- Discard Task Confirmation Modal -->
+        <div id="discardTaskModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background: rgba(0,0,0,0.15);">
+            <div class="bg-white p-8 rounded-xl shadow-2xl w-[400px] border-2 border-gray-400 font-onest modal-animate relative">
+                <h2 class="text-2xl font-overpass font-bold mb-2 text-blue-800">Confirm Deletion</h2>
+                <hr class="border-gray-400 mb-6">
+                <p class="text-lg text-gray-700 mb-6" id="discardTaskMessage">Are you sure you want to discard this task?</p>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" onclick="closeDiscardTaskModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
+                    <button id="confirmDiscardTaskBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 font-semibold">Delete</button>
+                </div>
+                <form id="discardTaskForm" method="POST" action="task_actions.php" class="hidden">
+                    <input type="hidden" name="task_id" id="discardTaskId" value="">
+                    <input type="hidden" name="action" value="discard">
+                </form>
+            </div>
+        </div>
+
         <script>
 
         if (localStorage.getItem('darkMode') === 'enabled') {
@@ -1878,6 +1891,20 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     closeReportModal();
                 }
             });
+
+            let discardTaskId = null;
+            function openDiscardTaskModal(taskId) {
+                discardTaskId = taskId;
+                document.getElementById('discardTaskId').value = taskId;
+                document.getElementById('discardTaskModal').classList.remove('hidden');
+            }
+            function closeDiscardTaskModal() {
+                document.getElementById('discardTaskModal').classList.add('hidden');
+                discardTaskId = null;
+            }
+            document.getElementById('confirmDiscardTaskBtn').onclick = function() {
+                document.getElementById('discardTaskForm').submit();
+            };
         </script>
     </div>
 </body>
