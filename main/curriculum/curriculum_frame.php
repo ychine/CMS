@@ -487,8 +487,8 @@ $conn->close();
                         echo "<td class='px-4 py-2 border-b w-[55%]'>" . htmlspecialchars($courseTitle) . "</td>";
                     
                         echo "<td class='px-4 py-2 border-b w-[30%]'>";
-                        
-                        
+                        echo "<div class='flex items-center justify-between'>";
+                        echo "<div class='flex-1'>";
                         if ($userRole === 'DN') {
                             echo "<select class='w-full assign-personnel-dropdown' 
                                 data-course-code='" . htmlspecialchars($courseTitle) . "' 
@@ -496,7 +496,6 @@ $conn->close();
                                 data-program='" . htmlspecialchars($programId) . "'>";
                             echo "<option value=''>-- Assign Personnel --</option>";
                         
-                            // Sort personnel list alphabetically by name
                             usort($GLOBALS['personnelList'], function($a, $b) {
                                 return strcasecmp($a['name'], $b['name']);
                             });
@@ -508,10 +507,20 @@ $conn->close();
                         
                             echo "</select>";
                         } else {
-                            
                             echo htmlspecialchars($assignedTo ?: 'Not assigned');
                         }
+                        echo "</div>";
                         
+                        if ($userRole === 'DN') {
+                            echo "<button onclick=\"confirmDeleteCourse('$programId', '$year', '$courseCode', '$courseTitle')\" 
+                                class='ml-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors duration-200' 
+                                title='Remove course from curriculum'>
+                                <svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                                </svg>
+                            </button>";
+                        }
+                        echo "</div>";
                         echo "</td>";
                         // Collapsible row for approved files
                         echo "<tr id='$rowId' class='hidden'>";
@@ -1216,6 +1225,69 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    function confirmDeleteCourse(programId, curriculumYear, courseCode, courseTitle) {
+        event.stopPropagation(); // Prevent row click event
+        Swal.fire({
+            title: 'Remove Course?',
+            text: `Are you sure you want to remove "${courseCode} - ${courseTitle}" from the curriculum?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, remove it',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteCourse(programId, curriculumYear, courseCode);
+            }
+        });
+    }
+
+    function deleteCourse(programId, curriculumYear, courseCode) {
+        const formData = new FormData();
+        formData.append('program_id', programId);
+        formData.append('curriculum_year', curriculumYear);
+        formData.append('course_code', courseCode);
+        formData.append('ajax', 'true');
+
+        fetch('../curriculum/remove_course.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Removed!',
+                    text: 'Course has been removed from the curriculum.',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to remove course',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred while removing the course',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+        });
+    }
 </script>
 
 <?php if (isset($_SESSION['success'])): ?>
