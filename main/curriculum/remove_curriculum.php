@@ -58,6 +58,19 @@ try {
         $curriculumId = $result->fetch_assoc()['id'];
         $stmt->close();
         
+        // Before deleting anything, get faculty ID and curriculum name
+        $getFaculty = $conn->prepare("SELECT FacultyID, name FROM curricula WHERE id = ?");
+        $getFaculty->bind_param("i", $curriculumId);
+        $getFaculty->execute();
+        $getFacultyResult = $getFaculty->get_result();
+        $facultyID = null;
+        if ($getFacultyResult && $getFacultyResult->num_rows > 0) {
+            $row = $getFacultyResult->fetch_assoc();
+            $facultyID = $row['FacultyID'];
+            $curriculumName = $row['name'];
+        }
+        $getFaculty->close();
+        
         // Delete associated program courses
         $stmt = $conn->prepare("DELETE FROM program_courses WHERE CurriculumID = ?");
         if (!$stmt) {
@@ -90,7 +103,7 @@ try {
         // --- AUDIT LOG ---
         $personnelID = $_SESSION['AccountID'];
         $fullName = getFullName($conn, $personnelID);
-        $description = "Deleted curriculum: $curriculumYear (ID: $curriculumId)";
+        $description = "Deleted curriculum: $curriculumName";
         if ($facultyID) {
             $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description, LogDateTime)
                        VALUES (?, ?, ?, ?, NOW())";
