@@ -22,6 +22,27 @@ if (isset($_POST['post_announcement']) && in_array($role, ['DN', 'PH', 'COR'])) 
     $stmt->bind_param("ssii", $title, $message, $createdBy, $facultyId);
     
     if ($stmt->execute()) {
+        // Get all personnel in the faculty
+        $personnelQuery = "SELECT AccountID FROM personnel WHERE FacultyID = ?";
+        $personnelStmt = $conn->prepare($personnelQuery);
+        $personnelStmt->bind_param("i", $facultyId);
+        $personnelStmt->execute();
+        $personnelResult = $personnelStmt->get_result();
+        
+        // Create notification for each personnel
+        while ($row = $personnelResult->fetch_assoc()) {
+            $accountID = $row['AccountID'];
+            $notifTitle = "New Announcement: " . $title;
+            $notifMessage = $message;
+            
+            $notifSql = "INSERT INTO notifications (AccountID, Title, Message) VALUES (?, ?, ?)";
+            $notifStmt = $conn->prepare($notifSql);
+            $notifStmt->bind_param("iss", $accountID, $notifTitle, $notifMessage);
+            $notifStmt->execute();
+            $notifStmt->close();
+        }
+        
+        $personnelStmt->close();
         $message = "Announcement posted successfully!";
     } else {
         $message = "Error posting announcement: " . $stmt->error;
