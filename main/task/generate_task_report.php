@@ -1,9 +1,25 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
     exit();
 }
+
+$autoloadPath = __DIR__ . '/../../vendor/autoload.php';
+if (!file_exists($autoloadPath)) {
+    die('Composer autoloader not found. Please run composer install.');
+}
+require_once $autoloadPath;
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+
 $conn = new mysqli("localhost", "root", "", "cms");
 if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
 
@@ -50,6 +66,135 @@ foreach ($assignments as $a) {
     if ($a['Status'] === 'Completed') $completed++;
     elseif ($a['Status'] === 'Submitted') $submitted++;
     else $pending++;
+}
+
+// Excel export
+if (isset($_GET['export']) && $_GET['export'] === 'excel') {
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Task Report');
+
+    // Add task information
+    $sheet->setCellValue('A1', 'Task Report: ' . $task['Title']);
+    $sheet->setCellValue('A2', 'School Year: ' . $task['SchoolYear'] . ' | Term: ' . $task['Term']);
+    
+    // Merge cells for title
+    $sheet->mergeCells('A1:F1');
+    $sheet->mergeCells('A2:F2');
+    
+    // Style task information
+    $titleStyle = [
+        'font' => [
+            'bold' => true,
+            'size' => 14,
+            'color' => ['rgb' => '2563EB']
+        ],
+        'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER
+        ]
+    ];
+    $sheet->getStyle('A1:F1')->applyFromArray($titleStyle);
+    
+    $subtitleStyle = [
+        'font' => [
+            'size' => 12,
+            'color' => ['rgb' => '475569']
+        ],
+        'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER
+        ]
+    ];
+    $sheet->getStyle('A2:F2')->applyFromArray($subtitleStyle);
+
+    // Set headers (moved down 2 rows)
+    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Status', 'Submission Date'];
+    $sheet->fromArray($headers, NULL, 'A4');
+
+    // Style headers
+    $headerStyle = [
+        'font' => [
+            'bold' => true,
+            'color' => ['rgb' => '334155'],
+        ],
+        'fill' => [
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => ['rgb' => 'F1F5F9']
+        ],
+        'borders' => [
+            'bottom' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['rgb' => 'E2E8F0']
+            ]
+        ],
+        'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER,
+            'vertical' => Alignment::VERTICAL_CENTER
+        ]
+    ];
+    $sheet->getStyle('A4:F4')->applyFromArray($headerStyle);
+
+    // Add data (starting from row 5)
+    $row = 5;
+    foreach ($assignments as $a) {
+        $sheet->setCellValue('A' . $row, $a['CourseCode']);
+        $sheet->setCellValue('B' . $row, $a['CourseTitle']);
+        $sheet->setCellValue('C' . $row, $a['ProgramName']);
+        $sheet->setCellValue('D' . $row, $a['AssignedTo'] ?: 'Unassigned');
+        $sheet->setCellValue('E' . $row, $a['Status']);
+        $sheet->setCellValue('F' . $row, $a['SubmissionDate'] ?: '-');
+        $row++;
+    }
+
+    // Style data rows
+    $dataStyle = [
+        'borders' => [
+            'bottom' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['rgb' => 'F1F5F9']
+            ]
+        ],
+        'alignment' => [
+            'vertical' => Alignment::VERTICAL_CENTER
+        ]
+    ];
+    $sheet->getStyle('A5:F' . ($row-1))->applyFromArray($dataStyle);
+
+    // Auto-size columns
+    foreach (range('A', 'F') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // Add summary sheet
+    $summarySheet = $spreadsheet->createSheet();
+    $summarySheet->setTitle('Summary');
+    
+    // Add summary data
+    $summarySheet->setCellValue('A1', 'Task Summary');
+    $summarySheet->setCellValue('A3', 'Total Assignments');
+    $summarySheet->setCellValue('B3', $total);
+    $summarySheet->setCellValue('A4', 'Completed');
+    $summarySheet->setCellValue('B4', $completed);
+    $summarySheet->setCellValue('A5', 'Submitted');
+    $summarySheet->setCellValue('B5', $submitted);
+    $summarySheet->setCellValue('A6', 'Pending');
+    $summarySheet->setCellValue('B6', $pending);
+
+    // Style summary sheet
+    $summarySheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+    $summarySheet->getStyle('A3:B6')->getFont()->setSize(12);
+    $summarySheet->getColumnDimension('A')->setAutoSize(true);
+    $summarySheet->getColumnDimension('B')->setAutoSize(true);
+
+    // Set active sheet back to main report
+    $spreadsheet->setActiveSheetIndex(0);
+
+    // Create the Excel file
+    $writer = new Xlsx($spreadsheet);
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="task_report_' . $taskId . '.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit;
 }
 
 function statusBadge($status) {
@@ -193,6 +338,11 @@ function statusBadge($status) {
             <div style="margin-left:auto;"><span class="summary-label">Total:</span> <span class="summary-metric" style="color:#0ea5e9;"><?= $total ?></span></div>
         </div>
         <div class="section-title">Assignment Summary</div>
+        <a href="generate_task_report.php?task_id=<?= $taskId ?>&export=excel" 
+           style="display:inline-block;margin-bottom:18px;padding:8px 18px;background:#2563eb;color:#fff;border-radius:8px;font-weight:600;text-decoration:none;"
+           download>
+           Download as Excel
+        </a>
         <div style="overflow-x:auto;">
         <table class="assignment-table">
             <tr>
