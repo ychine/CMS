@@ -234,7 +234,7 @@ $totalStmt->close();
     </style>
 </head>
 <body>
-    <div class="flex-1 flex flex-col px-[50px] md:px-[50px] pt-[15px]  overflow-y-auto">
+    <div class="flex-1 flex flex-col pr-[10px] px-[50px] md:px-[50px] pt-[15px]  overflow-y-auto">
         <h1 class="py-[10px] text-[35px] font-overpass font-bold" style="letter-spacing: -0.03em;">Dashboard</h1>
         <hr class="border-gray-300 py-[10px]">
         <div class="relative w-full">
@@ -243,9 +243,10 @@ $totalStmt->close();
                 
                 <div class="flex gap-5 flex-1 max-w-[900px]">
                     <!-- Tasks -->
-                    <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[210px]">
+                    <div class="flex-1 bg-white p-[30px] pb-[20px] font-overpass rounded-lg shadow-md h-[210px]">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-bold">Tasks</h2>
+                            <a href="../task/task_frame.php" class="text-sm text-blue-600 hover:underline">See all tasks</a>
                         </div>
 
                         <?php
@@ -263,7 +264,7 @@ $totalStmt->close();
                         ?>
 
                         <?php if ($taskResult->num_rows > 0): ?>
-                            <div class="space-y-3">
+                            <div class="space-y-3 max-h-[120px] overflow-y-auto pr-2">
                                 <?php while ($task = $taskResult->fetch_assoc()): ?>
                                     <a href="submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=fm-dash" class="block">
                                         <?php
@@ -317,7 +318,7 @@ $totalStmt->close();
                         <?php endif; ?>
                     </div>
                     <!-- Faculty -->
-                    <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[210px]">
+                    <div class="w-[300px] bg-white p-[30px] pb-[20px] rounded-lg shadow-md font-overpass h-[210px]">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-bold">Faculty</h2>
                             <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">

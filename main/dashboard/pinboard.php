@@ -29,6 +29,21 @@ if (isset($_POST['post_announcement']) && in_array($role, ['DN', 'PH', 'COR'])) 
     $stmt->close();
 }
 
+// Handle announcement deletion
+if (isset($_POST['delete_announcement']) && in_array($role, ['DN', 'PH', 'COR'])) {
+    $pinId = $_POST['pin_id'];
+    $deleteSql = "DELETE FROM pinboard WHERE PinID = ? AND FacultyID = ?";
+    $deleteStmt = $conn->prepare($deleteSql);
+    $deleteStmt->bind_param("ii", $pinId, $facultyId);
+    
+    if ($deleteStmt->execute()) {
+        $message = "Announcement deleted successfully!";
+    } else {
+        $message = "Error deleting announcement: " . $deleteStmt->error;
+    }
+    $deleteStmt->close();
+}
+
 if (!empty($facultyId)) {
     $pinboardSql = "SELECT p.*, CONCAT(per.FirstName, ' ', per.LastName) as AuthorName, per.Role as AuthorRole 
                     FROM pinboard p 
@@ -67,7 +82,17 @@ $conn->close();
                 </div>
             <?php else: ?>
                 <?php foreach ($pinboardPosts as $post): ?>
-                    <div class="relative bg-gray-100 rounded-xl p-6 shadow-sm flex flex-col">
+                    <div class="relative bg-gray-100 rounded-xl p-3 py-6 shadow-sm flex flex-col">
+                        <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
+                        <form method="POST" class="absolute top-2 right-2">
+                            <input type="hidden" name="pin_id" value="<?php echo $post['PinID']; ?>">
+                            <button type="submit" name="delete_announcement" class="text-gray-400 hover:text-red-500 transition-colors duration-200" title="Delete announcement">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </form>
+                        <?php endif; ?>
                         <div class="flex flex-row items-start">
                             <div class="w-1.5 h-full bg-green-400 rounded-full mr-4"></div>
                             <div class="flex-1 flex flex-col">
@@ -78,8 +103,7 @@ $conn->close();
                                 </div>
                                 <p class="text-base leading-relaxed text-gray-700 mb-4 whitespace-pre-line break-words"><?php echo nl2br(htmlspecialchars($post['Message'])); ?></p>
                                 <div class="flex items-center text-xs text-gray-500 font-medium mt-2">
-            
-                                     <h3 class="font-bold"><?php echo htmlspecialchars($post['AuthorName']); ?> </h3>
+                                    <h3 class="font-bold"><?php echo htmlspecialchars($post['AuthorName']); ?> </h3>
                                     <span class="mx-1">•</span>
                                     <span><?php echo htmlspecialchars($post['AuthorRole']); ?></span>
                                 </div>

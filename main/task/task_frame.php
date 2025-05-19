@@ -1107,7 +1107,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         <div class="mb-8">
                             <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Tasks Assigned to You</h2>
                             <?php foreach ($tasks as $task): ?>
-                                <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                                <div class=" bg-white p-8 rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                      onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
                                         <div class="flex items-center gap-3">
@@ -1537,13 +1537,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Ongoing Tasks</h2>
                     <?php if (empty($ongoingTasks)): ?>
                         <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
-                            <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                            <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                                 <p class="text-gray-500">No tasks available. Create your first task!</p>
                             </div>
                         </div>
                     <?php else: ?>
                         <?php foreach ($ongoingTasks as $task): ?>
-                            <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                            <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
                                     <div class="flex items-center gap-3">
