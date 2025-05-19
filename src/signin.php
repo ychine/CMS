@@ -45,6 +45,53 @@
             margin-top: 5px;
             display: none;
         }
+
+        /* Updated Toast Styling */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            color: #fff;
+            border-radius: 8px;
+            font-family: 'Onest', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s;
+            backdrop-filter: blur(8px);
+        }
+
+        .toast.success {
+            background-color: rgba(76, 175, 80, 0.95);
+            border-left: 4px solid #2e7d32;
+        }
+
+        .toast.error {
+            background-color: rgba(220, 53, 69, 0.95);
+            border-left: 4px solid #c82333;
+        }
+
+        .toast.warning {
+            background-color: rgba(255, 193, 7, 0.95);
+            border-left: 4px solid #d39e00;
+            color: #000;
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, 100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -137,15 +184,41 @@ let loginAttempts = JSON.parse(localStorage.getItem('loginAttempts')) || {};
 const MAX_ATTEMPTS = 3;
 const LOCKOUT_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
+// Function to format time remaining
+function formatTimeRemaining(milliseconds) {
+    const hours = Math.floor(milliseconds / (60 * 60 * 1000));
+    const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / (60 * 1000));
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+}
+
 // Function to show toast messages
 function showToast(message, type = 'error') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerText = message;
+    
+    // Add icon based on type
+    const icon = document.createElement('span');
+    if (type === 'success') {
+        icon.innerHTML = '✓';
+    } else if (type === 'error') {
+        icon.innerHTML = '✕';
+    } else if (type === 'warning') {
+        icon.innerHTML = '⚠';
+    }
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    
+    toast.appendChild(icon);
+    toast.appendChild(messageSpan);
     document.body.appendChild(toast);
 
     setTimeout(() => {
-        toast.remove(); 
+        toast.remove();
     }, 3000);
 }
 
@@ -187,10 +260,15 @@ function updateAccountWarning(username) {
         const timeRemaining = LOCKOUT_DURATION - timeElapsed;
         
         if (timeRemaining > 0) {
-            const hoursRemaining = Math.floor(timeRemaining / (60 * 60 * 1000));
-            const minutesRemaining = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
-            
-            accountWarning.textContent = `This account has been locked due to multiple failed login attempts. Lockout expires in ${hoursRemaining}h ${minutesRemaining}m.`;
+            const timeFormatted = formatTimeRemaining(timeRemaining);
+            accountWarning.innerHTML = `
+                This account has been locked due to multiple failed login attempts. 
+                Lockout expires in ${timeFormatted}. 
+                <a href="mailto:support@coursedock.com?subject=Account%20Unlock%20Request&body=Please%20unlock%20my%20account%20(username:%20${encodeURIComponent(username)})" 
+                   style="color: #51D55A; text-decoration: underline; margin-left: 5px;">
+                   Contact Support
+                </a>
+            `;
         } else {
             accountWarning.textContent = 'This account has been locked due to multiple failed login attempts. Please contact support.';
         }
@@ -199,7 +277,12 @@ function updateAccountWarning(username) {
         usernameField.classList.add('error-border');
     } else if (loginAttempts[username] && loginAttempts[username].count > 0 && loginAttempts[username].count < MAX_ATTEMPTS) {
         const attemptsLeft = MAX_ATTEMPTS - loginAttempts[username].count;
-        accountWarning.textContent = `Warning: ${attemptsLeft} login ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before account lockout.`;
+        accountWarning.innerHTML = `
+            Warning: ${attemptsLeft} login ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before account lockout.
+            <span style="font-size: 12px; display: block; margin-top: 5px;">
+                After 3 failed attempts, your account will be locked for 24 hours.
+            </span>
+        `;
         accountWarning.style.display = 'block';
         
         // Change warning color based on attempts left
@@ -214,6 +297,25 @@ function updateAccountWarning(username) {
         accountWarning.style.display = 'none';
         accountWarning.style.color = '#ff5252'; // Reset to default color
     }
+}
+
+// Function to manually reset lockout (for admin use)
+function resetLockout(username) {
+    if (loginAttempts[username]) {
+        loginAttempts[username].locked = false;
+        loginAttempts[username].count = 0;
+        localStorage.removeItem(`locked_${username}`);
+        localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
+        updateAccountWarning(username);
+        showToast('Account lockout has been reset.', 'success');
+    }
+}
+
+// Check for admin reset parameter
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('reset_lockout') === 'true' && urlParams.get('username')) {
+    const username = urlParams.get('username');
+    resetLockout(username);
 }
 
 togglePassword.addEventListener('click', function () {
@@ -242,11 +344,11 @@ form.addEventListener('submit', function(e) {
         if (username === '') usernameField.classList.add('error-border');
         if (password === '') passwordField.classList.add('error-border');
         if (captchaResponse === '') {
-            showToast('Please complete the CAPTCHA.');
+            showToast('Please complete the CAPTCHA.', 'warning');
             return;
         }
 
-        showToast('Please fill in all fields.');
+        showToast('Please fill in all fields.', 'warning');
         return;
     }
     
@@ -305,6 +407,15 @@ if (urlParams.get('error') === 'invalid') {
     if (username) {
         usernameField.value = username;
         updateAccountWarning(username);
+    }
+} else if (urlParams.get('success') === 'login') {
+    // Reset login attempts for this user on successful login
+    const username = urlParams.get('username') || '';
+    if (username && loginAttempts[username]) {
+        loginAttempts[username].count = 0;
+        loginAttempts[username].locked = false;
+        localStorage.removeItem(`locked_${username}`);
+        localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
     }
 }
 

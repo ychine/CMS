@@ -226,6 +226,19 @@ $conn->close();
         .dark .hover\:bg-gray-200:hover {
             background: #2d2d36 !important;
         }
+        /* Dark mode styles for pending submissions */
+        .dark .bg-gray-50 {
+            background: #1e1e24 !important;
+        }
+        .dark .hover\:bg-gray-100:hover {
+            background: #2d2d36 !important;
+        }
+        .dark .bg-blue-100 {
+            background: #1e3a8a !important;
+        }
+        .dark .text-blue-800 {
+            color: #93c5fd !important;
+        }
     </style>
 </head>
 <body>
@@ -343,10 +356,6 @@ $conn->close();
                     <!-- Pending Submissions Section -->
                     <h2 class="pl-2 text-2xl pt-5 font-overpass font-bold">Pending Submissions</h2>
                     <div class="bg-white p-[30px] rounded-lg shadow-md font-overpass">
-                        <div class="flex justify-end items-center mb-4">
-                            <a href="../task/task_frame.php" class="text-sm text-blue-600 hover:underline">View All Tasks</a>
-                        </div>
-                        
                         <?php if (!empty($pendingSubmissions)): ?>
                             <div class="space-y-3">
                                 <?php foreach ($pendingSubmissions as $submission): ?>
@@ -354,9 +363,9 @@ $conn->close();
                                        class="block p-3 border border-gray-200 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200">
                                         <div class="flex items-center justify-between">
                                             <div class="flex-1">
-                                                <h3 class="font-semibold text-gray-800"><?php echo htmlspecialchars($submission['TaskTitle']); ?></h3>
+                                                <h3 class="font-semibold text-gray-800"><?php echo htmlspecialchars($submission['CourseCode'] . ' - ' . $submission['CourseTitle']); ?></h3>
                                                 <p class="text-sm text-gray-600">
-                                                    <?php echo htmlspecialchars($submission['CourseCode'] . ' - ' . $submission['CourseTitle']); ?>
+                                                    <?php echo htmlspecialchars($submission['TaskTitle']); ?>
                                                 </p>
                                                 <p class="text-xs text-gray-500">
                                                     <?php echo htmlspecialchars($submission['ProgramName']); ?> • 
@@ -374,6 +383,9 @@ $conn->close();
                                         </div>
                                     </a>
                                 <?php endforeach; ?>
+                            </div>
+                            <div class="flex justify-end mt-4">
+                                <a href="../task/task_frame.php" class="text-sm text-blue-600 hover:underline">View All Tasks</a>
                             </div>
                         <?php else: ?>
                             <div class="text-center py-8 text-gray-500">
