@@ -134,7 +134,7 @@ $conn->close();
 </head>
 <body>
 
-<div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto">
+<div class="flex-1 flex flex-col px-[50px] pt-[15px] overflow-y-auto pb-[100px]">
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Audit Log</h1>
     <hr class="border-gray-400">
     <p class="text-gray-500 mt-3 mb-5 font-onest">

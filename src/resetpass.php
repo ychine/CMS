@@ -58,8 +58,8 @@
 
         <div class="footer">
             <hr><br>
-            © 2025 PLP - TeamOG1E. All rights reserved.
-            <a href="#">About CourseDock</a>
+            © 2025 CourseDock. All rights reserved.
+            <a href="../src/about.php">About CourseDock</a>
             <a href="#">Contact our Support</a>
         </div>
     </div>

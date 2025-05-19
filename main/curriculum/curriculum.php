@@ -98,6 +98,7 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="../../src/styles.css" rel="stylesheet" />
+    <link href="../../src/sidebar.css" rel="stylesheet" />
     <title>Curricula | CourseDock</title>
     <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -105,90 +106,6 @@ $conn->close();
         body { font-family: 'Inter', sans-serif; }
         .font-overpass { font-family: 'Overpass', sans-serif; }
         .font-onest { font-family: 'Onest', sans-serif; }
-
-        /* Sidebar */
-
-        #sidebar {
-            transition: width 0.6s ease-in-out;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-       
-        .collapsed #logo, 
-        .collapsed #logo-text {
-            visibility: hidden; 
-            transition: all 0s ease-in-out; 
-        }
-
-      
-        .collapsed .link-text {
-            display: none;      
-        }
-
-       
-        .collapsed {
-            width: 80px;
-            align-items: center;
-        }
-
-        #toggleSidebar {
-            transition: all 0.5s ease-in-out;
-        }
-
-        .collapsed #toggleSidebar {
-            position: absolute;
-        
-            width: 35px;
-            height: 35px;
-            background-color: #324f96;
-            color: white;
-            display: flex;            
-            align-items: center;      
-            justify-content: center; 
-        }
-
-        .collapsed .menu-item {
-            width: 50px; 
-            height: 50px;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto;
-            padding: 0; 
-            border-radius: 20%; 
-         
-        }
-
-
-        .collapsed .menu-item img {
-            width: 24px;
-            height: 24px;
-            margin: 0;
-        }
-
-        .menu-item {
-            user-select: none;
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .menu-item:hover {
-            background-color: #13275B;
-        }
-
-    
-        .link-text {
-            font-size: 16px;
-            color: #E3E3E3;
-            font-family: 'Onest', sans-serif;
-            font-weight: 400;
-            transition: opacity 0.3s ease;
-        }
 
 
         .user-info {
@@ -305,19 +222,6 @@ $conn->close();
             transform: scale(1.1);
         }
 
-        .collapsed .create-text {
-            display: none;
-        }
-
-    
-        .collapsed #createButton {
-            justify-content: center;
-            gap: 0;
-            padding: 14px; 
-            border-radius: 30%;
-            transition: all 0.5s ease-in-out;
-            transition: all 1s ease-in-out;
-        }
 
       
         .collapsed .sidebar-footer {
@@ -325,67 +229,6 @@ $conn->close();
             transition: all 1s ease-in-out;
         }
 
-        
-                
-
-        /* DARK MODE STYLES */
-        body.dark {
-            background-color: #324f96;
-        }
-        .dark .bg-white {
-            background: #2d3036 !important;
-            color: #fff;
-        }
-        .dark #sidebar {
-            background: #23252b !important;
-            color: #e3e3e3;
-        }
-        .dark .flex-1 {
-            background: #1a1c20 !important;
-            color: #fff;
-        }
-        .dark .profile-dropdown {
-            background: #23252b !important;
-            border: 1px solid #35373c !important;
-            border-radius: 10px !important;
-        }
-        .dark .profile-dropdown-item {
-            color: #e3e3e3 !important;
-        }
-        .dark .profile-dropdown-item:hover {
-            background: #35373c !important;
-            color: #fff !important;
-        }
-        .dark .profile-dropdown-item svg {
-            color: #e3e3e3 !important;
-        }
-        .dark .user-info {
-            background: transparent !important;
-        }
-        .dark .user-info:hover {
-            background: #23252b !important;
-        }
-        .dark .hover\:bg-gray-100:hover {
-            background: #35373c !important;
-        }
-        .dark .text-gray-600, .dark .text-gray-500 {
-            color: #e3e3e3 !important;
-        }
-        .dark .rounded-full.bg-\[\#1D387B\] {
-            background: #314f9b !important;
-        }
-        .dark .profile-dropdown-item.text-red-500 {
-            color: #ff6b6b !important;
-        }
-
-        .dark .profile-dropdown-bg {
-            background: #23252b !important;
-            border-color: #35373c !important;
-        }
-
-        .dark .link-text, .dark .font-onest, .dark .font-overpass {
-            color: #e3e3e3 !important;
-        }
         
 
     </style>
@@ -443,7 +286,7 @@ $conn->close();
             </div>
 
 
-            <button id="createButton" class=" mt-auto rounded-[10px] text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
+            <button id="createButton" class=" mt-auto  text-white px-4 font-onest py-3 rounded-md text-lg font-regular transition-colors duration-300 flex items-center justify-between w-full">
               
             </button>
 
@@ -452,7 +295,7 @@ $conn->close();
                 © 2025 CourseDock. All rights reserved.
                 <span class="mt-1">
                     <br>
-                    <a href="#" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
+                    <a href="../../src/about.php" class="text-gray-400 hover:underline mx-1">About CourseDock</a>
                     <a href="#" class="text-gray-400 hover:underline mx-1">Contact our Support</a>
                 </span>
             </div>
@@ -461,7 +304,7 @@ $conn->close();
         <!-- Main Content -->
         <div class="flex-1 flex flex-col h-full ">
 
-            <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
+            <div class="bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3); z-index: 1;">
                 <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
@@ -469,16 +312,30 @@ $conn->close();
                 
                 <div class="flex items-center gap-4">
                     <!-- Notification Icon -->
-                    <div class="relative">
-                        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="relative border p-[2px] border-gray-200 rounded-lg">
+                    <button id="notificationButton" class="p-2 hover:bg-gray-100 transition-all duration-300 ease-in-out focus:outline-none focus:border-[#51D55A] focus:rounded-lg focus:border-2 flex items-center justify-center active:scale-95" style="position: relative; width: 40px; height: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
                             <!-- Notification Badge -->
                             <?php if ($notificationCount > 0): ?>
-                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full"><?php echo $notificationCount; ?></span>
+                            <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full transition-all duration-300"><?php echo $notificationCount; ?></span>
                             <?php endif; ?>
-                        </button>
+                            <!-- Red Dot Indicator (always present, outside PHP if-block) -->
+                            <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50 transition-all duration-300"></span>
+                        </button> 
+                        <!-- Notification Dropdown -->
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                            <div class="p-4 shadow-md">
+                                <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
+                            </div>
+                            <div id="notificationList" class="max-h-96 overflow-y-auto">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                            <div class="p-4 border-t border-gray-200 text-center">
+                                <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
+                            </div>
+                        </div>
                     </div>
              
              
@@ -626,16 +483,7 @@ $conn->close();
             
         </script>
 
-        <script>
-            const toggleBtn = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const chevronIcon = document.getElementById('chevronIcon');
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                chevronIcon.classList.toggle('rotate-180');
-            });
-        </script>
+<script src="../../src/sidebar.js"></script>
 
 
 <script>
@@ -683,6 +531,159 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('darkMode') === 'enabled') {
     document.body.classList.add('dark');
   }
+</script>
+
+<script>
+const userRole = "<?php echo $row['Role']; ?>";
+console.log('userRole:', userRole);
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationButton = document.getElementById('notificationButton');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationList = document.getElementById('notificationList');
+
+    // Load notifications immediately on page load
+    loadNotifications();
+
+    // Load notifications every 30 seconds
+    setInterval(loadNotifications, 30000);
+
+    // Toggle notification dropdown
+    notificationButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (notificationDropdown.classList.contains('hidden')) {
+            // Show dropdown with animation
+            notificationDropdown.classList.remove('hidden');
+            // Use setTimeout to ensure the transition works
+            setTimeout(() => {
+                notificationDropdown.classList.remove('opacity-0', 'scale-95');
+                notificationDropdown.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        } else {
+            // Hide dropdown with animation
+            notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            notificationDropdown.classList.add('opacity-0', 'scale-95');
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+            }, 300);
+        }
+        if (!notificationDropdown.classList.contains('hidden')) {
+            loadNotifications();
+        }
+    });
+
+    // Close dropdown when clicking outside with animation
+    document.addEventListener('click', function(e) {
+        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+            notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            notificationDropdown.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+            }, 300);
+        }
+    });
+
+    function loadNotifications() {
+        fetch('../src/scripts/get_notifications.php')
+            .then(response => response.json())
+            .then(data => {
+                notificationList.innerHTML = '';
+                if (data.notifications.length === 0) {
+                    notificationList.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
+                    updateNotifDot();
+                    return;
+                }
+
+                data.notifications.forEach(notification => {
+                    const notificationElement = document.createElement('div');
+                    notificationElement.className = `p-4 border-b hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
+                    notificationElement.innerHTML = `
+                        <div class="flex items-start">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">${notification.title}</p>
+                                <p class="text-sm text-gray-500">${notification.message}</p>
+                                <p class="text-xs text-gray-400 mt-1">${new Date(notification.created_at).toLocaleString()}</p>
+                            </div>
+                            ${!notification.is_read ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>' : ''}
+                        </div>
+                    `;
+
+                    notificationElement.addEventListener('click', () => {
+                        if (!notification.is_read) {
+                            markAsRead(notification.id);
+                        }
+                        if (notification.task_id) {
+                            const iframe = document.getElementById('contentIframe');
+                            if (iframe) {
+                                let fromParam = '';
+                                if (userRole === 'Faculty Member') fromParam = 'fm-dash';
+                                else if (userRole === 'Program Head') fromParam = 'ph-dash';
+                                else if (userRole === 'College Dean') fromParam = 'dn-dash';
+                                else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
+                                iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                document.getElementById('notificationDropdown').classList.add('hidden');
+                            }
+                        }
+                    });
+
+                    notificationList.appendChild(notificationElement);
+                });
+                updateNotifDot();
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+                notificationList.innerHTML = '<div class="p-4 text-center text-red-500">Error loading notifications</div>';
+                updateNotifDot();
+            });
+    }
+
+    function markAsRead(notificationId) {
+        const formData = new FormData();
+        formData.append('notification_id', notificationId);
+
+        fetch('../../src/scripts/mark_notification_read.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const badge = notificationButton.querySelector('span');
+                if (badge) {
+                    const currentCount = parseInt(badge.textContent);
+                    if (currentCount > 1) {
+                        badge.textContent = currentCount - 1;
+                    } else {
+                        badge.remove();
+                    }
+                }
+                updateNotifDot();
+            }
+        })
+        .catch(error => console.error('Error marking notification as read:', error));
+    }
+
+    function updateNotifDot() {
+        let notifDot = document.getElementById('notifDot');
+        if (!notifDot) {
+            notifDot = document.createElement('span');
+            notifDot.id = 'notifDot';
+            notifDot.className = 'absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50';
+            notificationButton.appendChild(notifDot);
+        }
+        // Check for unread notifications in the list
+        const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
+        // Show the dot only if there are unread notifications
+        if (hasUnread) {
+            notifDot.style.display = '';
+        } else {
+            notifDot.style.display = 'none';
+        }
+    }
+});
 </script>
 </body>
 </html>

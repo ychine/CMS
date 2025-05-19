@@ -19,7 +19,7 @@
     <?php if (isset($_GET['registersuccess']) && $_GET['registersuccess'] == 1): ?>
    
         <div class="toast success" id="toast-success">
-            Registration Successful!
+            Registration successful! You can now log in.
         </div>
         
         <script>
@@ -29,7 +29,7 @@
                 if (toast) {
                     toast.style.display = 'none';
                 }
-            }, 3000);
+            }, 3500);
         </script>
     <?php endif; ?>
     

@@ -81,7 +81,7 @@
 </head>
 <body>
   <div class="settings-card">
-    <h2 class="text-xl font-bold mb-4">Settings</h2>
+    <h2 class="text-xl font-onest font-bold mb-4">Settings</h2>
     <div class="toggle-switch">
       <span><i class="fas fa-sun"></i></span>
       <label class="switch">
