@@ -37,6 +37,20 @@ if ($conn->connect_error) {
     exit();
 }
 
+// Helper to get full name
+function getFullName($conn, $accountId) {
+    $stmt = $conn->prepare("SELECT FirstName, LastName FROM personnel WHERE AccountID = ?");
+    $stmt->bind_param("i", $accountId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $name = 'Unknown User';
+    if ($row = $result->fetch_assoc()) {
+        $name = trim($row['FirstName'] . ' ' . $row['LastName']);
+    }
+    $stmt->close();
+    return $name;
+}
+
 try {
     // Start transaction
     $conn->begin_transaction();
@@ -68,6 +82,29 @@ try {
 
     // Commit transaction
     $conn->commit();
+
+    // --- AUDIT LOG ---
+    $facultyID = null;
+    $personnelID = $_SESSION['AccountID'];
+    $fullName = getFullName($conn, $personnelID);
+    // Get faculty ID for this program
+    $getFaculty = $conn->prepare("SELECT FacultyID FROM curricula WHERE id = ?");
+    $getFaculty->bind_param("i", $curriculumId);
+    $getFaculty->execute();
+    $getFacultyResult = $getFaculty->get_result();
+    if ($getFacultyResult && $getFacultyResult->num_rows > 0) {
+        $facultyID = $getFacultyResult->fetch_assoc()['FacultyID'];
+    }
+    $getFaculty->close();
+    $description = "Deleted course: $courseCode from curriculum $curriculumYear";
+    if ($facultyID) {
+        $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description, LogDateTime)
+                   VALUES (?, ?, ?, ?, NOW())";
+        $logStmt = $conn->prepare($logSql);
+        $logStmt->bind_param("iiss", $facultyID, $personnelID, $fullName, $description);
+        $logStmt->execute();
+        $logStmt->close();
+    }
 
     if ($isAjax) {
         echo json_encode(['success' => true, 'message' => 'Course removed successfully']);

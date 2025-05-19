@@ -86,6 +86,19 @@ try {
         if (!$conn->commit()) {
             throw new Exception("Commit failed: " . $conn->error);
         }
+
+        // --- AUDIT LOG ---
+        $personnelID = $_SESSION['AccountID'];
+        $fullName = getFullName($conn, $personnelID);
+        $description = "Deleted curriculum: $curriculumYear (ID: $curriculumId)";
+        if ($facultyID) {
+            $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description, LogDateTime)
+                       VALUES (?, ?, ?, ?, NOW())";
+            $logStmt = $conn->prepare($logSql);
+            $logStmt->bind_param("iiss", $facultyID, $personnelID, $fullName, $description);
+            $logStmt->execute();
+            $logStmt->close();
+        }
         
         echo json_encode(['success' => true, 'message' => 'Curriculum deleted successfully']);
     } catch (Exception $e) {
@@ -105,4 +118,18 @@ try {
     }
 }
 exit(); // Ensure script ends here
+
+// Helper to get full name
+function getFullName($conn, $accountId) {
+    $stmt = $conn->prepare("SELECT FirstName, LastName FROM personnel WHERE AccountID = ?");
+    $stmt->bind_param("i", $accountId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $name = 'Unknown User';
+    if ($row = $result->fetch_assoc()) {
+        $name = trim($row['FirstName'] . ' ' . $row['LastName']);
+    }
+    $stmt->close();
+    return $name;
+}
 ?> 

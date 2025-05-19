@@ -35,6 +35,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
     $stmt->close();      
     
     if ($facultyID) {
+        // Fetch program code and name before deletion
+        $progStmt = $conn->prepare("SELECT ProgramCode, ProgramName FROM programs WHERE ProgramID = ?");
+        $progStmt->bind_param("i", $programID);
+        $progStmt->execute();
+        $progResult = $progStmt->get_result();
+        $programCode = $programName = '';
+        if ($progResult && $progResult->num_rows > 0) {
+            $progRow = $progResult->fetch_assoc();
+            $programCode = $progRow['ProgramCode'];
+            $programName = $progRow['ProgramName'];
+        }
+        $progStmt->close();
+        
         // Begin transaction for data integrity
         $conn->begin_transaction();
         
@@ -74,6 +87,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
             // Commit transaction
             $conn->commit();
             
+            // --- AUDIT LOG ---
+            $personnelID = $_SESSION['AccountID'];
+            $fullName = getFullName($conn, $personnelID);
+            $description = "Deleted program: $programCode - $programName";
+            if ($facultyID) {
+                $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description, LogDateTime)
+                           VALUES (?, ?, ?, ?, NOW())";
+                $logStmt = $conn->prepare($logSql);
+                $logStmt->bind_param("iiss", $facultyID, $personnelID, $fullName, $description);
+                $logStmt->execute();
+                $logStmt->close();
+            }
+            
             if(isset($_POST['ajax'])) {
                 echo json_encode(['success' => true, 'message' => 'Program deleted successfully']);
                 exit();
@@ -100,4 +126,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
 // If not an AJAX request, redirect back to curriculum page
 header("Location: ../curriculum/curriculum_frame.php"); 
 exit(); 
+
+// Helper to get full name
+function getFullName($conn, $accountId) {
+    $stmt = $conn->prepare("SELECT FirstName, LastName FROM personnel WHERE AccountID = ?");
+    $stmt->bind_param("i", $accountId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $name = 'Unknown User';
+    if ($row = $result->fetch_assoc()) {
+        $name = trim($row['FirstName'] . ' ' . $row['LastName']);
+    }
+    $stmt->close();
+    return $name;
+}
 ?>
