@@ -57,6 +57,33 @@ $assignStmt->execute();
 $assignResult = $assignStmt->get_result();
 while ($row = $assignResult->fetch_assoc()) $assignments[] = $row;
 
+// After fetching $assignments, attach co-authors to each assignment
+foreach ($assignments as &$a) {
+    if (!empty($a['SubmissionPath'])) {
+        $submissionPath = $a['SubmissionPath'];
+        $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
+        $subStmt->bind_param("s", $submissionPath);
+        $subStmt->execute();
+        $subRes = $subStmt->get_result();
+        if ($subRow = $subRes->fetch_assoc()) {
+            $submissionID = $subRow['SubmissionID'];
+            $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
+            $coStmt->bind_param("i", $submissionID);
+            $coStmt->execute();
+            $coRes = $coStmt->get_result();
+            $coauthorsList = [];
+            while ($coRow = $coRes->fetch_assoc()) {
+                $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
+            }
+            $a['CoAuthors'] = $coauthorsList;
+            $coStmt->close();
+        }
+        $subStmt->close();
+    } else {
+        $a['CoAuthors'] = [];
+    }
+}
+
 $total = count($assignments);
 $completed = 0;
 $pending = 0;
@@ -105,7 +132,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     $sheet->getStyle('A2:F2')->applyFromArray($subtitleStyle);
 
    
-    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Status', 'Submission Date'];
+    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Co-Authors', 'Status', 'Submission Date'];
     $sheet->fromArray($headers, NULL, 'A4');
 
  
@@ -134,12 +161,14 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
    
     $row = 5;
     foreach ($assignments as $a) {
+        $coauthors = !empty($a['CoAuthors']) ? implode(', ', $a['CoAuthors']) : '-';
         $sheet->setCellValue('A' . $row, $a['CourseCode']);
         $sheet->setCellValue('B' . $row, $a['CourseTitle']);
         $sheet->setCellValue('C' . $row, $a['ProgramName']);
         $sheet->setCellValue('D' . $row, $a['AssignedTo'] ?: 'Unassigned');
-        $sheet->setCellValue('E' . $row, $a['Status']);
-        $sheet->setCellValue('F' . $row, $a['SubmissionDate'] ?: '-');
+        $sheet->setCellValue('E' . $row, $coauthors);
+        $sheet->setCellValue('F' . $row, $a['Status']);
+        $sheet->setCellValue('G' . $row, $a['SubmissionDate'] ?: '-');
         $row++;
     }
 
@@ -155,10 +184,10 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             'vertical' => Alignment::VERTICAL_CENTER
         ]
     ];
-    $sheet->getStyle('A5:F' . ($row-1))->applyFromArray($dataStyle);
+    $sheet->getStyle('A5:G' . ($row-1))->applyFromArray($dataStyle);
 
 
-    foreach (range('A', 'F') as $col) {
+    foreach (range('A', 'G') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
@@ -348,6 +377,7 @@ function statusBadge($status) {
                 <th>Course Title</th>
                 <th>Program Name</th>
                 <th>Assigned Professor</th>
+                <th>Co-Authors</th>
                 <th>Status</th>
                 <th>Submission Date</th>
             </tr>
@@ -357,6 +387,7 @@ function statusBadge($status) {
                 <td><?= htmlspecialchars($a['CourseTitle']) ?></td>
                 <td><?= htmlspecialchars($a['ProgramName']) ?></td>
                 <td><?= htmlspecialchars($a['AssignedTo']) ?: '<span style="color:red;">Unassigned</span>' ?></td>
+                <td><?= !empty($a['CoAuthors']) ? htmlspecialchars(implode(', ', $a['CoAuthors'])) : '-' ?></td>
                 <td><?= statusBadge($a['Status']) ?></td>
                 <td><?= $a['SubmissionDate'] ? htmlspecialchars($a['SubmissionDate']) : '-' ?></td>
             </tr>
