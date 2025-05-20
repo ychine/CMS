@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
     $stmt->close();      
     
     if ($facultyID) {
-        // Fetch program code and name before deletion
+        
         $progStmt = $conn->prepare("SELECT ProgramCode, ProgramName FROM programs WHERE ProgramID = ?");
         $progStmt->bind_param("i", $programID);
         $progStmt->execute();
@@ -47,12 +47,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
             $programName = $progRow['ProgramName'];
         }
         $progStmt->close();
-        
-        // Begin transaction for data integrity
+
         $conn->begin_transaction();
         
         try {
-            // First, delete related program_courses entries
+           
             $stmt = $conn->prepare("
                 DELETE pc FROM program_courses pc
                 INNER JOIN curricula c ON pc.CurriculumID = c.id
@@ -62,13 +61,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
             $stmt->execute();
             $stmt->close();
             
-            // Then, delete curricula
+            
             $stmt = $conn->prepare("DELETE FROM curricula WHERE ProgramID = ? AND FacultyID = ?");
             $stmt->bind_param("ii", $programID, $facultyID);
             $stmt->execute();
             $stmt->close();
             
-            // Check if there are any remaining curricula for this program
+            
             $stmt = $conn->prepare("SELECT COUNT(*) as count FROM curricula WHERE ProgramID = ?");
             $stmt->bind_param("i", $programID);
             $stmt->execute();
@@ -76,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
             $row = $result->fetch_assoc();
             $stmt->close();
             
-            // Only delete the program if there are no more curricula associated with it
+           
             if ($row['count'] == 0) {
                 $stmt = $conn->prepare("DELETE FROM programs WHERE ProgramID = ?");
                 $stmt->bind_param("i", $programID);
@@ -84,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
                 $stmt->close();
             }
             
-            // Commit transaction
+       
             $conn->commit();
             
             // --- AUDIT LOG ---
@@ -105,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
                 exit();
             }
         } catch (Exception $e) {
-            // Rollback transaction on error
+            
             $conn->rollback();
             
             if(isset($_POST['ajax'])) {
@@ -123,11 +122,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['program_id'])) {
     $conn->close(); 
 }   
 
-// If not an AJAX request, redirect back to curriculum page
+
 header("Location: ../curriculum/curriculum_frame.php"); 
 exit(); 
 
-// Helper to get full name
+
 function getFullName($conn, $accountId) {
     $stmt = $conn->prepare("SELECT FirstName, LastName FROM personnel WHERE AccountID = ?");
     $stmt->bind_param("i", $accountId);

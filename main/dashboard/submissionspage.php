@@ -117,7 +117,6 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
     }
 }
 
-// Handle task approval (Dean only)
 if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $taskAssignmentID = $_POST['task_assignment_id'];
     
@@ -128,7 +127,7 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $approveStmt->bind_param("ii", $personnelID, $taskAssignmentID);
     
     if($approveStmt->execute()) {
-        // Check if all assignments for this task are completed
+      
         $checkAllCompletedSql = "SELECT TaskID FROM task_assignments 
                                 WHERE TaskAssignmentID = ?";
         $checkStmt = $conn->prepare($checkAllCompletedSql);
@@ -139,7 +138,7 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
         $taskID = $taskData['TaskID'];
         $checkStmt->close();
         
-        // Count total vs completed assignments for this task
+    
         $countSql = "SELECT COUNT(*) as total, 
                     SUM(CASE WHEN Status = 'Completed' THEN 1 ELSE 0 END) as completed 
                     FROM task_assignments WHERE TaskID = ?";
@@ -150,7 +149,6 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
         $countData = $countResult->fetch_assoc();
         $countStmt->close();
         
-        // If all assignments are completed, mark the task as completed
         if ($countData['total'] == $countData['completed']) {
             $updateTaskSql = "UPDATE tasks SET Status = 'Completed' WHERE TaskID = ?";
             $updateTaskStmt = $conn->prepare($updateTaskSql);
@@ -158,7 +156,7 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
             $updateTaskStmt->execute();
             $updateTaskStmt->close();
         } else {
-            // At least one assignment is completed, mark as In Progress
+            
             $updateTaskSql = "UPDATE tasks SET Status = 'In Progress' WHERE TaskID = ?";
             $updateTaskStmt = $conn->prepare($updateTaskSql);
             $updateTaskStmt->bind_param("i", $taskID);
@@ -173,10 +171,8 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $approveStmt->close();
 }
 
-// Fetch tasks based on user role
 $tasks = [];
 
-// Check if task_id is provided in URL
 if (isset($_GET['task_id'])) {
     $taskID = $_GET['task_id'];
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
@@ -203,7 +199,7 @@ if (isset($_GET['task_id'])) {
         $tasksStmt->bind_param("ii", $taskID, $facultyID);
     }
 } else if ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR') {
-    // Dean, Program Head, and Coordinator see all tasks in their faculty
+   
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
@@ -219,7 +215,7 @@ if (isset($_GET['task_id'])) {
     $tasksStmt = $conn->prepare($tasksSql);
     $tasksStmt->bind_param("i", $facultyID);
 } else {
-    // Regular faculty members see only tasks assigned to them
+
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
@@ -240,7 +236,7 @@ $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
 
 while ($taskRow = $tasksResult->fetch_assoc()) {
-    // For each task, get the courses and their assignment details
+   
     $assignmentsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.Status as AssignmentStatus, 
                     ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
@@ -256,7 +252,7 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                     WHERE ta.TaskID = ?";
     
     if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-        // Regular faculty members only see their own assignments
+       
         $assignmentsSql .= " AND pc.PersonnelID = ?";
     }
     
@@ -333,7 +329,7 @@ if (isset($_GET['from'])) {
       break;
   }
 } else {
-  // Default based on user role
+
   switch ($userRole) {
     case 'FM':
       $backUrl = '../../main/dashboard/fm-dash.php';
@@ -1241,20 +1237,20 @@ if (isset($_GET['from'])) {
   </div>
   
   <script>
-    // Add event listener for task selector change
+   
     document.addEventListener('DOMContentLoaded', function() {
-      // Enable dark mode for all roles if set in localStorage
+     
       if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
       }
-      // Check if there are tasks
+    
       const taskSelector = document.getElementById('taskSelector');
       if (taskSelector) {
         taskSelector.addEventListener('change', updateTaskSelection);
       }
-      // Real-time status updates for tasks (for demonstration - in production, you'd use WebSockets or AJAX)
+     
       setInterval(function() {
-        // This would normally check for updates from the server
+        
         console.log('Checking for task updates...');
       }, 30000); // Every 30 seconds
     });
@@ -1277,7 +1273,6 @@ if (isset($_GET['from'])) {
         return;
       }
 
-      // Get the selected task data
       const taskData = <?php echo json_encode($uploadableTasks); ?>[selector.value];
 
       // Set hidden fields
@@ -1315,7 +1310,7 @@ if (isset($_GET['from'])) {
         submitBtn.disabled = true;
       }
 
-      // Show upload form
+      
       uploadForm.classList.remove('hidden');
     }
 
@@ -1329,7 +1324,7 @@ if (isset($_GET['from'])) {
         fileName.textContent = fileInput.files[0].name;
         selectedFile.classList.remove('hidden');
         submitBtn.disabled = false;
-        // Preview file if possible
+   
         previewFile(fileInput.files[0]);
       } else {
         selectedFile.classList.add('hidden');
@@ -1374,7 +1369,7 @@ if (isset($_GET['from'])) {
       }
     }
 
-    // Function to toggle task details (for future use)
+   
     function toggleTaskDetails(taskId) {
       const detailsSection = document.getElementById('task-details-' + taskId);
       if (detailsSection.classList.contains('hidden')) {
@@ -1384,9 +1379,9 @@ if (isset($_GET['from'])) {
       }
     }
 
-    // Function to handle task notifications (for future implementation)
+  
     function notifyTaskUpdate(taskId, status) {
-      // This would show a notification when a task is updated
+     
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded';
       notification.innerText = `Task ${taskId} has been ${status}`;

@@ -334,12 +334,12 @@ $conn->close();
                             </div>
 
                             <div class="flex items-start gap-4">
-                                <!-- Donut Chart (Left) -->
+                                <!-- Donut Chart-->
                                 <div class="faculty-chart-container" style="width: 100px; height: 100px;">
                                     <canvas id="facultyDonutChart"></canvas>
                                 </div>
 
-                                <!-- Role Labels (Right) -->
+                                <!-- Role Labels -->
                                 <div class="grid grid-cols-1 gap-1 flex-1">
                                     <?php foreach($roleLabels as $code => $label): ?>
                                         <div class="flex items-center bg-gray-100 rounded px-2 py-1">
@@ -353,7 +353,7 @@ $conn->close();
                         </div>
                     </div>
 
-                    <!-- Pending Submissions Section -->
+                    <!-- Pending Submissions -->
                     <h2 class="pl-2 text-2xl pt-5 font-overpass font-bold">Pending Submissions</h2>
                     <div class="bg-white p-[30px] rounded-lg shadow-md font-overpass">
                         <?php if (!empty($pendingSubmissions)): ?>
@@ -394,7 +394,7 @@ $conn->close();
                         <?php endif; ?>
                     </div>
                 </div>
-                <!-- Pinboard on the far right -->
+                <!-- Pinboard sa right -->
                 <?php include 'pinboard.php'; ?>
             </div>
         </div>

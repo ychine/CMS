@@ -686,11 +686,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const menu = document.getElementById('userMenu');
     const icon = document.getElementById('dropdown-icon');
     
-    if (!menu) return; // Safety check
+    if (!menu) return;
     
     menu.classList.toggle('hidden');
     
-    // Rotate icon when menu is open
+  
     if (icon) {
       if (menu.classList.contains('hidden')) {
         icon.classList.remove('rotate-180');
@@ -700,7 +700,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  // Close menu when clicking outside
   document.addEventListener('click', function(event) {
     const menu = document.getElementById('userMenu');
     const profileContainer = document.querySelector('.profile-container');
@@ -722,7 +721,6 @@ if (localStorage.getItem('darkMode') === 'enabled') {
   </script>
 
 <script>
-// Add this to your existing JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     const notificationButton = document.getElementById('notificationButton');
     const notificationDropdown = document.getElementById('notificationDropdown');
@@ -759,7 +757,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    // Load notifications
     function loadNotifications() {
         fetch('src/scripts/get_notifications.php')
             .then(response => response.json())
@@ -814,7 +811,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Mark notification as read
     function markAsRead(notificationId) {
         const formData = new FormData();
         formData.append('notification_id', notificationId);
@@ -826,7 +822,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update the notification count badge
+               
                 const badge = notificationButton.querySelector('span');
                 if (badge) {
                     const currentCount = parseInt(badge.textContent);

@@ -14,7 +14,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch user role
 $userRole = "";
 $userRoleQuery = "SELECT Role FROM personnel WHERE AccountID = ?";
 $roleStmt = $conn->prepare($userRoleQuery);
@@ -71,12 +70,10 @@ while ($row = $res->fetch_assoc()) {
     $curriculum = $row['CurriculumName'];
     $courseTitle = $row['Title'];
 
-    // Combine personnel name
     $assignedPersonnel = ($row['FirstName'] && $row['LastName']) 
         ? $row['FirstName'] . ' ' . $row['LastName'] 
         : null;
 
-    // Init program entry if not set
     if (!isset($programs[$programId])) {
         $programs[$programId] = [
             'code' => $program,
@@ -84,12 +81,10 @@ while ($row = $res->fetch_assoc()) {
         ];
     }
 
-    // Init curriculum entry if not set
     if ($curriculum && !isset($programs[$programId]['curricula'][$curriculum])) {
         $programs[$programId]['curricula'][$curriculum] = [];
     }
 
-    // Add course with assigned personnel and course code
     if ($courseTitle) {
         $programs[$programId]['curricula'][$curriculum][] = [
             'title' => $courseTitle,
@@ -99,7 +94,6 @@ while ($row = $res->fetch_assoc()) {
     }
 }
 
-// Sort courses within each curriculum by course code
 foreach ($programs as $programId => $programData) {
     foreach ($programData['curricula'] as $curriculum => $courses) {
         usort($programs[$programId]['curricula'][$curriculum], function($a, $b) {
@@ -147,7 +141,7 @@ while ($row = $res->fetch_assoc()) {
 
 $stmt->close();
 
-// 1. Get current school year and term from the latest task in this faculty
+
 $currentSchoolYear = '';
 $currentTerm = '';
 $taskSql = "SELECT SchoolYear, Term FROM tasks WHERE FacultyID = ? ORDER BY CreatedAt DESC LIMIT 1";
@@ -780,7 +774,7 @@ $conn->close();
 </div>
 
 <script>
-    // Store user role in JavaScript for use in functions
+   
     const userRole = "<?php echo $userRole; ?>";
     let programToDelete = null;
     let curriculumToDelete = null;
@@ -788,7 +782,7 @@ $conn->close();
 
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.assign-personnel-dropdown').forEach(dropdown => {
-            // Add click event to stop propagation
+           
             dropdown.addEventListener('click', function(e) {
                 e.stopPropagation();
             });
@@ -822,7 +816,7 @@ $conn->close();
                         console.log("Parsed JSON:", json);
                     } catch (e) {
                         console.error("Error parsing JSON:", e);
-                        alert("Raw error: " + text); // Show raw response
+                        alert("Raw error: " + text); 
                     }
                 })
                 .catch(err => {
@@ -852,67 +846,66 @@ $conn->close();
 
     function deleteProgram(programId) {
   
-    const confirmBtn = document.getElementById('confirmDeleteBtn');
-    const originalText = confirmBtn.textContent;
-    confirmBtn.textContent = 'Deleting...';
-    confirmBtn.disabled = true;
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const originalText = confirmBtn.textContent;
+        confirmBtn.textContent = 'Deleting...';
+        confirmBtn.disabled = true;
+        
     
-    // Close the modal
-    closeDeleteModal();
-    
-    // Create form data
-    const formData = new FormData();
-    formData.append('program_id', programId);
-    formData.append('ajax', 'true');
+        closeDeleteModal();
 
-    
-    fetch('../curriculum/remove_program.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success === true) {
-            // Show success message with SweetAlert2
-            Swal.fire({
-                title: 'Deleted!',
-                text: 'Program deleted successfully',
-                icon: 'success',
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'OK'
-            }).then((result) => {
-                // Reload the page after the user clicks OK
-                location.reload();
-            });
-        } else {
-            // Show error message with SweetAlert2
+        const formData = new FormData();
+        formData.append('program_id', programId);
+        formData.append('ajax', 'true');
+
+        
+        fetch('../curriculum/remove_program.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success === true) {
+        
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Program deleted successfully',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Reload the page after the user clicks OK
+                    location.reload();
+                });
+            } else {
+                // Show error message with SweetAlert2
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to delete program',
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+                // Reset button
+                confirmBtn.textContent = originalText;
+                confirmBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        
             Swal.fire({
                 title: 'Error!',
-                text: data.message || 'Failed to delete program',
+                text: 'An error occurred while deleting the program',
                 icon: 'error',
                 confirmButtonColor: '#3085d6',
                 confirmButtonText: 'OK'
             });
-            // Reset button
+        
             confirmBtn.textContent = originalText;
             confirmBtn.disabled = false;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        // Show error message with SweetAlert2
-        Swal.fire({
-            title: 'Error!',
-            text: 'An error occurred while deleting the program',
-            icon: 'error',
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'OK'
         });
-        // Reset button
-        confirmBtn.textContent = originalText;
-        confirmBtn.disabled = false;
-    });
-}
+    }
 
     function toggleProgramFields() {
         const dropdown = document.getElementById("existing_program");
@@ -993,19 +986,17 @@ $conn->close();
 
     function openCourseModal() {
         document.getElementById('courseModal').classList.remove('hidden');
-    document.getElementById('task-dropdown').classList.remove('show');
-    
-    // Reset form fields
-    document.getElementById('course_program').value = '';
-    document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
-    document.getElementById('course_code').value = '';
-    document.getElementById('course_title').value = '';
-    document.getElementById('courseSearch').value = '';
-    document.getElementById('existingCoursesList').classList.add('hidden');
-    
-    // Load existing courses
-    loadExistingCourses();
-}
+        document.getElementById('task-dropdown').classList.remove('show');
+        
+        document.getElementById('course_program').value = '';
+        document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
+        document.getElementById('course_code').value = '';
+        document.getElementById('course_title').value = '';
+        document.getElementById('courseSearch').value = '';
+        document.getElementById('existingCoursesList').classList.add('hidden');
+
+        loadExistingCourses();
+    }
 
     window.addEventListener('keydown', function (e) {
         if (e.key === "Escape") {
@@ -1017,107 +1008,104 @@ $conn->close();
 
 
     function closeCourseModal() {
-    document.getElementById('courseModal').classList.add('hidden');
-}
-
-function loadCurricula(programId) {
-    if (!programId) {
-        document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
-        return;
+        document.getElementById('courseModal').classList.add('hidden');
     }
-    
-    // Show loading state
-    document.getElementById('course_curriculum').innerHTML = '<option value="">Loading curricula...</option>';
-    
-    // Fetch curricula for the selected program
-    fetch(`../curriculum/get_curricula.php?program_id=${programId}`)
-        .then(response => response.json())
-        .then(data => {
-            const select = document.getElementById('course_curriculum');
-            
-            if (data.success) {
-                if (data.curricula.length > 0) {
-                    select.innerHTML = '<option value="">-- Select Curriculum --</option>';
-                    data.curricula.forEach(curriculum => {
-                        select.innerHTML += `<option value="${curriculum.id}">${curriculum.name}</option>`;
-                    });
-                } else {
-                    select.innerHTML = '<option value="">No curricula available</option>';
-                }
-            } else {
-                select.innerHTML = '<option value="">Error loading curricula</option>';
-                console.error(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('course_curriculum').innerHTML = '<option value="">Error loading curricula</option>';
-        });
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-    const addCourseForm = document.getElementById('addCourseForm');
-    if (addCourseForm) {
-        addCourseForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            // Submit form via AJAX
-            fetch(this.action, {
-                method: 'POST',
-                body: formData
-            })
+    function loadCurricula(programId) {
+        if (!programId) {
+            document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
+            return;
+        }
+        
+        document.getElementById('course_curriculum').innerHTML = '<option value="">Loading curricula...</option>';
+        
+        fetch(`../curriculum/get_curricula.php?program_id=${programId}`)
             .then(response => response.json())
             .then(data => {
+                const select = document.getElementById('course_curriculum');
+                
                 if (data.success) {
-                    // Show success message
-                    Swal.fire({
-                        title: 'Success!',
-                        text: data.message,
-                        icon: 'success',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        // Close modal and reload page
-                        closeCourseModal();
-                        location.reload();
-                    });
+                    if (data.curricula.length > 0) {
+                        select.innerHTML = '<option value="">-- Select Curriculum --</option>';
+                        data.curricula.forEach(curriculum => {
+                            select.innerHTML += `<option value="${curriculum.id}">${curriculum.name}</option>`;
+                        });
+                    } else {
+                        select.innerHTML = '<option value="">No curricula available</option>';
+                    }
                 } else {
-                    // Show error message
-                    Swal.fire({
-                        title: 'Error!',
-                        text: data.message,
-                        icon: 'error',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    });
+                    select.innerHTML = '<option value="">Error loading curricula</option>';
+                    console.error(data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'An error occurred while adding the course',
-                    icon: 'error',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'OK'
+                document.getElementById('course_curriculum').innerHTML = '<option value="">Error loading curricula</option>';
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const addCourseForm = document.getElementById('addCourseForm');
+        if (addCourseForm) {
+            addCourseForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                // Submit form via AJAX
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            // Close modal and reload page
+                            closeCourseModal();
+                            location.reload();
+                        });
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while adding the course',
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    });
                 });
             });
-        });
-    }
-});
+        }
+    });
 
     function closeTaskModal() {
-        // This function is called in the event listener but doesn't seem to exist
-        // Adding an empty implementation to prevent errors
+       
     }
 
     function toggleCollapse(id) {
         const el = document.getElementById(id);
         if (el) {
             el.classList.toggle('hidden');
-            // Find the button that triggered this collapse
+          
             const button = document.querySelector(`button[onclick="toggleCollapse('${id}')"]`);
             if (button) {
                 button.classList.toggle('collapsed');
@@ -1145,7 +1133,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('filePreviewContent').innerHTML = '';
     }
 
-    // Add click outside functionality
     document.getElementById('filePreviewModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeFilePreviewModal();
@@ -1178,35 +1165,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function deleteCurriculum(programId, curriculumYear) {
-        // Show loading state
+      
         const confirmBtn = document.getElementById('confirmDeleteCurriculumBtn');
         const originalText = confirmBtn.textContent;
         confirmBtn.textContent = 'Deleting...';
         confirmBtn.disabled = true;
         
-        // Close the modal
         closeDeleteCurriculumModal();
         
-        // Create form data
         const formData = new FormData();
         formData.append('program_id', programId);
         formData.append('curriculum_year', curriculumYear);
         formData.append('ajax', 'true');
         
-        console.log('Deleting curriculum:', { programId, curriculumYear }); // Debug log
+        console.log('Deleting curriculum:', { programId, curriculumYear }); 
         
         fetch('../curriculum/remove_curriculum.php', {
             method: 'POST',
             body: formData
         })
         .then(response => {
-            console.log('Response status:', response.status); // Debug log
+            console.log('Response status:', response.status); 
             return response.json();
         })
         .then(data => {
-            console.log('Response data:', data); // Debug log
+            console.log('Response data:', data); 
             if (data.success === true) {
-                // Show success message with SweetAlert2
+               
                 Swal.fire({
                     title: 'Deleted!',
                     text: 'Curriculum deleted successfully',
@@ -1214,11 +1199,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'OK'
                 }).then((result) => {
-                    // Reload the page after the user clicks OK
+                 
                     location.reload();
                 });
             } else {
-                // Show error message with SweetAlert2
+            
                 Swal.fire({
                     title: 'Error!',
                     text: data.message || 'Failed to delete curriculum',
@@ -1226,14 +1211,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'OK'
                 });
-                // Reset button
+                
                 confirmBtn.textContent = originalText;
                 confirmBtn.disabled = false;
             }
         })
         .catch(error => {
-            console.error('Error:', error); // Debug log
-            // Show error message with SweetAlert2
+            console.error('Error:', error);
+           
             Swal.fire({
                 title: 'Error!',
                 text: 'An error occurred while deleting the curriculum. Please check the console for details.',
@@ -1241,13 +1226,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmButtonColor: '#3085d6',
                 confirmButtonText: 'OK'
             });
-            // Reset button
+          
             confirmBtn.textContent = originalText;
             confirmBtn.disabled = false;
         });
     }
 
-    // Course search functionality
+    //corusee searchingg
     document.addEventListener('DOMContentLoaded', function() {
         const searchInputs = document.querySelectorAll('.search-course-input');
         
@@ -1273,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function confirmDeleteCourse(programId, curriculumYear, courseCode, courseTitle) {
-        event.stopPropagation(); // Prevent row click event
+        event.stopPropagation(); 
         Swal.fire({
             title: 'Remove Course?',
             text: `Are you sure you want to remove "${courseCode} - ${courseTitle}" from the curriculum?`,
@@ -1335,7 +1320,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add these new functions for course search functionality
+    
     function loadExistingCourses() {
         const searchInput = document.getElementById('courseSearch');
         const coursesList = document.getElementById('existingCoursesList');
@@ -1350,7 +1335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Fetch courses from the server
+         
             fetch(`../curriculum/search_courses.php?search=${encodeURIComponent(searchTerm)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -1386,7 +1371,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
         
-        // Handle course selection
+       
         coursesList.addEventListener('change', function(e) {
             if (e.target.classList.contains('course-checkbox')) {
                 const courseCode = e.target.dataset.code;
@@ -1424,7 +1409,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Close the dropdown when clicking outside
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && !coursesList.contains(e.target)) {
                 coursesList.classList.add('hidden');
@@ -1432,7 +1416,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add function to remove selected course
+  
     function removeSelectedCourse(courseCode) {
         const checkbox = document.querySelector(`input[data-code="${courseCode}"]`);
         if (checkbox) {
@@ -1441,7 +1425,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Modify the form submission
     document.getElementById('addCourseForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
