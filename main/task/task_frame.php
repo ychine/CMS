@@ -108,7 +108,7 @@ if ($userRole === 'FM') {
         JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
         LEFT JOIN personnel p ON p.AccountID = ?
         LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
-        WHERE pc.PersonnelID = ? AND ta.Status != 'Completed'
+        WHERE pc.PersonnelID = ? AND ta.Status IN ('Pending', 'In Progress')
         GROUP BY t.TaskID
         ORDER BY t.CreatedAt DESC";
     $ongoingTasksStmt = $conn->prepare($ongoingTasksSql);

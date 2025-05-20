@@ -250,10 +250,11 @@ $totalStmt->close();
                         </div>
 
                         <?php
-                        $taskQuery = "SELECT DISTINCT t.TaskID, t.Title, t.DueDate, ta.Status 
+                        $taskQuery = "SELECT DISTINCT t.TaskID, t.Title, t.DueDate, ta.Status, ta.CourseCode, c.Title AS CourseTitle 
                                     FROM tasks t 
                                     JOIN task_assignments ta ON t.TaskID = ta.TaskID 
                                     JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID 
+                                    JOIN courses c ON ta.CourseCode = c.CourseCode
                                     WHERE pc.PersonnelID = ? 
                                     AND ta.Status != 'Completed'
                                     ORDER BY t.DueDate ASC";
@@ -280,10 +281,13 @@ $totalStmt->close();
                                                 $borderColor = '#ef4444'; // rose
                                         }
                                         ?>
-                                        <div class="bg-gray-100 border border-gray-200 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid <?php echo $borderColor; ?>">
+                                        <div class="bg-gray-100 border border-gray-200 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid <?php echo $borderColor; ?>;">
                                             <div class="flex items-center justify-between">
                                                 <div class="flex-1">
                                                     <div class="font-medium font-onest text-sm"><?php echo htmlspecialchars($task['Title']); ?></div>
+                                                    <div class="text-xs text-blue-700 font-semibold mt-1">
+                                                        <?php echo htmlspecialchars($task['CourseCode']); ?> - <?php echo htmlspecialchars($task['CourseTitle']); ?>
+                                                    </div>
                                                     <div class="text-xs text-gray-500 mt-1">
                                                         Due: <?php echo date('M d, Y', strtotime($task['DueDate'])); ?>
                                                     </div>
