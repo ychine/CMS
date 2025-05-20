@@ -569,25 +569,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadNotifications();
 
-
+    // 30s
     setInterval(loadNotifications, 30000);
 
-   
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
         if (notificationDropdown.classList.contains('hidden')) {
-      
+    
             notificationDropdown.classList.remove('hidden');
-     
+         
             setTimeout(() => {
                 notificationDropdown.classList.remove('opacity-0', 'scale-95');
                 notificationDropdown.classList.add('opacity-100', 'scale-100');
             }, 10);
         } else {
-   
+        
             notificationDropdown.classList.remove('opacity-100', 'scale-100');
             notificationDropdown.classList.add('opacity-0', 'scale-95');
-         
+            
             setTimeout(() => {
                 notificationDropdown.classList.add('hidden');
             }, 300);
@@ -597,6 +596,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+
+    document.addEventListener('click', function(e) {
+        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+            notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            notificationDropdown.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+            }, 300);
+        }
+    });
 
     function loadNotifications() {
         fetch('../src/scripts/get_notifications.php')
@@ -635,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 else if (userRole === 'Program Head') fromParam = 'ph-dash';
                                 else if (userRole === 'College Dean') fromParam = 'dn-dash';
                                 else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
-                                iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                iframe.src = `../dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
                         }
@@ -688,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       
         const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
-       s
+      
         if (hasUnread) {
             notifDot.style.display = '';
         } else {

@@ -796,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 else if (userRole === 'Program Head') fromParam = 'ph-dash';
                                 else if (userRole === 'College Dean') fromParam = 'dn-dash';
                                 else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
-                                iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                iframe.src = `../dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
                         }
