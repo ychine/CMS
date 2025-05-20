@@ -57,7 +57,6 @@ $assignStmt->execute();
 $assignResult = $assignStmt->get_result();
 while ($row = $assignResult->fetch_assoc()) $assignments[] = $row;
 
-// Automated summary
 $total = count($assignments);
 $completed = 0;
 $pending = 0;
@@ -68,21 +67,20 @@ foreach ($assignments as $a) {
     else $pending++;
 }
 
-// Excel export
 if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setTitle('Task Report');
 
-    // Add task information
+
     $sheet->setCellValue('A1', 'Task Report: ' . $task['Title']);
     $sheet->setCellValue('A2', 'School Year: ' . $task['SchoolYear'] . ' | Term: ' . $task['Term']);
     
-    // Merge cells for title
+
     $sheet->mergeCells('A1:F1');
     $sheet->mergeCells('A2:F2');
     
-    // Style task information
+   
     $titleStyle = [
         'font' => [
             'bold' => true,
@@ -106,11 +104,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     ];
     $sheet->getStyle('A2:F2')->applyFromArray($subtitleStyle);
 
-    // Set headers (moved down 2 rows)
+   
     $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Status', 'Submission Date'];
     $sheet->fromArray($headers, NULL, 'A4');
 
-    // Style headers
+ 
     $headerStyle = [
         'font' => [
             'bold' => true,
@@ -133,7 +131,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     ];
     $sheet->getStyle('A4:F4')->applyFromArray($headerStyle);
 
-    // Add data (starting from row 5)
+   
     $row = 5;
     foreach ($assignments as $a) {
         $sheet->setCellValue('A' . $row, $a['CourseCode']);
@@ -145,7 +143,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
         $row++;
     }
 
-    // Style data rows
+ 
     $dataStyle = [
         'borders' => [
             'bottom' => [
@@ -159,16 +157,16 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     ];
     $sheet->getStyle('A5:F' . ($row-1))->applyFromArray($dataStyle);
 
-    // Auto-size columns
+
     foreach (range('A', 'F') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
-    // Add summary sheet
+  
     $summarySheet = $spreadsheet->createSheet();
     $summarySheet->setTitle('Summary');
     
-    // Add summary data
+  
     $summarySheet->setCellValue('A1', 'Task Summary');
     $summarySheet->setCellValue('A3', 'Total Assignments');
     $summarySheet->setCellValue('B3', $total);
@@ -179,16 +177,16 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     $summarySheet->setCellValue('A6', 'Pending');
     $summarySheet->setCellValue('B6', $pending);
 
-    // Style summary sheet
+  
     $summarySheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
     $summarySheet->getStyle('A3:B6')->getFont()->setSize(12);
     $summarySheet->getColumnDimension('A')->setAutoSize(true);
     $summarySheet->getColumnDimension('B')->setAutoSize(true);
 
-    // Set active sheet back to main report
+ 
     $spreadsheet->setActiveSheetIndex(0);
 
-    // Create the Excel file
+
     $writer = new Xlsx($spreadsheet);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment;filename="task_report_' . $taskId . '.xlsx"');

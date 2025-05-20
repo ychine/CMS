@@ -43,8 +43,8 @@ if ($row = $res->fetch_assoc()) {
 }
 $stmt->close();
 
-// Update assignment
-$stmt = $conn->prepare("UPDATE program_courses SET PersonnelID = ? WHERE CurriculumID = ? AND CourseCode = ?");
+
+$stmt = $conn->prepare("UPDATE program_courses SET PersonnelID = ? WHERE CurriculumID = ? AND CourseCode = ?");          // Update assignment for course
 $stmt->bind_param("iis", $personnelId, $curriculumId, $courseCode);
 $success = $stmt->execute();
 $stmt->close();

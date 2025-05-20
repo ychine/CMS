@@ -5,7 +5,6 @@ ini_set('display_errors', 0);
 
 session_start();
 
-// Set JSON header
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['Username'])) {
@@ -27,17 +26,16 @@ $programId = $_POST['program_id'];
 $curriculumYear = $_POST['curriculum_year'];
 
 try {
-    // Direct database connection without requiring config file
+
     $conn = new mysqli("localhost", "root", "", "cms");
     if ($conn->connect_error) {
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
 
-    // Start transaction
     $conn->begin_transaction();
 
     try {
-        // First, get the curriculum ID
+       
         $stmt = $conn->prepare("SELECT id FROM curricula WHERE ProgramID = ? AND name LIKE ?");
         if (!$stmt) {
             throw new Exception("Prepare failed: " . $conn->error);
@@ -58,7 +56,7 @@ try {
         $curriculumId = $result->fetch_assoc()['id'];
         $stmt->close();
         
-        // Before deleting anything, get faculty ID and curriculum name
+       
         $getFaculty = $conn->prepare("SELECT FacultyID, name FROM curricula WHERE id = ?");
         $getFaculty->bind_param("i", $curriculumId);
         $getFaculty->execute();
@@ -71,7 +69,7 @@ try {
         }
         $getFaculty->close();
         
-        // Delete associated program courses
+       
         $stmt = $conn->prepare("DELETE FROM program_courses WHERE CurriculumID = ?");
         if (!$stmt) {
             throw new Exception("Prepare failed: " . $conn->error);
@@ -83,7 +81,6 @@ try {
         }
         $stmt->close();
         
-        // Delete the curriculum
         $stmt = $conn->prepare("DELETE FROM curricula WHERE id = ?");
         if (!$stmt) {
             throw new Exception("Prepare failed: " . $conn->error);
@@ -95,7 +92,6 @@ try {
         }
         $stmt->close();
         
-        // Commit transaction
         if (!$conn->commit()) {
             throw new Exception("Commit failed: " . $conn->error);
         }
@@ -115,7 +111,7 @@ try {
         
         echo json_encode(['success' => true, 'message' => 'Curriculum deleted successfully']);
     } catch (Exception $e) {
-        // Rollback transaction on error
+    
         $conn->rollback();
         throw new Exception("Database operation failed: " . $e->getMessage());
     }
@@ -130,9 +126,8 @@ try {
         $conn->close();
     }
 }
-exit(); // Ensure script ends here
+exit(); 
 
-// Helper to get full name
 function getFullName($conn, $accountId) {
     $stmt = $conn->prepare("SELECT FirstName, LastName FROM personnel WHERE AccountID = ?");
     $stmt->bind_param("i", $accountId);

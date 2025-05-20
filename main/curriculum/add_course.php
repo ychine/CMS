@@ -52,7 +52,6 @@ $success = true;
 $addedCourses = [];
 $errors = [];
 
-// Start transaction
 $conn->begin_transaction();
 
 try {
@@ -60,33 +59,33 @@ try {
         $courseCode = $course['code'];
         $courseTitle = $course['title'];
 
-        // Check if course exists
-        $checkCourse = "SELECT CourseCode FROM courses WHERE CourseCode = ?";
+        
+        $checkCourse = "SELECT CourseCode FROM courses WHERE CourseCode = ?";                                      // check if course exist
         $stmt = $conn->prepare($checkCourse);
         $stmt->bind_param("s", $courseCode);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows === 0) {
-            // Insert new course
-            $insertCourse = "INSERT INTO courses (CourseCode, Title) VALUES (?, ?)";
+          
+            $insertCourse = "INSERT INTO courses (CourseCode, Title) VALUES (?, ?)";                               // adding course
             $stmt = $conn->prepare($insertCourse);
             $stmt->bind_param("ss", $courseCode, $courseTitle);
             $stmt->execute();
         }
 
-        // Check if course is already in curriculum
-        $checkExisting = "SELECT CourseCode FROM program_courses WHERE CurriculumID = ? AND CourseCode = ?";
+        
+        $checkExisting = "SELECT CourseCode FROM program_courses WHERE CurriculumID = ? AND CourseCode = ?";        // validation if course ifs in curriculum
         $stmt = $conn->prepare($checkExisting);
         $stmt->bind_param("is", $curriculumID, $courseCode);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows === 0) {
-            // Add course to curriculum with ProgramID
-            $insertProgramCourse = "INSERT INTO program_courses (ProgramID, CurriculumID, CourseCode, FacultyID) VALUES (?, ?, ?, ?)";
+          
+            $insertProgramCourse = "INSERT INTO program_courses (ProgramID, CurriculumID, CourseCode, FacultyID) VALUES (?, ?, ?, ?)";  
             $stmt = $conn->prepare($insertProgramCourse);
-            $stmt->bind_param("iisi", $programID, $curriculumID, $courseCode, $facultyID);
+            $stmt->bind_param("iisi", $programID, $curriculumID, $courseCode, $facultyID);        //adding course into program course with progid
             $stmt->execute();
             $addedCourses[] = $courseCode;
         } else {

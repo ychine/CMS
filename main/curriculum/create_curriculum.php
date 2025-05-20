@@ -22,7 +22,7 @@ if ($type === 'course') {
     $stmt->bind_param("s", $name);
     if ($stmt->execute()) {
         $newCourseId = $conn->insert_id;
-        // Link course to AY Revision
+       
         $link = $conn->prepare("INSERT INTO program_courses (curriculum_id, course_id) VALUES (?, ?)");
         $link->bind_param("ii", $parentId, $newCourseId);
         $link->execute();

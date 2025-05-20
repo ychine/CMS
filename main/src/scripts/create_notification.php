@@ -5,7 +5,7 @@ function createTaskNotification($taskID, $taskTitle, $facultyID) {
     global $conn;
     
     try {
-        // Get all personnel in the faculty
+       
         $query = "SELECT p.AccountID 
                  FROM personnel p 
                  WHERE p.FacultyID = ?";
@@ -15,7 +15,7 @@ function createTaskNotification($taskID, $taskTitle, $facultyID) {
         $stmt->execute();
         $result = $stmt->get_result();
         
-        // Create notification for each personnel
+    
         while ($row = $result->fetch_assoc()) {
             $accountID = $row['AccountID'];
             

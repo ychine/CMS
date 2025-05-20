@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -12,7 +11,7 @@ if (!isset($_SESSION['Username'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Debug: Log POST data
+    
     error_log("POST data: " . print_r($_POST, true));
 
     $isNewProgram = isset($_POST['is_new_program']) && $_POST['is_new_program'] === '1';
@@ -34,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $username = $_SESSION['Username'];
     
-    // Get FacultyID based on username
     $stmt = $conn->prepare("SELECT p.FacultyID FROM personnel p 
                             JOIN accounts a ON p.AccountID = a.AccountID 
                             WHERE a.Username = ?");
@@ -63,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     if ($isNewProgram) {
-        // Handle new program creation
+      
         $programCode = isset($_POST['program_code']) ? $_POST['program_code'] : '';
         $programName = isset($_POST['program_name']) ? $_POST['program_name'] : '';
 
@@ -73,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        // Check if program already exists for this faculty
+        //  if program already exists for this faculty
         $checkStmt = $conn->prepare("
             SELECT p.ProgramID 
             FROM programs p
@@ -131,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Create curriculum - removed CurriculumYear from the query since it doesn't exist in the table
+    // Create curriculum 
     $curriculumStmt = $conn->prepare("INSERT INTO curricula (ProgramID, name, FacultyID) VALUES (?, ?, ?)");
     if (!$curriculumStmt) {
         $_SESSION['error'] = 'Prepare failed: ' . $conn->error;

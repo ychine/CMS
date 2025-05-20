@@ -177,14 +177,11 @@ const eyeOpen = document.querySelector('.eye-open');
 const eyeClosed = document.querySelector('.eye-closed');
 const accountWarning = document.getElementById('account-warning');
 
-// Track login attempts - use localStorage for persistence
 let loginAttempts = JSON.parse(localStorage.getItem('loginAttempts')) || {};
 
-// Maximum allowed attempts before locking
 const MAX_ATTEMPTS = 3;
-const LOCKOUT_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const LOCKOUT_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds 86 400 000
 
-// Function to format time remaining
 function formatTimeRemaining(milliseconds) {
     const hours = Math.floor(milliseconds / (60 * 60 * 1000));
     const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / (60 * 1000));
@@ -195,12 +192,10 @@ function formatTimeRemaining(milliseconds) {
     return `${minutes}m`;
 }
 
-// Function to show toast messages
 function showToast(message, type = 'error') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
-    // Add icon based on type
+ 
     const icon = document.createElement('span');
     if (type === 'success') {
         icon.innerHTML = '✓';
@@ -222,16 +217,14 @@ function showToast(message, type = 'error') {
     }, 3000);
 }
 
-// Function to check if account is locked
 function isAccountLocked(username) {
     if (!username) return false;
     
-    // Check in loginAttempts object
     if (loginAttempts[username] && loginAttempts[username].locked) {
-        // Check if lockout period has expired
+      
         const now = Date.now();
         if (loginAttempts[username].timestamp && (now - loginAttempts[username].timestamp > LOCKOUT_DURATION)) {
-            // Unlock account if lockout period has passed
+    
             loginAttempts[username].locked = false;
             loginAttempts[username].count = 0;
             localStorage.removeItem(`locked_${username}`);
@@ -241,11 +234,9 @@ function isAccountLocked(username) {
         return true;
     }
     
-    // Double-check in localStorage (for persistence across sessions)
     return localStorage.getItem(`locked_${username}`) === 'true';
 }
 
-// Function to update account warning message with attempt countdown
 function updateAccountWarning(username) {
     if (!username) {
         accountWarning.style.display = 'none';
@@ -253,7 +244,7 @@ function updateAccountWarning(username) {
     }
     
     if (isAccountLocked(username)) {
-        // Calculate remaining lockout time
+      
         const now = Date.now();
         const lockTime = loginAttempts[username].timestamp;
         const timeElapsed = now - lockTime;
@@ -285,21 +276,20 @@ function updateAccountWarning(username) {
         `;
         accountWarning.style.display = 'block';
         
-        // Change warning color based on attempts left
+        
         if (attemptsLeft === 1) {
-            accountWarning.style.color = '#ff0000'; // Red for last attempt
+            accountWarning.style.color = '#ff0000';         // Red for last attempt
         } else if (attemptsLeft === 2) {
-            accountWarning.style.color = '#ff9900'; // Orange for second attempt
+            accountWarning.style.color = '#ff9900';         // Orange for second attempt
         } else {
-            accountWarning.style.color = '#ff5252'; // Default color
+            accountWarning.style.color = '#ff5252';         // Default color
         }
     } else {
         accountWarning.style.display = 'none';
-        accountWarning.style.color = '#ff5252'; // Reset to default color
+        accountWarning.style.color = '#ff5252';             // Reset to default color
     }
 }
 
-// Function to manually reset lockout (for admin use)
 function resetLockout(username) {
     if (loginAttempts[username]) {
         loginAttempts[username].locked = false;
@@ -311,7 +301,6 @@ function resetLockout(username) {
     }
 }
 
-// Check for admin reset parameter
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('reset_lockout') === 'true' && urlParams.get('username')) {
     const username = urlParams.get('username');
@@ -331,7 +320,6 @@ form.addEventListener('submit', function(e) {
     const password = passwordField.value.trim();
     const captchaResponse = grecaptcha.getResponse();
 
-    // Check if account is locked
     if (isAccountLocked(username)) {
         e.preventDefault();
         showToast('This account has been locked due to multiple failed login attempts. Please try again later or contact support.', 'error');
@@ -351,8 +339,7 @@ form.addEventListener('submit', function(e) {
         showToast('Please fill in all fields.', 'warning');
         return;
     }
-    
-    // Add username to form data for tracking failed attempts
+ 
     const hiddenInput = document.createElement('input');
     hiddenInput.type = 'hidden';
     hiddenInput.name = 'attempted_username';
@@ -360,12 +347,10 @@ form.addEventListener('submit', function(e) {
     form.appendChild(hiddenInput);
 });
 
-// Process URL parameters for login errors
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('error') === 'invalid') {
     const username = urlParams.get('username') || '';
-    
-    // Initialize login attempts for this username if not exists
+
     if (!loginAttempts[username]) {
         loginAttempts[username] = {
             count: 0,
@@ -374,14 +359,11 @@ if (urlParams.get('error') === 'invalid') {
         };
     }
     
-    // Increment failed attempts
     loginAttempts[username].count++;
     loginAttempts[username].timestamp = Date.now();
     
-    // Update localStorage
     localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
     
-    // Check if account should be locked (3 failed attempts)
     if (loginAttempts[username].count >= MAX_ATTEMPTS) {
         loginAttempts[username].locked = true;
         localStorage.setItem(`locked_${username}`, 'true');
@@ -389,14 +371,12 @@ if (urlParams.get('error') === 'invalid') {
         
         showToast(`Your account has been locked due to ${MAX_ATTEMPTS} failed login attempts. Please try again after 24 hours or contact support.`, 'error');
         
-        // Pre-fill the username field
         usernameField.value = username;
         updateAccountWarning(username);
     } else {
         const attemptsLeft = MAX_ATTEMPTS - loginAttempts[username].count;
         showToast(`Invalid username or password. ${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before account lockout.`, 'warning');
-        
-        // Pre-fill the username field
+
         usernameField.value = username;
         updateAccountWarning(username);
     }
@@ -409,7 +389,7 @@ if (urlParams.get('error') === 'invalid') {
         updateAccountWarning(username);
     }
 } else if (urlParams.get('success') === 'login') {
-    // Reset login attempts for this user on successful login
+   
     const username = urlParams.get('username') || '';
     if (username && loginAttempts[username]) {
         loginAttempts[username].count = 0;
@@ -419,20 +399,20 @@ if (urlParams.get('error') === 'invalid') {
     }
 }
 
-// Check localStorage for locked accounts on page load
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Clean up old login attempts (older than 24 hours)
+    
     const now = Date.now();
     
     Object.keys(loginAttempts).forEach(username => {
         if (loginAttempts[username].timestamp && (now - loginAttempts[username].timestamp > LOCKOUT_DURATION)) {
-            // Reset if lockout period has passed
+           
             if (loginAttempts[username].locked) {
                 loginAttempts[username].locked = false;
                 loginAttempts[username].count = 0;
                 localStorage.removeItem(`locked_${username}`);
             } else if (loginAttempts[username].count > 0) {
-                // Reset attempt count if not locked and old
+               
                 delete loginAttempts[username];
             }
         }
@@ -440,7 +420,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
     
-    // Check if current username is locked
     const username = usernameField.value.trim();
     if (username) {
         updateAccountWarning(username);
@@ -453,8 +432,7 @@ usernameField.addEventListener('input', () => {
     if (username !== '') {
         usernameField.classList.remove('error-border');
     }
-    
-    // Update warning based on username
+
     updateAccountWarning(username);
 });
 
@@ -469,7 +447,7 @@ passwordField.addEventListener('input', () => {
     }
 });
 
-// Function to check remaining lockout time (for debugging)
+
 function checkLockoutTime(username) {
     if (!loginAttempts[username] || !loginAttempts[username].locked) {
         console.log(`User ${username} is not locked.`);

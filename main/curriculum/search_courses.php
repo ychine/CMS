@@ -17,7 +17,6 @@ if ($conn->connect_error) {
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $accountID = $_SESSION['AccountID'];
 
-// Get faculty ID from personnel table
 $facultyQuery = "SELECT FacultyID FROM personnel WHERE AccountID = ?";
 $facultyStmt = $conn->prepare($facultyQuery);
 $facultyStmt->bind_param("i", $accountID);
@@ -39,7 +38,6 @@ if (empty($search)) {
     exit();
 }
 
-// Search for courses within the faculty
 $sql = "SELECT DISTINCT c.CourseCode, c.Title 
         FROM courses c
         JOIN program_courses pc ON c.CourseCode = pc.CourseCode

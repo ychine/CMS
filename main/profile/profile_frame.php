@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
     exit();
@@ -35,7 +34,6 @@ if ($result && $result->num_rows > 0) {
     $email = $user['Email'];
     $role = $user['Role'];
 
-    // Map role codes to descriptive names
     $roleNames = [
         'DN' => 'Dean',
         'PH' => 'Program Head',
@@ -46,7 +44,7 @@ if ($result && $result->num_rows > 0) {
     
     $roleDisplay = isset($roleNames[$role]) ? $roleNames[$role] : $role;
 
-    // Fetch the list of members within the same faculty
+    
     if ($facultyID) {
         $memberQuery = "SELECT FirstName, LastName, Role 
                         FROM personnel 
@@ -64,7 +62,6 @@ if ($result && $result->num_rows > 0) {
         $memberStmt->close();
     }
 } else {
-    // Handle error - user not found
     $fullName = "User Not Found";
     $email = $username;
     $facultyName = "No Faculty Assigned";
@@ -72,14 +69,13 @@ if ($result && $result->num_rows > 0) {
     $members = [];
 }
 
-// Process password change if form submitted
+
 $passwordMessage = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['change_password'])) {
     $currentPassword = $_POST['current_password'];
     $newPassword = $_POST['new_password'];
     $confirmPassword = $_POST['confirm_password'];
-    
-    // Verify current password
+ 
     $checkPasswordQuery = "SELECT Password FROM accounts WHERE AccountID = ?";
     $checkStmt = $conn->prepare($checkPasswordQuery);
     $checkStmt->bind_param("i", $accountID);
@@ -89,10 +85,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['change_password'])) {
     
     if (password_verify($currentPassword, $userData['Password'])) {
         if ($newPassword === $confirmPassword) {
-            // Hash the new password
+       
             $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
             
-            // Update password
             $updateQuery = "UPDATE accounts SET Password = ? WHERE AccountID = ?";
             $updateStmt = $conn->prepare($updateQuery);
             $updateStmt->bind_param("si", $hashedPassword, $accountID);
@@ -120,7 +115,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['change_password'])) {
     $checkStmt->close();
 }
 
-// Process profile update
 $profileMessage = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_profile'])) {
     $firstName = $_POST['firstName'];
@@ -148,15 +142,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_profile'])) {
     $updateProfileStmt->close();
 }
 
-// Handle account deletion
+//account deletion
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_account'])) {
-    // Delete account (you might want to add a confirmation dialog in JS)
+ 
     $deleteQuery = "DELETE FROM accounts WHERE AccountID = ?";
     $deleteStmt = $conn->prepare($deleteQuery);
     $deleteStmt->bind_param("i", $accountID);
     
     if ($deleteStmt->execute()) {
-        // Logout and redirect
+       
         session_destroy();
         header("Location: ../index.php?msg=account_deleted");
         exit();
@@ -413,7 +407,7 @@ $conn->close();
     </div>
 
     <script>
-        // Toggle profile edit form
+     
         document.getElementById('toggleEditProfile').addEventListener('click', function() {
             document.getElementById('profileDisplay').classList.add('hidden');
             document.getElementById('profileForm').classList.remove('hidden');
@@ -429,7 +423,7 @@ $conn->close();
             
         });
         
-        // Confirm delete account
+       
         function confirmDelete() {
             return confirm("Are you sure you want to delete your account? This action cannot be undone.");
         }

@@ -1633,7 +1633,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
         <script>
 
-        if (localStorage.getItem('darkMode') === 'enabled') {
+            if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark');
             }
             
@@ -1657,7 +1657,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
             function openTaskModal() {
                 document.getElementById('taskModal').classList.remove('hidden');
-                // Reset filters when opening
+
                 document.getElementById('courseSearch').value = '';
                 document.getElementById('filterType').value = 'all';
                 filterCourses();
@@ -1668,7 +1668,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
             function closeTaskModal() {
                 document.getElementById('taskModal').classList.add('hidden');
-                // Reset filters when closing
+              
                 document.getElementById('courseSearch').value = '';
                 document.getElementById('filterType').value = 'all';
                 filterCourses();
@@ -1685,7 +1685,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 const courseItems = document.querySelectorAll('.course-item');
                 let visibleCount = 0;
                 
-                // Show/hide program titles based on if any courses in that program are visible
+               
                 const programSections = {};
                 
                 courseItems.forEach(item => {
@@ -1696,10 +1696,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     const programSection = item.closest('.program-section');
                     const programId = programSection ? programSection.dataset.program : null;
                     
-                    // Match search term
+                    
                     const matchesSearch = courseCode.includes(searchTerm) || courseTitle.includes(searchTerm);
                     
-                    // Match filter type
+                    
                     let matchesFilter = true;
                     if (filterType === 'assigned' && hasProfessor === 'no') {
                         matchesFilter = false;
@@ -1707,7 +1707,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         matchesFilter = false;
                     }
 
-                    // Match curriculum filter
+                   
                     let matchesCurriculum = true;
                     if (curriculumFilter !== 'all' && curriculumId !== curriculumFilter) {
                         matchesCurriculum = false;
@@ -1737,7 +1737,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     }
                 });
                 
-                // Update the counter
+               
                 const counterText = visibleCount === 1 
                     ? "Showing 1 course" 
                     : `Showing ${visibleCount} courses`;
@@ -1748,22 +1748,22 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 const btn = document.getElementById('selectAllBtn');
                 const checkboxes = document.querySelectorAll('.course-item:not([style*="display: none"]) .course-checkbox:not([disabled])');
                 
-                // Check if all visible checkboxes are checked
+                
                 const allChecked = Array.from(checkboxes).every(cb => cb.checked);
                 
-                // Toggle checkboxes
+            
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = !allChecked;
                 });
                 
-                // Update button text
+          
                 btn.textContent = allChecked ? 'Select All' : 'Deselect All';
             }
 
             function openPreviewModal(filePath, taskId) {
                 const modal = document.getElementById('previewModal');
                 const content = document.getElementById('previewContent');
-                // Determine file type
+               
                 const ext = filePath.split('.').pop().toLowerCase();
                 if (["pdf"].includes(ext)) {
                     content.innerHTML = `<embed src="${filePath}" type="application/pdf" style="width:100%;height:85vh;">`;
@@ -1793,7 +1793,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 modal.classList.add('hidden');
             }
 
-            // Close modals when clicking outside
+         
             window.onclick = function(event) {
                 const previewModal = document.getElementById('previewModal');
                 const revisionModal = document.getElementById('revisionModal');
@@ -1806,7 +1806,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 }
             }
 
-            // Close modals with Escape key
+           
             document.addEventListener('keydown', function(e) {
                 if (e.key === "Escape") {
                     closePreviewModal();
@@ -1814,7 +1814,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 }
             });
 
-            // Add view switching functionality
             document.querySelectorAll('input[name="taskView"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     const view = this.value;
@@ -1832,7 +1831,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 const term = document.querySelector('select[name="term"]').value;
                 const selectedCourses = document.querySelectorAll('input[name="assigned[]"]:checked');
 
-                // Validate required fields
+             
                 if (!title) {
                     alert('Please enter a task title');
                     return false;
@@ -1854,7 +1853,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     return false;
                 }
 
-                // Validate course selection
                 if (selectedCourses.length === 0) {
                     alert('Please select at least one course to assign the task to');
                     return false;
@@ -1863,18 +1861,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 return true;
             }
 
-            // Toggle the 3-dot menu
             function toggleTaskMenu(btn) {
-                // Close any other open menus
+                
                 document.querySelectorAll('.task-menu-dropdown').forEach(menu => {
                     if (menu !== btn.nextElementSibling) menu.classList.add('hidden');
                 });
-                // Toggle this menu
+            
                 const menu = btn.nextElementSibling;
                 menu.classList.toggle('hidden');
             }
 
-            // Close menu when clicking outside
+          
             window.addEventListener('click', function(event) {
                 document.querySelectorAll('.task-menu-dropdown').forEach(menu => {
                     if (!menu.contains(event.target) && !event.target.closest('button[onclick^="toggleTaskMenu"]')) {
@@ -1883,11 +1880,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 });
             });
 
-            // Generate report function
             function generateTaskReport(taskId) {
-                // Show the modal
+               
                 document.getElementById('reportModal').classList.remove('hidden');
-                // Set the iframe source
                 document.getElementById('reportFrame').src = 'generate_task_report.php?task_id=' + taskId;
             }
 
@@ -1896,7 +1891,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 document.getElementById('reportFrame').src = '';
             }
 
-            // Optional: Close modal when clicking outside the modal content
+            //closing modals
             window.addEventListener('click', function(event) {
                 const modal = document.getElementById('reportModal');
                 if (event.target === modal) {

@@ -579,7 +579,7 @@ $conn->close();
             
 
             <!-- Dynamic Content -->
-            <iframe id="contentIframe" src="audit_log_frame.php" class="w-full flex-1 fade-in" frameborder="0" style="z-index: 0;"></iframe>
+            <iframe id="contentIframe" src="audit_log_frame.php" class="w-full flex-1 fade-in" frameborder="0" style="z-index: 0    ;"></iframe>
 
         </div>
     </div>
