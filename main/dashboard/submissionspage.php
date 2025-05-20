@@ -36,11 +36,26 @@ if ($result && $result->num_rows > 0) {
 }
 $stmt->close();
 
+// Fetch all faculty members except the current user for co-author selection
+$coauthors = [];
+if ($facultyID) {
+    $coauthorQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ? AND PersonnelID != ? ORDER BY FirstName, LastName";
+    $coauthorStmt = $conn->prepare($coauthorQuery);
+    $coauthorStmt->bind_param("ii", $facultyID, $personnelID);
+    $coauthorStmt->execute();
+    $coauthorResult = $coauthorStmt->get_result();
+    while ($row = $coauthorResult->fetch_assoc()) {
+        $coauthors[] = $row;
+    }
+    $coauthorStmt->close();
+}
+
 // Handle file upload and submission
 if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['task_file'])) {
     $taskID = $_POST['task_id'];
     $courseCode = $_POST['course_code'];
     $programID = $_POST['program_id'];
+    $selectedCoauthors = isset($_POST['coauthors']) ? $_POST['coauthors'] : [];
     
     // Check if directory exists, if not create it
     $uploadDir = "../../uploads/tasks/{$taskID}/";
@@ -70,6 +85,16 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
         $insertStmt = $conn->prepare($insertSql);
         $insertStmt->bind_param("iisssiss", $facultyID, $taskID, $courseCode, $programID, $relativePath, $personnelID, $schoolYear, $term);
         if($insertStmt->execute()) {
+            $submissionID = $conn->insert_id;
+            // Save co-authors in teammembers table
+            if (!empty($selectedCoauthors)) {
+                $tmStmt = $conn->prepare("INSERT INTO teammembers (SubmissionID, MembersID) VALUES (?, ?)");
+                foreach ($selectedCoauthors as $coauthorID) {
+                    $tmStmt->bind_param("ii", $submissionID, $coauthorID);
+                    $tmStmt->execute();
+                }
+                $tmStmt->close();
+            }
             $message = "File uploaded successfully.";
         } else {
             $message = "Error inserting submission: " . $insertStmt->error;
@@ -253,6 +278,36 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
         $assignments[] = $assignmentRow;
     }
     $assignmentsStmt->close();
+    
+    // When displaying each assignment in the task view, fetch and display co-authors
+    foreach ($assignments as &$assignmentRow) {
+        // Find the submission for this assignment
+        if (!empty($assignmentRow['SubmissionPath'])) {
+            $submissionPath = $assignmentRow['SubmissionPath'];
+            // Get SubmissionID
+            $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
+            $subStmt->bind_param("s", $submissionPath);
+            $subStmt->execute();
+            $subRes = $subStmt->get_result();
+            if ($subRow = $subRes->fetch_assoc()) {
+                $submissionID = $subRow['SubmissionID'];
+                // Get co-authors
+                $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
+                $coStmt->bind_param("i", $submissionID);
+                $coStmt->execute();
+                $coRes = $coStmt->get_result();
+                $coauthorsList = [];
+                while ($coRow = $coRes->fetch_assoc()) {
+                    $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
+                }
+                $assignmentRow['CoAuthors'] = $coauthorsList;
+                $coStmt->close();
+            }
+            $subStmt->close();
+        } else {
+            $assignmentRow['CoAuthors'] = [];
+        }
+    }
     
     $taskRow['Assignments'] = $assignments;
     $tasks[] = $taskRow;
@@ -1040,6 +1095,9 @@ if (isset($_GET['from'])) {
                       </div>
                       <p class="text-xs text-gray-600 font-light"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
                       <p class="text-xs text-gray-600 font-light">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
+                      <?php if (!empty($assignment['CoAuthors'])): ?>
+                        <p class="text-xs text-gray-600 font-light">Co-Authors: <?php echo htmlspecialchars(implode(', ', $assignment['CoAuthors'])); ?></p>
+                      <?php endif; ?>
                       <?php if (!empty($assignment['RevisionReason'])): ?>
                         <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
                           <span class="font-medium text-yellow-800">Revision Requested:</span>
@@ -1124,6 +1182,32 @@ if (isset($_GET['from'])) {
               <input type="hidden" name="task_id" id="taskID">
               <input type="hidden" name="course_code" id="courseCode">
               <input type="hidden" name="program_id" id="programID">
+              <!-- Co-author checkboxes -->
+              <?php if (!empty($coauthors)): ?>
+              <div class="mb-6">
+                <label class="block mb-2 font-semibold text-gray-700">Select Co-Authors:</label>
+                <div class="rounded-2xl shadow-lg bg-white border border-gray-200 p-4" style="max-width: 350px;">
+                  <div class="sticky top-0 z-10 bg-white pb-2">
+                    <input type="text" id="coauthorSearch" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-base" placeholder="Search co-authors...">
+                  </div>
+                  <div class="mb-2 mt-2">
+                    <label class="flex items-center space-x-3 px-2 py-2 rounded-lg cursor-pointer transition bg-blue-50 hover:bg-blue-100 font-semibold">
+                      <input type="checkbox" id="coauthorNone" name="coauthors_none" value="none" class="form-checkbox h-5 w-5 text-blue-600 transition-all duration-150">
+                      <span class="text-blue-700">None</span>
+                    </label>
+                  </div>
+                  <div id="coauthorList" class="flex flex-col gap-y-1 overflow-y-auto pr-1" style="min-width: 200px; max-height: 220px;">
+                    <?php foreach ($coauthors as $coauthor): ?>
+                      <label class="flex items-center space-x-3 px-2 py-2 rounded-lg cursor-pointer transition hover:bg-blue-50 coauthor-item">
+                        <input type="checkbox" name="coauthors[]" value="<?php echo $coauthor['PersonnelID']; ?>" class="form-checkbox h-5 w-5 text-blue-600 coauthor-checkbox transition-all duration-150">
+                        <span class="text-gray-800 coauthor-name text-base font-medium"><?php echo htmlspecialchars($coauthor['FirstName'] . ' ' . $coauthor['LastName']); ?></span>
+                      </label>
+                    <?php endforeach; ?>
+                  </div>
+                </div>
+              </div>
+              <?php endif; ?>
+              <!-- End co-author checkboxes -->
               <div class="file-input-container mb-6">
                 <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
                   <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
@@ -1311,6 +1395,35 @@ if (isset($_GET['from'])) {
         notification.remove();
       }, 3000);
     }
+
+    // Co-author search filter
+    const coauthorSearch = document.getElementById('coauthorSearch');
+    const coauthorList = document.getElementById('coauthorList');
+    coauthorSearch.addEventListener('input', function() {
+      const term = this.value.toLowerCase();
+      coauthorList.querySelectorAll('.coauthor-item').forEach(function(label) {
+        const name = label.querySelector('.coauthor-name').textContent.toLowerCase();
+        label.style.display = name.includes(term) ? '' : 'none';
+      });
+    });
+    // None option logic
+    const noneBox = document.getElementById('coauthorNone');
+    const coauthorCheckboxes = coauthorList.querySelectorAll('.coauthor-checkbox');
+    noneBox.addEventListener('change', function() {
+      if (this.checked) {
+        coauthorCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+      } else {
+        coauthorCheckboxes.forEach(cb => { cb.disabled = false; });
+      }
+    });
+    coauthorCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        if (this.checked) {
+          noneBox.checked = false;
+          noneBox.dispatchEvent(new Event('change'));
+        }
+      });
+    });
   </script>
 </body>
 </html>

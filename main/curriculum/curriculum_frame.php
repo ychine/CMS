@@ -553,6 +553,27 @@ $conn->close();
                                 echo "<a href='$fileUrl' download class='text-green-600 hover:underline'>Download</a> ";
                                 echo "<span class='text-gray-700 ml-2'>($fileName)</span>";
                                 if ($submitter) echo "<span class='text-gray-500 ml-2'>by $submitter</span>";
+                                // Fetch and display co-authors
+                                $coauthorsList = [];
+                                $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
+                                $subStmt->bind_param("s", $filePath);
+                                $subStmt->execute();
+                                $subRes = $subStmt->get_result();
+                                if ($subRow = $subRes->fetch_assoc()) {
+                                    $submissionID = $subRow['SubmissionID'];
+                                    $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
+                                    $coStmt->bind_param("i", $submissionID);
+                                    $coStmt->execute();
+                                    $coRes = $coStmt->get_result();
+                                    while ($coRow = $coRes->fetch_assoc()) {
+                                        $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
+                                    }
+                                    $coStmt->close();
+                                }
+                                $subStmt->close();
+                                if (!empty($coauthorsList)) {
+                                    echo "<span class='text-gray-500 ml-2'>Co-Authors: " . htmlspecialchars(implode(', ', $coauthorsList)) . "</span>";
+                                }
                                 if ($date) echo "<span class='text-gray-400 ml-2'>$date</span>";
                                 echo "</li>";
                             }
