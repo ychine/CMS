@@ -602,10 +602,10 @@ $conn->close();
     <?php endif; ?>
 
     <div id="courseModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] border-2 border-gray-400 font-onest modal-animate">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-[600px] max-h-[90vh] border-2 border-gray-400 font-onest modal-animate overflow-hidden flex flex-col">
             <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">Add New Course</h2>
             <hr class="border-gray-400 mb-6">
-            <form id="addCourseForm" method="POST" action="../curriculum/add_course.php" class="space-y-4">
+            <form id="addCourseForm" method="POST" action="../curriculum/add_course.php" class="space-y-4 overflow-y-auto flex-1">
                 
                 <div class="space-y-2">
                     <label class="block text-lg font-semibold text-gray-700">Select Program:</label>
@@ -626,19 +626,39 @@ $conn->close();
                     </select>
                 </div>
 
+                <!-- New Course Selection Section -->
                 <div class="space-y-2">
-                    <label class="block text-lg font-semibold text-gray-700">Course Code:</label>
-                    <input type="text" id="course_code" name="course_code" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required placeholder="e.g., COMP101" />
+                    <label class="block text-lg font-semibold text-gray-700">Select Existing Courses or Create New:</label>
+                    <div class="relative">
+                        <input type="text" id="courseSearch" placeholder="Search existing courses..." 
+                            class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500">
+                        <div id="existingCoursesList" class="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
+                            <!-- Courses will be populated here -->
+                        </div>
+                    </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="block text-lg font-semibold text-gray-700">Course Title:</label>
-                    <input type="text" id="course_title" name="course_title" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required placeholder="e.g., Introduction to Programming" />
+                <!-- Selected Courses List -->
+                <div id="selectedCoursesList" class="space-y-2 max-h-40 overflow-y-auto border-2 border-gray-200 rounded-lg p-2">
+                    <!-- Selected courses will be shown here -->
                 </div>
 
-                <div class="flex justify-end gap-4 pt-4">
+                <!-- New Course Creation Fields -->
+                <div id="newCourseFields" class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-gray-700">Course Code:</label>
+                        <input type="text" id="course_code" name="course_code" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="e.g., COMP101" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-lg font-semibold text-gray-700">Course Title:</label>
+                        <input type="text" id="course_title" name="course_title" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" placeholder="e.g., Introduction to Programming" />
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4 pt-4 sticky bottom-0 bg-white">
                     <button type="button" onclick="closeCourseModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">Cancel</button>
-                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">Add Course</button>
+                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">Add Courses</button>
                 </div>
             </form>
         </div>
@@ -959,7 +979,12 @@ $conn->close();
     document.getElementById('course_curriculum').innerHTML = '<option value="">-- Select Program First --</option>';
     document.getElementById('course_code').value = '';
     document.getElementById('course_title').value = '';
-    }
+    document.getElementById('courseSearch').value = '';
+    document.getElementById('existingCoursesList').classList.add('hidden');
+    
+    // Load existing courses
+    loadExistingCourses();
+}
 
     window.addEventListener('keydown', function (e) {
         if (e.key === "Escape") {
@@ -1288,6 +1313,163 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Add these new functions for course search functionality
+    function loadExistingCourses() {
+        const searchInput = document.getElementById('courseSearch');
+        const coursesList = document.getElementById('existingCoursesList');
+        const selectedCoursesList = document.getElementById('selectedCoursesList');
+        let selectedCourses = new Set();
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            if (searchTerm.length < 2) {
+                coursesList.classList.add('hidden');
+                return;
+            }
+            
+            // Fetch courses from the server
+            fetch(`../curriculum/search_courses.php?search=${encodeURIComponent(searchTerm)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.courses.length > 0) {
+                        coursesList.innerHTML = '';
+                        data.courses.forEach(course => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-200 last:border-b-0';
+                            div.innerHTML = `
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="course_${course.CourseCode}" 
+                                        class="course-checkbox mr-2" 
+                                        data-code="${course.CourseCode}"
+                                        data-title="${course.Title}">
+                                    <label for="course_${course.CourseCode}" class="flex-1">
+                                        <div class="font-semibold">${course.CourseCode}</div>
+                                        <div class="text-sm text-gray-600">${course.Title}</div>
+                                    </label>
+                                </div>
+                            `;
+                            coursesList.appendChild(div);
+                        });
+                        coursesList.classList.remove('hidden');
+                    } else {
+                        coursesList.innerHTML = '<div class="p-3 text-gray-500">No courses found</div>';
+                        coursesList.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    coursesList.innerHTML = '<div class="p-3 text-red-500">Error loading courses</div>';
+                    coursesList.classList.remove('hidden');
+                });
+        });
+        
+        // Handle course selection
+        coursesList.addEventListener('change', function(e) {
+            if (e.target.classList.contains('course-checkbox')) {
+                const courseCode = e.target.dataset.code;
+                const courseTitle = e.target.dataset.title;
+                
+                if (e.target.checked) {
+                    selectedCourses.add(JSON.stringify({ code: courseCode, title: courseTitle }));
+                } else {
+                    selectedCourses.delete(JSON.stringify({ code: courseCode, title: courseTitle }));
+                }
+                
+                updateSelectedCoursesList();
+            }
+        });
+        
+        function updateSelectedCoursesList() {
+            selectedCoursesList.innerHTML = '';
+            selectedCourses.forEach(courseStr => {
+                const course = JSON.parse(courseStr);
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-2 bg-gray-50 rounded mb-2';
+                div.innerHTML = `
+                    <div>
+                        <div class="font-semibold">${course.code}</div>
+                        <div class="text-sm text-gray-600">${course.title}</div>
+                    </div>
+                    <button type="button" onclick="removeSelectedCourse('${course.code}')" 
+                        class="text-red-500 hover:text-red-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                `;
+                selectedCoursesList.appendChild(div);
+            });
+        }
+        
+        // Close the dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !coursesList.contains(e.target)) {
+                coursesList.classList.add('hidden');
+            }
+        });
+    }
+
+    // Add function to remove selected course
+    function removeSelectedCourse(courseCode) {
+        const checkbox = document.querySelector(`input[data-code="${courseCode}"]`);
+        if (checkbox) {
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('change'));
+        }
+    }
+
+    // Modify the form submission
+    document.getElementById('addCourseForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const selectedCourses = Array.from(document.querySelectorAll('#selectedCoursesList > div')).map(div => ({
+            code: div.querySelector('.font-semibold').textContent,
+            title: div.querySelector('.text-sm').textContent
+        }));
+        
+        formData.append('selected_courses', JSON.stringify(selectedCourses));
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    closeCourseModal();
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message,
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred while adding the courses',
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+        });
+    });
 </script>
 
 <?php if (isset($_SESSION['success'])): ?>

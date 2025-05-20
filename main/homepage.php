@@ -382,14 +382,14 @@ $conn->close();
                         </button> 
                         <!-- Notification Dropdown -->
                         <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                            <div class="p-4 bg-white rounded-t-lg relative" style="z-index: 2;">
+                            <div class="p-4 shadow-md">
                                 <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
                             </div>
-                            <div id="notificationList" class="max-h-96 overflow-y-auto bg-white relative" style="z-index: 1;">
+                            <div id="notificationList" class="max-h-96 z-2 overflow-y-auto">
                                 <!-- Notifications will be loaded here -->
                             </div>
                             <div class="p-4 border-t border-gray-200 text-center">
-                                <a href="task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
+                                <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
                             </div>
                         </div>
                     </div>
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const notificationElement = document.createElement('div');
                     notificationElement.className = `p-4 border-b hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
                     notificationElement.innerHTML = `
-                        <div class="flex items-start">
+                        <div class="flex items-start z-0">
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-gray-900">${notification.title}</p>
                                 <p class="text-sm text-gray-500">${notification.message}</p>

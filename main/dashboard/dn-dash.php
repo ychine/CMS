@@ -265,7 +265,7 @@ $conn->close();
                                         <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #f59e0b;">
                                             <div class="flex items-center w-full">
                                                 <div class="text-2xl font-bold mr-2 font-onest"><?php echo $pendingCount; ?></div>
-                                                <div class="text-xs whitespace-nowrap">Pending Review</div>
+                                                <div class="text-xs font-onest whitespace-nowrap">Pending Review</div>
                                                 <div class="ml-auto">
                                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -279,7 +279,7 @@ $conn->close();
                                         <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #ef4444;">
                                             <div class="flex items-center w-full">
                                                 <div class="text-2xl font-bold mr-2 font-onest"><?php echo $unaccomplishedCount; ?></div>
-                                                <div class="text-xs whitespace-nowrap">Unaccomplished</div>
+                                                <div class="text-xs font-onest whitespace-nowrap">Unaccomplished</div>
                                                 <div class="ml-auto">
                                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -293,7 +293,7 @@ $conn->close();
                                         <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #10b981;">
                                             <div class="flex items-center w-full">
                                                 <div class="text-2xl font-bold mr-2 font-onest"><?php echo $completeCount; ?></div>
-                                                <div class="text-xs whitespace-nowrap">Complete</div>
+                                                <div class="text-xs font-onest whitespace-nowrap">Complete</div>
                                                 <div class="ml-auto">
                                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

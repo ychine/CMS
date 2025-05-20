@@ -1,6 +1,5 @@
 <?php
 
-// Ensure $userData is always defined and safe to use
 if (!isset($userData) || !is_array($userData)) {
     $userData = [];
 }
@@ -22,14 +21,14 @@ if (isset($_POST['post_announcement']) && in_array($role, ['DN', 'PH', 'COR'])) 
     $stmt->bind_param("ssii", $title, $message, $createdBy, $facultyId);
     
     if ($stmt->execute()) {
-        // Get all personnel in the faculty
+      
         $personnelQuery = "SELECT AccountID FROM personnel WHERE FacultyID = ?";
         $personnelStmt = $conn->prepare($personnelQuery);
         $personnelStmt->bind_param("i", $facultyId);
         $personnelStmt->execute();
         $personnelResult = $personnelStmt->get_result();
         
-        // Create notification for each personnel
+     
         while ($row = $personnelResult->fetch_assoc()) {
             $accountID = $row['AccountID'];
             $notifTitle = "New Announcement: " . $title;
@@ -50,7 +49,7 @@ if (isset($_POST['post_announcement']) && in_array($role, ['DN', 'PH', 'COR'])) 
     $stmt->close();
 }
 
-// Handle announcement deletion
+
 if (isset($_POST['delete_announcement']) && in_array($role, ['DN', 'PH', 'COR'])) {
     $pinId = $_POST['pin_id'];
     $deleteSql = "DELETE FROM pinboard WHERE PinID = ? AND FacultyID = ?";
@@ -65,7 +64,7 @@ if (isset($_POST['delete_announcement']) && in_array($role, ['DN', 'PH', 'COR'])
     $deleteStmt->close();
 }
 
-// Handle syllabus format upload
+
 if (isset($_POST['upload_syllabus']) && in_array($role, ['DN', 'PH', 'COR'])) {
     $target_dir = "uploads/syllabus_formats/";
     if (!file_exists($target_dir)) {
@@ -77,7 +76,7 @@ if (isset($_POST['upload_syllabus']) && in_array($role, ['DN', 'PH', 'COR'])) {
     $target_file = $target_dir . $file_name;
     $file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
     
-    // Check if file is a PDF or DOC/DOCX
+
     if ($file_type == "pdf" || $file_type == "doc" || $file_type == "docx") {
         // First, delete any existing syllabus format
         $deleteSql = "DELETE FROM syllabus_formats WHERE FacultyID = ?";
@@ -171,7 +170,7 @@ $conn->close();
             <button onclick="openPinboardModal()" class="text-xs text-blue-600 hover:underline">Post Announcement</button>
             <?php endif; ?>
         </div>
-        <div class="space-y-4 overflow-y-auto max-h-[calc(100vh-400px)] pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
+        <div class="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
             <?php if (empty($pinboardPosts)): ?>
                 <div class="text-sm text-gray-600 text-center py-4">
                     No announcements yet.
@@ -192,7 +191,7 @@ $conn->close();
                         <div class="flex flex-row items-start">
                             <div class="w-1.5 h-full bg-green-400 rounded-full mr-4"></div>
                             <div class="flex-1 flex flex-col">
-                                <h3 class="font-bold italic text-lg tracking-tight mb-1 break-words" style="color: #0D5191;"><?php echo htmlspecialchars($post['Title']); ?></h3>
+                                <h3 class="font-bold text-lg tracking-tight mb-1 break-words" style="color: #0D5191;"><?php echo htmlspecialchars($post['Title']); ?></h3>
                                 <div class="flex items-center gap-1 mb-3">
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     <span class="text-xs text-gray-400 font-medium"><?php echo date('M j, Y', strtotime($post['CreatedAt'])); ?></span>
@@ -210,11 +209,11 @@ $conn->close();
             <?php endif; ?>
 
             <!-- Syllabus Formats Section -->
-            <div class="mt-6 pt-6 border-t border-gray-200">
+            <div class="mt-6 pt-[20px] border-t border-gray-200">
                 <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg pt-6 font-bold">Syllabus Format</h2>
+                    <h2 class="text-lg pt-4 font-bold">Syllabus Format</h2>
                     <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
-                    <button onclick="openSyllabusModal()" class="text-xs text-blue-600 hover:underline"><?php echo empty($syllabusFormats) ? 'Upload Format' : 'Update Format'; ?></button>
+                    <button onclick="openSyllabusModal()" class="text-xs text-blue-600 pt-3 hover:underline"><?php echo empty($syllabusFormats) ? 'Upload Format' : 'Update Format'; ?></button>
                     <?php endif; ?>
                 </div>
                 <div class="space-y-4">
@@ -317,6 +316,9 @@ $conn->close();
         </form>
     </div>
 </div>
+
+<!-- Notification Dropdown -->
+<div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[9999] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
 
 <script>
 function openPinboardModal() {
