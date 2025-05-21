@@ -42,65 +42,119 @@ if (!$facultyID) {
 }
 
 $programs = [];
+$curriculaMap = [];
 
-$sql = "
-    SELECT 
-        p.ProgramID, p.ProgramCode,
-        c.id AS CurriculumID, c.name AS CurriculumName,
-        co.CourseCode, co.Title,
-        pc.PersonnelID,
-        per.FirstName, per.LastName
+$sqlCurricula = "
+    SELECT p.ProgramID, p.ProgramCode, c.id AS CurriculumID, c.name AS CurriculumName
     FROM programs p
     LEFT JOIN curricula c ON p.ProgramID = c.ProgramID
-    LEFT JOIN program_courses pc ON c.id = pc.CurriculumID
-    LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
-    LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
     WHERE c.FacultyID = ?
-    ORDER BY p.ProgramCode, c.name, co.CourseCode, co.Title
+    ORDER BY p.ProgramCode, c.name
 ";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $facultyID); 
+$stmt = $conn->prepare($sqlCurricula);
+$stmt->bind_param('i', $facultyID);
 $stmt->execute();
 $res = $stmt->get_result();
-
 while ($row = $res->fetch_assoc()) {
     $programId = $row['ProgramID'];
     $program = $row['ProgramCode'];
     $curriculum = $row['CurriculumName'];
-    $courseTitle = $row['Title'];
-
-    $assignedPersonnel = ($row['FirstName'] && $row['LastName']) 
-        ? $row['FirstName'] . ' ' . $row['LastName'] 
-        : null;
-
+    $curriculumId = $row['CurriculumID'];
     if (!isset($programs[$programId])) {
         $programs[$programId] = [
             'code' => $program,
             'curricula' => []
         ];
     }
-
     if ($curriculum && !isset($programs[$programId]['curricula'][$curriculum])) {
         $programs[$programId]['curricula'][$curriculum] = [];
-    }
-
-    if ($courseTitle) {
-        $programs[$programId]['curricula'][$curriculum][] = [
-            'title' => $courseTitle,
-            'code' => $row['CourseCode'],
-            'assigned_to' => $assignedPersonnel
+        $curriculaMap[$curriculumId] = [
+            'programId' => $programId,
+            'curriculum' => $curriculum
         ];
     }
 }
+$stmt->close();
 
-foreach ($programs as $programId => $programData) {
-    foreach ($programData['curricula'] as $curriculum => $courses) {
-        usort($programs[$programId]['curricula'][$curriculum], function($a, $b) {
-            return strcmp($a['code'], $b['code']);
-        });
+// 2. Fetch all courses for those curricula and nest them
+if (!empty($curriculaMap)) {
+    $curriculumIds = implode(',', array_map('intval', array_keys($curriculaMap)));
+    $sqlCourses = "
+        SELECT 
+            c.id AS CurriculumID,
+            co.CourseCode, co.Title,
+            pc.YearID, pc.SemesterID,
+            ay.YearName, ay.YearOrder,
+            s.SemesterName, s.SemesterOrder,
+            pc.PersonnelID, per.FirstName, per.LastName
+        FROM program_courses pc
+        LEFT JOIN curricula c ON pc.CurriculumID = c.id
+        LEFT JOIN courses co ON pc.CourseCode = co.CourseCode
+        LEFT JOIN academic_years ay ON pc.YearID = ay.YearID
+        LEFT JOIN semesters s ON pc.SemesterID = s.SemesterID
+        LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+        WHERE pc.CurriculumID IN ($curriculumIds)
+        ORDER BY c.id, ay.YearOrder, s.SemesterOrder, co.CourseCode
+    ";
+    $res = $conn->query($sqlCourses);
+    while ($row = $res->fetch_assoc()) {
+        $curriculumId = $row['CurriculumID'];
+        $programId = $curriculaMap[$curriculumId]['programId'];
+        $curriculum = $curriculaMap[$curriculumId]['curriculum'];
+        $courseTitle = $row['Title'];
+        $courseCode = $row['CourseCode'];
+        $yearName = $row['YearName'];
+        $semesterName = $row['SemesterName'];
+        $assignedPersonnel = ($row['FirstName'] && $row['LastName']) 
+            ? $row['FirstName'] . ' ' . $row['LastName'] 
+            : null;
+        if ($courseTitle && $yearName) {
+            if (!isset($programs[$programId]['curricula'][$curriculum][$yearName])) {
+                $programs[$programId]['curricula'][$curriculum][$yearName] = [];
+            }
+            if (!isset($programs[$programId]['curricula'][$curriculum][$yearName][$semesterName])) {
+                $programs[$programId]['curricula'][$curriculum][$yearName][$semesterName] = [];
+            }
+            $programs[$programId]['curricula'][$curriculum][$yearName][$semesterName][] = [
+                'title' => $courseTitle,
+                'code' => $courseCode,
+                'assigned_to' => $assignedPersonnel
+            ];
+        }
     }
 }
+
+// Helper arrays for year/semester names (for sorting)
+$yearNames = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+$semesterNames = ['1st Semester', '2nd Semester', 'Summer'];
+
+// Sort courses inside each semester
+foreach ($programs as $programId => &$programData) {
+    foreach ($programData['curricula'] as $curriculum => &$years) {
+        // Sort years by their order
+        uksort($years, function($a, $b) use ($yearNames) {
+            $yearOrderA = array_search($a, $yearNames) !== false ? array_search($a, $yearNames) : PHP_INT_MAX;
+            $yearOrderB = array_search($b, $yearNames) !== false ? array_search($b, $yearNames) : PHP_INT_MAX;
+            return $yearOrderA - $yearOrderB;
+        });
+        
+        foreach ($years as $yearName => &$semesters) {
+            // Sort semesters by their order
+            uksort($semesters, function($a, $b) use ($semesterNames) {
+                $semOrderA = array_search($a, $semesterNames) !== false ? array_search($a, $semesterNames) : PHP_INT_MAX;
+                $semOrderB = array_search($b, $semesterNames) !== false ? array_search($b, $semesterNames) : PHP_INT_MAX;
+                return $semOrderA - $semOrderB;
+            });
+            
+            foreach ($semesters as $semesterName => &$courses) {
+                usort($courses, function($a, $b) {
+                    return strcmp($a['code'], $b['code']);
+                });
+            }
+        }
+    }
+}
+unset($programData, $years, $semesters, $courses);
 
 $personnelList = [];
 $personnelQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ?";
@@ -429,162 +483,103 @@ $conn->close();
                 $programName = $programData['code'];
                 $curricula = $programData['curricula'];
                 $progId = 'prog_' . md5($programName);
+                
+                // Program level - visible by default
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
-                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\"><span class='collapse-arrow'>▶</span> $programName</button>";
-                
-                
+                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">
+                        <span class='collapse-arrow'>▶</span> $programName
+                      </button>";
                 if ($userRole === 'DN') {
                     echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
                 }
-                
                 echo "</div>";
                 
+                // Curricula level - hidden by default
                 echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
-                
-                foreach ($curricula as $year => $courses) {
-                    $yearId = 'year_' . md5($programName . $year);
+                foreach ($curricula as $curriculum => $years) {
+                    // Always render the curriculum, even if $years is empty
+                    $currId = 'curr_' . md5($programName . $curriculum);
                     echo "<div class='mt-2'>";
                     echo "<div class='flex items-center justify-between'>";
-                    echo "<button onclick=\"toggleCollapse('$yearId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\"><span class='collapse-arrow'>▶</span> $year</button>";
+                    echo "<button onclick=\"toggleCollapse('$currId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">\n        <span class='collapse-arrow'>▶</span> $curriculum\n      </button>";
                     if ($userRole === 'DN') {
-                        echo "<button onclick=\"confirmDeleteCurriculum('$programId', '$year')\" class=\"x-delete-btn x-delete-btn-sm\" title=\"Delete curriculum\">×</button>";
+                        echo "<button onclick=\"confirmDeleteCurriculum('$programId', '$curriculum')\" class=\"x-delete-btn x-delete-btn-sm\" title=\"Delete curriculum\">×</button>";
                     }
                     echo "</div>";
-                    echo "<div id=\"$yearId\" class='ml-4 mt-1 hidden'>";
-                    
-                    echo "<div class='overflow-x-auto'>";
-                    echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
-                    echo "<thead class='bg-gray-100 text-gray-900'>";
-                    echo "<tr>";
-                    echo "<th class='text-right px-4 py-2 border-b w-[5%]'> Code</th>";
-                    echo "<th class='px-4 py-2 border-b w-[60%]'>";
-                    echo "<div class='flex items-center justify-between'>";
-                    echo "<span>📚 Course</span>";
-                    echo "<input type='text' 
-                        class='w-48 p-2 min-h-[32px] text-sm border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all duration-200 text-gray-500 search-course-input' 
-                        placeholder='Search courses...' 
-                        data-curriculum-id='$yearId'>";
-                    echo "</div>";
-                    echo "</th>";
-                    echo "<th class='px-4 py-2 border-b text-left w-[35%]'>Assigned Prof.</th>";
-                    echo "</tr>";
-                    echo "</thead><tbody>";
-        
-                    foreach ($courses as $idx => $courseData) {
-                        $courseTitle = $courseData['title'];
-                        $assignedTo = $courseData['assigned_to'] ?? '';
-                        $courseCode = $courseData['code'] ?? $courseTitle;
-                        $rowId = 'files_' . md5($programName . $year . $courseTitle . $idx);
-                        echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
-                        echo "<td class='text-right px-4 py-2 border-b w-[15%]'>" . htmlspecialchars($courseCode) . "</td>";
-                        echo "<td class='px-4 py-2 border-b w-[55%]'>" . htmlspecialchars($courseTitle) . "</td>";
-                    
-                        echo "<td class='px-4 py-2 border-b w-[30%]'>";
-                        echo "<div class='flex items-center justify-between'>";
-                        echo "<div class='flex-1'>";
-                        if ($userRole === 'DN') {
-                            echo "<select class='w-full assign-personnel-dropdown' 
-                                data-course-code='" . htmlspecialchars($courseTitle) . "' 
-                                data-curriculum='" . htmlspecialchars($year) . "' 
-                                data-program='" . htmlspecialchars($programId) . "'>";
-                            echo "<option value=''>-- Assign Personnel --</option>";
-                        
-                            usort($GLOBALS['personnelList'], function($a, $b) {
-                                return strcasecmp($a['name'], $b['name']);
-                            });
-                            
-                            foreach ($GLOBALS['personnelList'] as $person) {
-                                $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
-                                echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
-                            }
-                        
-                            echo "</select>";
-                        } else {
-                            echo htmlspecialchars($assignedTo ?: 'Not assigned');
-                        }
-                        echo "</div>";
-                        
-                        if ($userRole === 'DN') {
-                            echo "<button onclick=\"confirmDeleteCourse('$programId', '$year', '$courseCode', '$courseTitle')\" 
-                                class='ml-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors duration-200' 
-                                title='Remove course from curriculum'>
-                                <svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                                    <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
-                                </svg>
-                            </button>";
-                        }
-                        echo "</div>";
-                        echo "</td>";
-                        // Collapsible row for approved files
-                        echo "<tr id='$rowId' class='hidden'>";
-                        echo "<td colspan='3' class='bg-gray-50 px-6 py-3 border-b'>";
-                        // Fetch all submissions for this course, current year/term
-                        $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
-                                    FROM submissions s
-                                    LEFT JOIN personnel per ON s.SubmittedBy = per.PersonnelID
-                                    JOIN task_assignments ta ON s.TaskID = ta.TaskID AND s.CourseCode = ta.CourseCode AND s.ProgramID = ta.ProgramID
-                                    WHERE s.FacultyID = ?
-                                    AND s.SubmissionPath IS NOT NULL
-                                    AND s.SubmissionPath != ''
-                                    AND s.CourseCode = ?
-                                    AND ta.ReviewStatus = 'Approved'
-                                    ORDER BY s.SubmissionDate DESC";
-                        $fileStmt = $conn->prepare($fileSql);
-                        $fileStmt->bind_param("is", $facultyID, $courseCode);
-                        $fileStmt->execute();
-                        $fileResult = $fileStmt->get_result();
-                        if ($fileResult->num_rows > 0) {
-                            echo "<ul class='list-disc pl-4'>";
-                            while ($fileRow = $fileResult->fetch_assoc()) {
-                                $filePath = $fileRow['SubmissionPath'];
-                                $submitter = trim($fileRow['FirstName'] . ' ' . $fileRow['LastName']);
-                                $date = $fileRow['SubmissionDate'] ? date('M j, Y g:i A', strtotime($fileRow['SubmissionDate'])) : '';
-                                $fileName = basename($filePath);
-                                $fileUrl = '../../' . htmlspecialchars($filePath);
-                                echo "<li class='mb-1'>";
-                                echo "<a href='javascript:void(0);' onclick=\"openFilePreviewModal('$fileUrl')\" class='text-blue-600 hover:underline'>Preview</a> | ";
-                                echo "<a href='$fileUrl' download class='text-green-600 hover:underline'>Download</a> ";
-                                echo "<span class='text-gray-700 ml-2'>($fileName)</span>";
-                                if ($submitter) echo "<span class='text-gray-500 ml-2'>by $submitter</span>";
-                                // Fetch and display co-authors
-                                $coauthorsList = [];
-                                $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
-                                $subStmt->bind_param("s", $filePath);
-                                $subStmt->execute();
-                                $subRes = $subStmt->get_result();
-                                if ($subRow = $subRes->fetch_assoc()) {
-                                    $submissionID = $subRow['SubmissionID'];
-                                    $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
-                                    $coStmt->bind_param("i", $submissionID);
-                                    $coStmt->execute();
-                                    $coRes = $coStmt->get_result();
-                                    while ($coRow = $coRes->fetch_assoc()) {
-                                        $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
+                    echo "<div id=\"$currId\" class='ml-4 mt-1 hidden'>";
+                    if (empty($years)) {
+                        echo "<div class='text-gray-400 italic px-4 py-2'>No courses yet.</div>";
+                    } else {
+                        foreach ($years as $yearName => $semesters) {
+                            if (empty($semesters)) continue;
+                            $yearNodeId = 'year_' . md5($programName . $curriculum . $yearName);
+                            echo "<div class='mt-2'>";
+                            echo "<button onclick=\"toggleCollapse('$yearNodeId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">\n                    <span class='collapse-arrow'>▶</span> $yearName\n                  </button>";
+                            echo "<div id=\"$yearNodeId\" class='ml-4 mt-1 hidden'>";
+                            foreach ($semesters as $semesterName => $courses) {
+                                if (empty($courses)) continue;
+                                $semNodeId = 'sem_' . md5($programName . $curriculum . $yearName . $semesterName);
+                                echo "<div class='mt-2'>";
+                                echo "<button onclick=\"toggleCollapse('$semNodeId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">\n                                    <span class='collapse-arrow'>▶</span> $semesterName\n                                  </button>";
+                                echo "<div id=\"$semNodeId\" class='ml-4 mt-1 hidden'>";
+                                echo "<div class='overflow-x-auto'>";
+                                echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
+                                echo "<thead class='bg-gray-100 text-gray-900'>";
+                                echo "<tr>";
+                                echo "<th class='text-right px-4 py-2 border-b w-[5%]'>Code</th>";
+                                echo "<th class='px-4 py-2 border-b w-[60%]'>Course</th>";
+                                echo "<th class='px-4 py-2 border-b text-left w-[35%]'>Assigned Prof.</th>";
+                                echo "</tr>";
+                                echo "</thead><tbody>";
+                                foreach ($courses as $idx => $courseData) {
+                                    $courseTitle = $courseData['title'];
+                                    $assignedTo = $courseData['assigned_to'] ?? '';
+                                    $courseCode = $courseData['code'] ?? $courseTitle;
+                                    echo "<tr class='hover:bg-gray-50'>";
+                                    echo "<td class='text-right px-4 py-2 border-b w-[15%]'>" . htmlspecialchars($courseCode) . "</td>";
+                                    echo "<td class='px-4 py-2 border-b w-[55%]'>" . htmlspecialchars($courseTitle) . "</td>";
+                                    echo "<td class='px-4 py-2 border-b w-[30%]'>";
+                                    echo "<div class='flex items-center justify-between'>";
+                                    echo "<div class='flex-1'>";
+                                    if ($userRole === 'DN') {
+                                        echo "<select class='w-full assign-personnel-dropdown' 
+                                            data-course-code='" . htmlspecialchars($courseTitle) . "' 
+                                            data-curriculum='" . htmlspecialchars($curriculum) . "' 
+                                            data-program='" . htmlspecialchars($programId) . "'>";
+                                        echo "<option value=''>-- Assign Personnel --</option>";
+                                        foreach ($GLOBALS['personnelList'] as $person) {
+                                            $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
+                                            echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
+                                        }
+                                        echo "</select>";
+                                    } else {
+                                        echo htmlspecialchars($assignedTo ?: 'Not assigned');
                                     }
-                                    $coStmt->close();
+                                    echo "</div>";
+                                    if ($userRole === 'DN') {
+                                        echo "<button onclick=\"confirmDeleteCourse('$programId', '$curriculum', '$courseCode', '$courseTitle')\" 
+                                            class='ml-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors duration-200' 
+                                            title='Remove course from curriculum'>
+                                            <svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                                                <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                                            </svg>
+                                        </button>";
+                                    }
+                                    echo "</div>";
+                                    echo "</td>";
+                                    echo "</tr>";
                                 }
-                                $subStmt->close();
-                                if (!empty($coauthorsList)) {
-                                    echo "<span class='text-gray-500 ml-2'>Co-Authors: " . htmlspecialchars(implode(', ', $coauthorsList)) . "</span>";
-                                }
-                                if ($date) echo "<span class='text-gray-400 ml-2'>$date</span>";
-                                echo "</li>";
+                                echo "</tbody></table>";
+                                echo "</div></div>";
+                                echo "</div>";
                             }
-                            echo "</ul>";
-                        } else {
-                            echo "<div class=' text-gray-400 italic'>No approved files</div>";
+                            echo "</div></div>";
                         }
-                        $fileStmt->close();
-                        echo "</td></tr>";
                     }
-                    
-        
-                    echo "</tbody></table></div>"; 
-                    echo "</div></div>"; 
+                    echo "</div></div>";
                 }
-        
-                echo "</div></div>"; 
+                echo "</div></div>";
             }
             $conn->close();
         }
