@@ -827,12 +827,12 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <?php if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR'): ?>
                         <!-- All Tasks for DN, PH, and COR -->
                         <?php if (!isset($_GET['view']) || $_GET['view'] === 'all' || $_GET['view'] === 'created'): ?>
-                        <div class="mb-8">
+                        <div class="mb-6">
                             <h2 class="text-2xl font-bold text-gray-800 mb-2 font-overpass">
                                 <?php echo (isset($_GET['view']) && $_GET['view'] === 'created') ? 'Tasks Created by You' : 'All Tasks'; ?>
                             </h2>
                             <?php foreach ($tasks as $task): ?>
-                                <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-20 relative cursor-pointer"
+                                <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-12 relative cursor-pointer"
                                      onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
                                         <!-- 3-dot menu trigger -->
@@ -1018,7 +1018,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         
                         $assignedTasks = [];
                         while ($taskRow = $assignedTasksResult->fetch_assoc()) {
-                            // Fetch the courses and assigned professors for each task
+                            
                             $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                                         p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
                                         ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, pc.PersonnelID as PersonnelID
