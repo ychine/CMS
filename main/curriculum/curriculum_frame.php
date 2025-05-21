@@ -209,6 +209,20 @@ if ($row = $taskResult->fetch_assoc()) {
 }
 $taskStmt->close();
 
+// Fetch academic years
+$yearOptions = [];
+$yearQuery = $conn->query("SELECT YearID, YearName FROM academic_years ORDER BY YearOrder");
+while ($row = $yearQuery->fetch_assoc()) {
+    $yearOptions[] = $row;
+}
+
+// Fetch semesters
+$semesterOptions = [];
+$semesterQuery = $conn->query("SELECT SemesterID, SemesterName FROM semesters ORDER BY SemesterOrder");
+while ($row = $semesterQuery->fetch_assoc()) {
+    $semesterOptions[] = $row;
+}
+
 $conn->close();
 ?>
 
@@ -467,6 +481,7 @@ $conn->close();
 </head>
 <body>
 
+
 <div class="flex-1 flex flex-col px-[50px] pt-[15px] pb-[50px] overflow-y-auto">
     <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1>
     <hr class="border-gray-400">
@@ -637,6 +652,27 @@ $conn->close();
                 </div>
 
                 <!-- New Course Selection Section -->
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Year:</label>
+                    <select id="course_year" name="year_id" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required>
+                        <option value="">-- Select Year --</option>
+                        <?php
+                        foreach ($yearOptions as $year): ?>
+                            <option value="<?= $year['YearID'] ?>"><?= htmlspecialchars($year['YearName']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-lg font-semibold text-gray-700">Select Semester:</label>
+                    <select id="course_semester" name="semester_id" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" required>
+                        <option value="">-- Select Semester --</option>
+                        <?php
+                        foreach ($semesterOptions as $sem): ?>
+                            <option value="<?= $sem['SemesterID'] ?>"><?= htmlspecialchars($sem['SemesterName']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
                 <div class="space-y-2">
                     <label class="block text-lg font-semibold text-gray-700">Select Existing Courses or Create New:</label>
                     <div class="relative">
@@ -1039,59 +1075,6 @@ $conn->close();
             });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const addCourseForm = document.getElementById('addCourseForm');
-        if (addCourseForm) {
-            addCourseForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                
-                // Submit form via AJAX
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        Swal.fire({
-                            title: 'Success!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonColor: '#3085d6',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            // Close modal and reload page
-                            closeCourseModal();
-                            location.reload();
-                        });
-                    } else {
-                        // Show error message
-                        Swal.fire({
-                            title: 'Error!',
-                            text: data.message,
-                            icon: 'error',
-                            confirmButtonColor: '#3085d6',
-                            confirmButtonText: 'OK'
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'An error occurred while adding the course',
-                        icon: 'error',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'OK'
-                    });
-                });
-            });
-        }
-    });
-
     function closeTaskModal() {
        
     }
@@ -1422,15 +1405,22 @@ $conn->close();
 
     document.getElementById('addCourseForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const formData = new FormData(this);
+        // Collect selected courses from the UI
         const selectedCourses = Array.from(document.querySelectorAll('#selectedCoursesList > div')).map(div => ({
             code: div.querySelector('.font-semibold').textContent,
             title: div.querySelector('.text-sm').textContent
         }));
-        
+        // Check if new course fields are filled
+        const newCourseCode = document.getElementById('course_code').value.trim();
+        const newCourseTitle = document.getElementById('course_title').value.trim();
+        if (newCourseCode && newCourseTitle) {
+            // Only add if not already in selectedCourses
+            if (!selectedCourses.some(c => c.code === newCourseCode)) {
+                selectedCourses.push({ code: newCourseCode, title: newCourseTitle });
+            }
+        }
         formData.append('selected_courses', JSON.stringify(selectedCourses));
-        
         fetch(this.action, {
             method: 'POST',
             body: formData

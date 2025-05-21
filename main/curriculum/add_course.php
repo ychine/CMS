@@ -35,10 +35,12 @@ $facultyStmt->close();
 $programID = $_POST['program_id'];
 $curriculumID = $_POST['curriculum_id'];
 $selectedCourses = json_decode($_POST['selected_courses'], true);
+$yearID = isset($_POST['year_id']) ? $_POST['year_id'] : null;
+$semesterID = isset($_POST['semester_id']) ? $_POST['semester_id'] : null;
 
-if (empty($programID) || empty($curriculumID)) {
+if (empty($programID) || empty($curriculumID) || empty($yearID) || empty($semesterID)) {
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Program and curriculum are required']);
+    echo json_encode(['success' => false, 'message' => 'Program, curriculum, year, and semester are required']);
     exit();
 }
 
@@ -83,9 +85,9 @@ try {
 
         if ($result->num_rows === 0) {
           
-            $insertProgramCourse = "INSERT INTO program_courses (ProgramID, CurriculumID, CourseCode, FacultyID) VALUES (?, ?, ?, ?)";  
+            $insertProgramCourse = "INSERT INTO program_courses (ProgramID, CurriculumID, CourseCode, FacultyID, YearID, SemesterID) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($insertProgramCourse);
-            $stmt->bind_param("iisi", $programID, $curriculumID, $courseCode, $facultyID);        //adding course into program course with progid
+            $stmt->bind_param("iisiii", $programID, $curriculumID, $courseCode, $facultyID, $yearID, $semesterID);
             $stmt->execute();
             $addedCourses[] = $courseCode;
         } else {
