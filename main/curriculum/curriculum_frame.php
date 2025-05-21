@@ -549,7 +549,8 @@ $conn->close();
                                     $courseTitle = $courseData['title'];
                                     $assignedTo = $courseData['assigned_to'] ?? '';
                                     $courseCode = $courseData['code'] ?? $courseTitle;
-                                    echo "<tr class='hover:bg-gray-50'>";
+                                    $rowId = 'files_' . md5($programName . $curriculum . $yearName . $semesterName . $courseTitle . $idx);
+                                    echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
                                     echo "<td class='text-right px-4 py-2 border-b w-[15%]'>" . htmlspecialchars($courseCode) . "</td>";
                                     echo "<td class='px-4 py-2 border-b w-[55%]'>" . htmlspecialchars($courseTitle) . "</td>";
                                     echo "<td class='px-4 py-2 border-b w-[30%]'>";
@@ -561,6 +562,9 @@ $conn->close();
                                             data-curriculum='" . htmlspecialchars($curriculum) . "' 
                                             data-program='" . htmlspecialchars($programId) . "'>";
                                         echo "<option value=''>-- Assign Personnel --</option>";
+                                        usort($GLOBALS['personnelList'], function($a, $b) {
+                                            return strcasecmp($a['name'], $b['name']);
+                                        });
                                         foreach ($GLOBALS['personnelList'] as $person) {
                                             $selected = ($person['name'] === $assignedTo) ? 'selected' : '';
                                             echo "<option value='" . $person['id'] . "' $selected>" . htmlspecialchars($person['name']) . "</option>";
@@ -571,7 +575,7 @@ $conn->close();
                                     }
                                     echo "</div>";
                                     if ($userRole === 'DN') {
-                                        echo "<button onclick=\"confirmDeleteCourse('$programId', '$curriculum', '$courseCode', '$courseTitle')\" 
+                                        echo "<button onclick=\"event.stopPropagation();confirmDeleteCourse('$programId', '$curriculum', '$courseCode', '$courseTitle')\" 
                                             class='ml-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors duration-200' 
                                             title='Remove course from curriculum'>
                                             <svg xmlns='http://www.w3.org/2000/svg' class='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
@@ -582,6 +586,67 @@ $conn->close();
                                     echo "</div>";
                                     echo "</td>";
                                     echo "</tr>";
+                                    // Collapsible row for approved files
+                                    echo "<tr id='$rowId' class='hidden'>";
+                                    echo "<td colspan='3' class='bg-gray-50 px-6 py-3 border-b'>";
+                                    // Fetch all submissions for this course, current year/term
+                                    $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
+                                                FROM submissions s
+                                                LEFT JOIN personnel per ON s.SubmittedBy = per.PersonnelID
+                                                JOIN task_assignments ta ON s.TaskID = ta.TaskID AND s.CourseCode = ta.CourseCode AND s.ProgramID = ta.ProgramID
+                                                WHERE s.FacultyID = ?
+                                                AND s.SubmissionPath IS NOT NULL
+                                                AND s.SubmissionPath != ''
+                                                AND s.CourseCode = ?
+                                                AND ta.ReviewStatus = 'Approved'
+                                                ORDER BY s.SubmissionDate DESC";
+                                    $fileStmt = $conn->prepare($fileSql);
+                                    $fileStmt->bind_param("is", $facultyID, $courseCode);
+                                    $fileStmt->execute();
+                                    $fileResult = $fileStmt->get_result();
+                                    if ($fileResult->num_rows > 0) {
+                                        echo "<ul class='list-disc pl-4'>";
+                                        while ($fileRow = $fileResult->fetch_assoc()) {
+                                            $filePath = $fileRow['SubmissionPath'];
+                                            $submitter = trim($fileRow['FirstName'] . ' ' . $fileRow['LastName']);
+                                            $date = $fileRow['SubmissionDate'] ? date('M j, Y g:i A', strtotime($fileRow['SubmissionDate'])) : '';
+                                            $fileName = basename($filePath);
+                                            $fileUrl = '../../' . htmlspecialchars($filePath);
+                                            echo "<li class='mb-1'>";
+                                            echo "<a href='javascript:void(0);' onclick=\"openFilePreviewModal('$fileUrl')\" class='text-blue-600 hover:underline'>Preview</a> | ";
+                                            echo "<a href='$fileUrl' download class='text-green-600 hover:underline'>Download</a> ";
+                                            echo "<span class='text-gray-700 ml-2'>($fileName)</span>";
+                                            if ($submitter) echo "<span class='text-gray-500 ml-2'>by $submitter</span>";
+                                            // Fetch and display co-authors
+                                            $coauthorsList = [];
+                                            $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
+                                            $subStmt->bind_param("s", $filePath);
+                                            $subStmt->execute();
+                                            $subRes = $subStmt->get_result();
+                                            if ($subRow = $subRes->fetch_assoc()) {
+                                                $submissionID = $subRow['SubmissionID'];
+                                                $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
+                                                $coStmt->bind_param("i", $submissionID);
+                                                $coStmt->execute();
+                                                $coRes = $coStmt->get_result();
+                                                while ($coRow = $coRes->fetch_assoc()) {
+                                                    $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
+                                                }
+                                                $coStmt->close();
+                                            }
+                                            $subStmt->close();
+                                            if (!empty($coauthorsList)) {
+                                                echo "<span class='text-gray-500 ml-2'>Co-Authors: " . htmlspecialchars(implode(', ', $coauthorsList)) . "</span>";
+                                            }
+                                            if ($date) echo "<span class='text-gray-400 ml-2'>$date</span>";
+                                            echo "</li>";
+                                        }
+                                        echo "</ul>";
+                                    } else {
+                                        echo "<div class=' text-gray-400 italic'>No approved files</div>";
+                                    }
+                                    $fileStmt->close();
+                                    echo "</td></tr>";
                                 }
                                 echo "</tbody></table>";
                                 echo "</div></div>";
@@ -799,6 +864,14 @@ $conn->close();
       <h2 class="text-2xl font-bold w-full text-center font-overpass">File Preview</h2>
     </div>
     <div class="flex-1 overflow-hidden" id="filePreviewContent"></div>
+  </div>
+</div>
+
+<div id="approvedFilesModal" class="hidden fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-[90vw] max-w-[500px] max-h-[90vh] flex flex-col relative">
+    <button onclick="closeApprovedFilesModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-3xl font-bold z-50" title="Close">&times;</button>
+    <h2 class="text-xl font-bold mb-4 text-blue-800">Approved Files</h2>
+    <div id="approvedFilesContent" class="flex-1 overflow-y-auto"></div>
   </div>
 </div>
 
@@ -1457,6 +1530,8 @@ $conn->close();
             });
         });
     });
+
+    
 </script>
 
 <?php if (isset($_SESSION['success'])): ?>
