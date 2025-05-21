@@ -502,9 +502,7 @@ $conn->close();
                 // Program level - visible by default
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
-                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">
-                        <span class='collapse-arrow'>▶</span> $programName
-                      </button>";
+                echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">\n        <span class='collapse-arrow'>▶</span> $programName\n      </button>";
                 if ($userRole === 'DN') {
                     echo "<button onclick=\"confirmDelete('$programId', '$programName')\" class=\"x-delete-btn\" title=\"Delete program\">×</button>";
                 }
@@ -517,7 +515,7 @@ $conn->close();
                     $currId = 'curr_' . md5($programName . $curriculum);
                     echo "<div class='mt-2'>";
                     echo "<div class='flex items-center justify-between'>";
-                    echo "<button onclick=\"toggleCollapse('$currId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">\n        <span class='collapse-arrow'>▶</span> $curriculum\n      </button>";
+                    echo "<button onclick=\"toggleCollapse('$currId')\" class=\"w-full text-left px-4 py-1 bg-green-100 text-green-900 rounded font-semibold shadow-sm hover:bg-green-200 transition-all duration-200\">\n        <span class='collapse-arrow'>▶</span> $curriculum\n      </button>";
                     if ($userRole === 'DN') {
                         echo "<button onclick=\"confirmDeleteCurriculum('$programId', '$curriculum')\" class=\"x-delete-btn x-delete-btn-sm\" title=\"Delete curriculum\">×</button>";
                     }
@@ -530,13 +528,13 @@ $conn->close();
                             if (empty($semesters)) continue;
                             $yearNodeId = 'year_' . md5($programName . $curriculum . $yearName);
                             echo "<div class='mt-2'>";
-                            echo "<button onclick=\"toggleCollapse('$yearNodeId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">\n                    <span class='collapse-arrow'>▶</span> $yearName\n                  </button>";
+                            echo "<button onclick=\"toggleCollapse('$yearNodeId')\" style=\"background:#ffe4b5;color:#7c4700;\" class=\"w-full text-left px-4 py-1 rounded font-semibold shadow-sm transition-all duration-200\">\n        <span class='collapse-arrow'>▶</span> $yearName\n      </button>";
                             echo "<div id=\"$yearNodeId\" class='ml-4 mt-1 hidden'>";
                             foreach ($semesters as $semesterName => $courses) {
                                 if (empty($courses)) continue;
                                 $semNodeId = 'sem_' . md5($programName . $curriculum . $yearName . $semesterName);
                                 echo "<div class='mt-2'>";
-                                echo "<button onclick=\"toggleCollapse('$semNodeId')\" class=\"w-full text-left px-4 py-1 bg-blue-50 text-blue-700 rounded font-semibold shadow-sm hover:bg-blue-100 transition-all duration-200\">\n                                    <span class='collapse-arrow'>▶</span> $semesterName\n                                  </button>";
+                                echo "<button onclick=\"toggleCollapse('$semNodeId')\" style=\"background:#e6e6fa;color:#4b3869;\" class=\"w-full text-left px-4 py-1 rounded font-semibold shadow-sm transition-all duration-200\">\n        <span class='collapse-arrow'>▶</span> $semesterName\n      </button>";
                                 echo "<div id=\"$semNodeId\" class='ml-4 mt-1 hidden'>";
                                 echo "<div class='overflow-x-auto'>";
                                 echo "<table class='min-w-full text-sm text-left text-gray-700 border border-gray-300'>";
