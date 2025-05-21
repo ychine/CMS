@@ -92,7 +92,7 @@ CREATE TABLE `auditlog` (
   KEY `PersonnelID` (`PersonnelID`),
   CONSTRAINT `fk_auditlog_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE SET NULL,
   CONSTRAINT `fk_auditlog_personnel` FOREIGN KEY (`PersonnelID`) REFERENCES `personnel` (`PersonnelID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,7 +101,7 @@ CREATE TABLE `auditlog` (
 
 LOCK TABLES `auditlog` WRITE;
 /*!40000 ALTER TABLE `auditlog` DISABLE KEYS */;
-INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32'),(13,2,12,'RIEGIE TAN','Assigned new role \'PH\' to REBECCA FAJARDO','2025-05-08 02:56:03'),(14,2,2,'ED RIAN','Joined the faculty','2025-05-08 03:03:36'),(15,2,12,'RIEGIE TAN','Removed ED RIAN from faculty','2025-05-08 03:12:45'),(16,2,12,'RIEGIE TAN','Assigned new role \'PH\' to NOREEN PEREZ','2025-05-09 19:12:28'),(17,2,12,'RIEGIE TAN','Created new task: 2022 SYLLABUS SUBMISSION','2025-05-17 03:23:23'),(18,2,12,'RIEGIE TAN','Created new task: 2024-2025 COURSEWARE SUBMISSION','2025-05-19 02:30:52');
+INSERT INTO `auditlog` VALUES (4,2,10,'MILAN FRANCO SANTOS','Joined the faculty','2025-05-02 19:50:18'),(5,2,12,'REDGIE TAN','Assigned new role \'COR\' to MILAN FRANCO SANTOS','2025-05-02 23:56:23'),(6,2,12,'REDGIE TAN','Assigned new role \'FM\' to MILAN FRANCO SANTOS','2025-05-02 23:56:43'),(7,2,12,'REDGIE TAN','Removed MILAN FRANCO SANTOS from faculty','2025-05-02 23:56:48'),(8,2,12,'REDGIE TAN','Transferred deanship to JAYSON DALUYON','2025-05-03 15:26:03'),(9,2,14,'JAYSON DALUYON','Transferred deanship to REDGIE TAN','2025-05-03 15:26:37'),(10,2,12,'REDGIE TAN','Assigned new role \'COR\' to CATHERINE SORBITO','2025-05-03 17:42:57'),(11,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Rebecca  Fajardo','2025-05-07 20:50:22'),(12,2,12,'RIEGIE TAN','Assigned new role \'PH\' to Noreen Perez','2025-05-07 20:50:32'),(13,2,12,'RIEGIE TAN','Assigned new role \'PH\' to REBECCA FAJARDO','2025-05-08 02:56:03'),(14,2,2,'ED RIAN','Joined the faculty','2025-05-08 03:03:36'),(15,2,12,'RIEGIE TAN','Removed ED RIAN from faculty','2025-05-08 03:12:45'),(16,2,12,'RIEGIE TAN','Assigned new role \'PH\' to NOREEN PEREZ','2025-05-09 19:12:28'),(17,2,12,'RIEGIE TAN','Created new task: 2022 SYLLABUS SUBMISSION','2025-05-17 03:23:23'),(18,2,12,'RIEGIE TAN','Created new task: 2024-2025 COURSEWARE SUBMISSION','2025-05-19 02:30:52'),(19,2,12,'RIEGIE TAN','Deleted curriculum: BSIT Curriculum 2023','2025-05-22 00:42:19'),(20,2,12,'RIEGIE TAN','Deleted curriculum: BSIT Curriculum 2024','2025-05-22 00:42:29'),(21,2,12,'RIEGIE TAN','Deleted curriculum: BSIT Curriculum 2025','2025-05-22 00:42:39'),(22,2,12,'RIEGIE TAN','Deleted course: CS 116 from curriculum BSIT Curriculum 2020','2025-05-22 02:26:35'),(23,2,12,'RIEGIE TAN','Deleted course: ATH 1103 from curriculum BSIT Curriculum 2020','2025-05-22 02:34:14'),(24,2,12,'RIEGIE TAN','Deleted course: ATH 1103 from curriculum BSIT Curriculum 2020','2025-05-22 02:35:54'),(25,2,12,'RIEGIE TAN','Deleted course: CS 102 from curriculum BSIT Curriculum 2020','2025-05-22 02:37:16'),(26,2,12,'RIEGIE TAN','Deleted course: ATH 1103 from curriculum BSIT Curriculum 2020','2025-05-22 02:37:33'),(27,2,12,'RIEGIE TAN','Deleted course: ATH 1103 from curriculum BSIT Curriculum 2023','2025-05-22 02:40:34');
 /*!40000 ALTER TABLE `auditlog` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -125,7 +125,7 @@ CREATE TABLE `courses` (
 
 LOCK TABLES `courses` WRITE;
 /*!40000 ALTER TABLE `courses` DISABLE KEYS */;
-INSERT INTO `courses` VALUES ('COMP 101','Introduction to Computing'),('COMP 102','Fundamentals of Programming (C++)'),('COMP 103','Intermediate Programming (Java)'),('COMP 104','Data Structures and Algorithms'),('COMP 105','Information Management'),('COMP 106','Applications Development and Emerging Technologies'),('CS 101','Discrete Structures I'),('CS 102','Discrete Structures II'),('CS 103','Object-Oriented Programming (VB.Net with Database)'),('CS 104','Algorithms and Complexity'),('CS 105','Software Engineering 1'),('CS 106','Automata Theory and Formal Languages'),('CS 107','Architecture and Organization'),('CS 108','Information Assurance and Security'),('CS 109','Software Engineering II'),('CS 110','Operating Systems'),('CS 111','Programming Languages'),('CS 112','Social Issues and Professional Practice'),('CS 113','On-the-Job Training Program (162 hours)'),('CS 114','Human Computer Interaction'),('CS 115','CS Thesis 1'),('CS 116','Networks and Communications'),('CS 117','CS Thesis 2'),('CS 201','CS Elective: Intelligent Systems'),('CS 202','CS Elective: Parallel and Distributed Programming'),('CS 203','CS Elective: Graphics and Visual Computing'),('CS 301','Math Elective: Linear Algebra'),('CS 401','Digital Design'),('CS 402','Web Programming Development'),('CS 403','Open Source Programming with Database'),('CS 404','Multimedia Systems'),('CS 405','Open Source Programming with Framework'),('CS 406','Robotics'),('IT 101','Discrete Mathematics'),('IT 102','Quantitative Methods'),('IT 103','Advanced Database Systems'),('IT 104','Integrative Programming and Technologies I'),('IT 105','Networking I'),('IT 106','Systems Integration and Architecture 1'),('IT 107','Networking II'),('IT 108','Information Assurance and Security I'),('IT 109','Introduction to Human Computer Interaction'),('IT 110','Social and Professional Issues'),('IT 111','IT Capstone Project I'),('IT 112','Information Assurance and Security II'),('IT 113','System Administration and Maintenance'),('IT 114','IT Capstone Project II'),('IT 115','On-the-Job Training'),('IT 201','IT Elective: Platform Technologies'),('IT 202','IT Elective: Object-Oriented Programming (VB.Net)'),('IT 203','IT Elective: Integrative Programming and Technologies II'),('IT 204','IT Elective: Systems Integration and Architecture II'),('IT 301','Web Programming'),('IT 302','Software Engineering'),('IT 303','Technopreneurship'),('IT 304','IT Professional Ethics'),('IT 305','Web Development'),('IT 306','Multimedia and Technologies'),('IT103','Advanced Database Systems');
+INSERT INTO `courses` VALUES ('ATH 1103','Macro Perspective of Tourism and Hospitality'),('COMP 101','Introduction to Computing'),('COMP 102','Fundamentals of Programming (C++)'),('COMP 103','Intermediate Programming (Java)'),('COMP 104','Data Structures and Algorithms'),('COMP 105','Information Management'),('COMP 106','Applications Development and Emerging Technologies'),('CS 101','Discrete Structures I'),('CS 102','Discrete Structures II'),('CS 103','Object-Oriented Programming (VB.Net with Database)'),('CS 104','Algorithms and Complexity'),('CS 105','Software Engineering 1'),('CS 106','Automata Theory and Formal Languages'),('CS 107','Architecture and Organization'),('CS 108','Information Assurance and Security'),('CS 109','Software Engineering II'),('CS 110','Operating Systems'),('CS 111','Programming Languages'),('CS 112','Social Issues and Professional Practice'),('CS 113','On-the-Job Training Program (162 hours)'),('CS 114','Human Computer Interaction'),('CS 115','CS Thesis 1'),('CS 116','Networks and Communications'),('CS 117','CS Thesis 2'),('CS 201','CS Elective: Intelligent Systems'),('CS 202','CS Elective: Parallel and Distributed Programming'),('CS 203','CS Elective: Graphics and Visual Computing'),('CS 301','Math Elective: Linear Algebra'),('CS 401','Digital Design'),('CS 402','Web Programming Development'),('CS 403','Open Source Programming with Database'),('CS 404','Multimedia Systems'),('CS 405','Open Source Programming with Framework'),('CS 406','Robotics'),('IT 101','Discrete Mathematics'),('IT 102','Quantitative Methods'),('IT 103','Advanced Database Systems'),('IT 104','Integrative Programming and Technologies I'),('IT 105','Networking I'),('IT 106','Systems Integration and Architecture 1'),('IT 107','Networking II'),('IT 108','Information Assurance and Security I'),('IT 109','Introduction to Human Computer Interaction'),('IT 110','Social and Professional Issues'),('IT 111','IT Capstone Project I'),('IT 112','Information Assurance and Security II'),('IT 113','System Administration and Maintenance'),('IT 114','IT Capstone Project II'),('IT 115','On-the-Job Training'),('IT 201','IT Elective: Platform Technologies'),('IT 202','IT Elective: Object-Oriented Programming (VB.Net)'),('IT 203','IT Elective: Integrative Programming and Technologies II'),('IT 204','IT Elective: Systems Integration and Architecture II'),('IT 301','Web Programming'),('IT 302','Software Engineering'),('IT 303','Technopreneurship'),('IT 304','IT Professional Ethics'),('IT 305','Web Development'),('IT 306','Multimedia and Technologies'),('IT103','Advanced Database Systems');
 /*!40000 ALTER TABLE `courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -147,7 +147,7 @@ CREATE TABLE `curricula` (
   KEY `fk_curricula_program` (`ProgramID`),
   CONSTRAINT `fk_curricula_faculty` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`) ON DELETE CASCADE,
   CONSTRAINT `fk_curricula_program` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -156,7 +156,7 @@ CREATE TABLE `curricula` (
 
 LOCK TABLES `curricula` WRITE;
 /*!40000 ALTER TABLE `curricula` DISABLE KEYS */;
-INSERT INTO `curricula` VALUES (1,'BSIT Curriculum 2022','2025-05-01 13:03:51',2,1),(2,'BSIT Curriculum 2020','2025-05-02 16:15:04',2,1),(3,'BSCS Curriculum 2020','2025-05-02 16:15:04',2,2),(6,'BSA Curriculum 2025','2025-05-04 17:53:51',3,12);
+INSERT INTO `curricula` VALUES (1,'BSIT Curriculum 2022','2025-05-01 13:03:51',2,1),(2,'BSIT Curriculum 2020','2025-05-02 16:15:04',2,1),(3,'BSCS Curriculum 2020','2025-05-02 16:15:04',2,2),(6,'BSA Curriculum 2025','2025-05-04 17:53:51',3,12),(11,'BSIT Curriculum 2023','2025-05-21 18:39:02',2,1);
 /*!40000 ALTER TABLE `curricula` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -215,7 +215,7 @@ CREATE TABLE `notifications` (
 
 LOCK TABLES `notifications` WRITE;
 /*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
-INSERT INTO `notifications` VALUES (1,26,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for CS 116',0,'2025-05-18 18:30:52',10),(2,34,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for CS 405',0,'2025-05-18 18:30:52',10),(3,26,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for IT 105',0,'2025-05-18 18:30:52',10),(4,24,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for IT 108',0,'2025-05-18 18:30:52',10),(5,27,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for IT 109',0,'2025-05-18 18:30:52',10);
+INSERT INTO `notifications` VALUES (1,26,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for CS 116',0,'2025-05-18 18:30:52',10),(2,34,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for CS 405',1,'2025-05-18 18:30:52',10),(3,26,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for IT 105',0,'2025-05-18 18:30:52',10),(4,24,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for IT 108',1,'2025-05-18 18:30:52',10),(5,27,'New Task Assigned','You have been assigned a new task: 2024-2025 COURSEWARE SUBMISSION for IT 109',0,'2025-05-18 18:30:52',10);
 /*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -314,7 +314,7 @@ CREATE TABLE `program_courses` (
   CONSTRAINT `fk_program_courses_year` FOREIGN KEY (`YearID`) REFERENCES `academic_years` (`YearID`),
   CONSTRAINT `program_courses_ibfk_1` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE CASCADE,
   CONSTRAINT `program_courses_ibfk_2` FOREIGN KEY (`CourseCode`) REFERENCES `courses` (`CourseCode`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=172 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -323,7 +323,7 @@ CREATE TABLE `program_courses` (
 
 LOCK TABLES `program_courses` WRITE;
 /*!40000 ALTER TABLE `program_courses` DISABLE KEYS */;
-INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL,1,NULL),(2,1,'COMP 102',2,2,12,NULL,NULL),(3,1,'COMP 103',2,2,NULL,NULL,NULL),(4,1,'COMP 104',2,2,17,NULL,NULL),(5,1,'COMP 105',2,2,NULL,NULL,NULL),(6,1,'COMP 106',2,2,22,NULL,NULL),(7,1,'IT 101',2,2,17,NULL,NULL),(8,1,'IT 102',2,2,NULL,NULL,NULL),(9,1,'IT 103',2,2,18,NULL,NULL),(10,1,'IT 104',2,2,14,NULL,NULL),(11,1,'IT 105',2,2,26,NULL,NULL),(12,1,'IT 106',2,2,NULL,NULL,NULL),(13,1,'IT 107',2,2,NULL,NULL,NULL),(14,1,'IT 108',2,2,24,NULL,NULL),(15,1,'IT 109',2,2,27,NULL,NULL),(16,1,'IT 110',2,2,NULL,NULL,NULL),(17,1,'IT 111',2,2,NULL,NULL,NULL),(18,1,'IT 112',2,2,NULL,NULL,NULL),(19,1,'IT 113',2,2,NULL,NULL,NULL),(20,1,'IT 114',2,2,NULL,NULL,NULL),(21,1,'IT 115',2,2,NULL,NULL,NULL),(22,1,'IT 201',2,2,NULL,NULL,NULL),(23,1,'IT 202',2,2,NULL,NULL,NULL),(24,1,'IT 203',2,2,NULL,NULL,NULL),(25,1,'IT 204',2,2,NULL,NULL,NULL),(26,1,'IT 301',2,2,NULL,NULL,NULL),(27,1,'IT 302',2,2,NULL,NULL,NULL),(28,1,'IT 303',2,2,NULL,NULL,NULL),(29,1,'IT 304',2,2,NULL,NULL,NULL),(30,1,'IT 305',2,2,NULL,NULL,NULL),(31,1,'IT 306',2,2,NULL,NULL,NULL),(32,2,'COMP 101',3,2,NULL,NULL,NULL),(33,2,'COMP 102',3,2,NULL,NULL,NULL),(34,2,'COMP 103',3,2,NULL,NULL,NULL),(35,2,'COMP 104',3,2,NULL,NULL,NULL),(36,2,'COMP 105',3,2,NULL,NULL,NULL),(37,2,'CS 101',3,2,NULL,NULL,NULL),(38,2,'CS 102',3,2,NULL,NULL,NULL),(39,2,'CS 103',3,2,NULL,NULL,NULL),(40,2,'CS 104',3,2,NULL,NULL,NULL),(41,2,'CS 105',3,2,NULL,NULL,NULL),(42,2,'CS 106',3,2,NULL,NULL,NULL),(43,2,'CS 107',3,2,NULL,NULL,NULL),(44,2,'CS 108',3,2,NULL,NULL,NULL),(45,2,'CS 109',3,2,NULL,NULL,NULL),(46,2,'CS 110',3,2,NULL,NULL,NULL),(47,2,'CS 111',3,2,NULL,NULL,NULL),(48,2,'CS 112',3,2,NULL,NULL,NULL),(49,2,'CS 113',3,2,NULL,NULL,NULL),(50,2,'CS 114',3,2,NULL,NULL,NULL),(51,2,'CS 115',3,2,NULL,NULL,NULL),(52,2,'CS 116',3,2,26,NULL,NULL),(53,2,'CS 117',3,2,NULL,NULL,NULL),(54,2,'CS 201',3,2,NULL,NULL,NULL),(55,2,'CS 202',3,2,NULL,NULL,NULL),(56,2,'CS 203',3,2,NULL,NULL,NULL),(57,2,'CS 301',3,2,NULL,NULL,NULL),(58,2,'CS 401',3,2,NULL,NULL,NULL),(59,2,'CS 402',3,2,NULL,NULL,NULL),(60,2,'CS 403',3,2,NULL,NULL,NULL),(61,2,'CS 404',3,2,NULL,NULL,NULL),(62,2,'CS 405',3,2,34,NULL,NULL),(63,2,'CS 406',3,2,NULL,NULL,NULL),(165,1,'COMP 101',1,2,NULL,NULL,NULL);
+INSERT INTO `program_courses` VALUES (1,1,'COMP 101',2,2,NULL,1,1),(2,1,'COMP 102',2,2,12,1,1),(3,1,'COMP 103',2,2,NULL,1,2),(4,1,'COMP 104',2,2,17,2,1),(5,1,'COMP 105',2,2,NULL,2,1),(6,1,'COMP 106',2,2,22,2,2),(7,1,'IT 101',2,2,17,1,2),(8,1,'IT 102',2,2,NULL,2,1),(9,1,'IT 103',2,2,18,2,2),(10,1,'IT 104',2,2,14,2,2),(11,1,'IT 105',2,2,26,2,2),(12,1,'IT 106',2,2,NULL,3,1),(13,1,'IT 107',2,2,NULL,3,1),(14,1,'IT 108',2,2,24,3,2),(15,1,'IT 109',2,2,27,3,2),(16,1,'IT 110',2,2,NULL,3,2),(17,1,'IT 111',2,2,NULL,3,3),(18,1,'IT 112',2,2,NULL,3,3),(19,1,'IT 113',2,2,NULL,4,1),(20,1,'IT 114',2,2,NULL,4,1),(21,1,'IT 115',2,2,NULL,4,2),(22,1,'IT 201',2,2,NULL,2,1),(23,1,'IT 202',2,2,NULL,2,1),(24,1,'IT 203',2,2,NULL,3,2),(25,1,'IT 204',2,2,NULL,4,1),(26,1,'IT 301',2,2,NULL,2,2),(27,1,'IT 302',2,2,NULL,3,1),(28,1,'IT 303',2,2,NULL,3,1),(29,1,'IT 304',2,2,NULL,3,1),(30,1,'IT 305',2,2,NULL,3,1),(31,1,'IT 306',2,2,NULL,3,2),(32,2,'COMP 101',3,2,NULL,1,1),(33,2,'COMP 102',3,2,NULL,1,1),(34,2,'COMP 103',3,2,NULL,1,2),(35,2,'COMP 104',3,2,NULL,2,1),(36,2,'COMP 105',3,2,NULL,2,1),(37,2,'CS 101',3,2,NULL,1,2),(38,2,'CS 102',3,2,NULL,2,1),(39,2,'CS 103',3,2,NULL,2,1),(40,2,'CS 104',3,2,NULL,2,2),(41,2,'CS 105',3,2,NULL,2,2),(42,2,'CS 106',3,2,NULL,3,1),(43,2,'CS 107',3,2,NULL,3,1),(44,2,'CS 108',3,2,NULL,3,1),(45,2,'CS 109',3,2,NULL,3,1),(46,2,'CS 110',3,2,NULL,3,2),(47,2,'CS 111',3,2,NULL,3,2),(48,2,'CS 112',3,2,NULL,3,2),(49,2,'CS 113',3,2,NULL,3,3),(50,2,'CS 114',3,2,NULL,4,1),(51,2,'CS 115',3,2,NULL,4,1),(52,2,'CS 116',3,2,26,4,2),(53,2,'CS 117',3,2,NULL,4,2),(54,2,'CS 201',3,2,NULL,3,1),(55,2,'CS 202',3,2,NULL,3,2),(56,2,'CS 203',3,2,NULL,4,1),(57,2,'CS 301',3,2,NULL,2,2),(58,2,'CS 401',3,2,NULL,2,2),(59,2,'CS 402',3,2,NULL,2,2),(60,2,'CS 403',3,2,NULL,3,1),(61,2,'CS 404',3,2,NULL,3,2),(62,2,'CS 405',3,2,34,3,2),(63,2,'CS 406',3,2,NULL,4,1),(165,1,'COMP 101',1,2,NULL,1,1);
 /*!40000 ALTER TABLE `program_courses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -374,7 +374,7 @@ CREATE TABLE `semesters` (
 
 LOCK TABLES `semesters` WRITE;
 /*!40000 ALTER TABLE `semesters` DISABLE KEYS */;
-INSERT INTO `semesters` VALUES (1,'1st Semester',1),(2,'2nd Semester',2);
+INSERT INTO `semesters` VALUES (1,'1st Semester',1),(2,'2nd Semester',2),(3,'Summer',3);
 /*!40000 ALTER TABLE `semesters` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -439,7 +439,7 @@ CREATE TABLE `submissions` (
   CONSTRAINT `fk_submissions_programid` FOREIGN KEY (`ProgramID`) REFERENCES `programs` (`ProgramID`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`FacultyID`) REFERENCES `faculties` (`FacultyID`),
   CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`TaskID`) REFERENCES `tasks` (`TaskID`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -448,7 +448,7 @@ CREATE TABLE `submissions` (
 
 LOCK TABLES `submissions` WRITE;
 /*!40000 ALTER TABLE `submissions` DISABLE KEYS */;
-INSERT INTO `submissions` VALUES (14,2,10,NULL,NULL,'2024-2025','1st','uploads/tasks/10/IT105 NETWORKING I OTERO (1).pdf',26,'2025-05-19 19:15:39','IT 105',1);
+INSERT INTO `submissions` VALUES (14,2,10,NULL,NULL,'2024-2025','1st','uploads/tasks/10/IT105 NETWORKING I OTERO (1).pdf',26,'2025-05-19 19:15:39','IT 105',1),(15,2,10,NULL,NULL,'2024-2025','1st','uploads/tasks/10/Reflection Paper .pdf',26,'2025-05-21 00:25:19','CS 116',2),(16,2,10,NULL,NULL,'2024-2025','1st','uploads/tasks/10/Reflection Paper.pdf',24,'2025-05-21 00:41:36','IT 108',1);
 /*!40000 ALTER TABLE `submissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -521,7 +521,7 @@ CREATE TABLE `task_assignments` (
 
 LOCK TABLES `task_assignments` WRITE;
 /*!40000 ALTER TABLE `task_assignments` DISABLE KEYS */;
-INSERT INTO `task_assignments` VALUES (24,10,2,'CS 116',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(25,10,2,'CS 405',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(26,10,1,'IT 105',2,'Submitted','Not Reviewed','uploads/tasks/10/IT105 NETWORKING I OTERO (1).pdf','2025-05-19 19:15:39',NULL,NULL,NULL),(27,10,1,'IT 108',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(28,10,1,'IT 109',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `task_assignments` VALUES (24,10,2,'CS 116',2,'Completed','Approved','uploads/tasks/10/Reflection Paper .pdf','2025-05-21 00:25:19',12,'2025-05-21 00:30:13',NULL),(25,10,2,'CS 405',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL),(26,10,1,'IT 105',2,'Completed','Approved','uploads/tasks/10/IT105 NETWORKING I OTERO (1).pdf','2025-05-19 19:15:39',12,'2025-05-21 01:30:58',NULL),(27,10,1,'IT 108',2,'Completed','Approved','uploads/tasks/10/Reflection Paper.pdf','2025-05-21 00:41:36',12,'2025-05-21 01:30:47',NULL),(28,10,1,'IT 109',2,'Pending','Not Reviewed',NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `task_assignments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -557,7 +557,7 @@ CREATE TABLE `tasks` (
 
 LOCK TABLES `tasks` WRITE;
 /*!40000 ALTER TABLE `tasks` DISABLE KEYS */;
-INSERT INTO `tasks` VALUES (10,'2024-2025 COURSEWARE SUBMISSION','Kindly submit on or before May 25, 2025',12,2,'2025-05-25','','2024-2025','1st','2025-05-19 02:30:52');
+INSERT INTO `tasks` VALUES (10,'2024-2025 COURSEWARE SUBMISSION','Kindly submit on or before May 25, 2025',12,2,'2025-05-25','In Progress','2024-2025','1st','2025-05-19 02:30:52');
 /*!40000 ALTER TABLE `tasks` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -584,6 +584,7 @@ CREATE TABLE `teammembers` (
 
 LOCK TABLES `teammembers` WRITE;
 /*!40000 ALTER TABLE `teammembers` DISABLE KEYS */;
+INSERT INTO `teammembers` VALUES (15,27),(15,30),(16,23);
 /*!40000 ALTER TABLE `teammembers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -596,4 +597,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-19 21:03:55
+-- Dump completed on 2025-05-22  3:15:08
