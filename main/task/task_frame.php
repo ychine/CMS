@@ -903,7 +903,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                         </div>
                                     </div>
-                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="font-medium text-gray-700">Progress:</span>
                                         <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1084,7 +1084,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                 <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                             </div>
                                         </div>
-                                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                         <div class="flex items-center gap-3 mb-2">
                                             <span class="font-medium text-gray-700">Progress:</span>
                                             <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1149,7 +1149,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                         </div>
                                     </div>
-                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="font-medium text-gray-700">Progress:</span>
                                         <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1211,7 +1211,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 <label class="block text-lg font-semibold text-gray-700">Task Description:</label>
                                 <textarea name="description" placeholder="Describe the task" 
                                     class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
-                                    rows="3"></textarea>
+                                    rows="5" style="white-space: pre-wrap;"></textarea>
                             </div>
                             
                             <div class="space-y-2">
@@ -1486,7 +1486,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         <div class="text-blue-700 font-semibold text-base mb-1">
                             <?php echo htmlspecialchars($course['CourseCode']); ?> - <?php echo htmlspecialchars($course['CourseTitle']); ?>
                         </div>
-                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                     </div>
                     <?php endforeach; ?>
                 <?php endforeach; ?>
@@ -1557,7 +1557,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 <div class="text-blue-700 font-semibold text-base mb-1">
                                     <?php echo htmlspecialchars($course['CourseCode']); ?> - <?php echo htmlspecialchars($course['CourseTitle']); ?>
                                 </div>
-                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                             </div>
                             <?php endforeach; ?>
                         <?php endforeach; ?>
@@ -1603,7 +1603,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 <div class="text-blue-700 font-semibold text-base mb-1">
                                     <?php echo htmlspecialchars($course['CourseCode']); ?> - <?php echo htmlspecialchars($course['CourseTitle']); ?>
                                 </div>
-                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                             </div>
                             <?php endforeach; ?>
                         <?php endforeach; ?>

@@ -18,6 +18,14 @@ $userRole = "";
 $facultyID = null;
 $message = "";
 
+// Add role mapping array
+$roleMap = [
+    'DN' => 'College Dean',
+    'PH' => 'Program Head',
+    'FM' => 'Faculty Member',
+    'COR' => 'Courseware Coordinator'
+];
+
 $sql = "SELECT personnel.PersonnelID, personnel.FacultyID, personnel.Role, faculties.Faculty 
         FROM personnel 
         JOIN faculties ON personnel.FacultyID = faculties.FacultyID
@@ -276,10 +284,10 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
     $assignmentsStmt->close();
     
     // When displaying each assignment in the task view, fetch and display co-authors
-    foreach ($assignments as &$assignmentRow) {
+    foreach ($assignments as &$assignment) {
         // Find the submission for this assignment
-        if (!empty($assignmentRow['SubmissionPath'])) {
-            $submissionPath = $assignmentRow['SubmissionPath'];
+        if (!empty($assignment['SubmissionPath'])) {
+            $submissionPath = $assignment['SubmissionPath'];
             // Get SubmissionID
             $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
             $subStmt->bind_param("s", $submissionPath);
@@ -296,12 +304,12 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                 while ($coRow = $coRes->fetch_assoc()) {
                     $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
                 }
-                $assignmentRow['CoAuthors'] = $coauthorsList;
+                $assignment['CoAuthors'] = $coauthorsList;
                 $coStmt->close();
             }
             $subStmt->close();
         } else {
-            $assignmentRow['CoAuthors'] = [];
+            $assignment['CoAuthors'] = [];
         }
     }
     
@@ -1040,7 +1048,7 @@ if (isset($_GET['from'])) {
         <?php if (!empty($tasks)): ?>
           <div class="section-header mb-8" style="position: relative; min-height: 48px; display: flex; align-items: center;">
             <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
-            <h3 class="task-title font-overpass" style="font-family: 'Overpass', sans-serif; margin-left: 0;">
+            <h3 class="task-title font-onest" style="font-family: 'Onest', sans-serif; margin-left: 0;">
               <?php echo htmlspecialchars($tasks[0]['Title']); ?>
             </h3>
             <span class="course-code" style="margin-left: 1rem;">
@@ -1056,15 +1064,15 @@ if (isset($_GET['from'])) {
                   <div class="faculty-avatar"></div>
                   <div class="faculty-details">
                     <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
-                    <p class="faculty-role font-light"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
+                    <p class="faculty-role font-light"><?php echo htmlspecialchars($roleMap[$task['CreatorRole']] ?? $task['CreatorRole']); ?></p>
                   </div>
                 </div>
                 <div class="deadline">
                   <p>Deadline: <?php echo date("F j, g:i a", strtotime($task['DueDate'])); ?></p>
                 </div>
               </div>
-              <div class="task-content mb-2">
-                <p class="text-base font-light">"<?php echo htmlspecialchars($task['Description']); ?>"</p>
+              <div class="task-content mb-2 p-[20px]">
+                <p class="text-base font-onest font-light"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                 <?php if (!empty($task['RevisionReason'])): ?>
                   <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <h4 class="font-medium text-yellow-800 mb-2">Revision Requested</h4>
@@ -1082,7 +1090,7 @@ if (isset($_GET['from'])) {
               
               <?php if (!empty($task['Assignments'])): ?>
                 <?php foreach ($task['Assignments'] as $assignment): ?>
-                  <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3">
+                  <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3" <?php if (!empty($assignment['SubmissionPath'])): ?> onclick="previewSubmission('<?php echo '../../' . htmlspecialchars($assignment['SubmissionPath']); ?>', '<?php echo htmlspecialchars($assignment['CourseCode'] . ' - ' . $assignment['CourseTitle']); ?>')" style="cursor: pointer;" <?php endif; ?>>
                     <div class="course-info">
                       <p class="course-name font-semibold"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
                       <div class="course-badges">
@@ -1352,21 +1360,52 @@ if (isset($_GET['from'])) {
       if (validImageTypes.includes(fileType)) {
         const reader = new FileReader();
         reader.onload = function(e) {
-          filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview">`;
+          filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" onerror="handleImageError(this)">`;
           filePreview.classList.remove('hidden');
         }
         reader.readAsDataURL(file);
       } else if (fileType === 'application/pdf') {
         const objectUrl = URL.createObjectURL(file);
-        filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview">`;
+        filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview" onerror="handlePdfError(this)">`;
         filePreview.classList.remove('hidden');
       } else {
-        filePreview.innerHTML = `<div class=\"doc-preview\">
-          <i class=\"fas fa-file-alt text-4xl text-blue-500\"></i>
-          <p class=\"mt-2\">Preview not available for this file type</p>
-        </div>`;
+        filePreview.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-file-alt text-4xl text-blue-500 mb-3"></i>
+            <p class="text-gray-600 dark:text-gray-300">Preview not available for this file type</p>
+            <a href="${file.name}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Download File
+            </a>
+          </div>
+        `;
         filePreview.classList.remove('hidden');
       }
+    }
+
+    function handleImageError(img) {
+      img.onerror = null; // Prevent infinite loop
+      img.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load image preview</p>
+          <a href="${img.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+
+    function handlePdfError(embed) {
+      embed.onerror = null; // Prevent infinite loop
+      embed.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load PDF preview</p>
+          <a href="${embed.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
     }
 
    
@@ -1419,6 +1458,103 @@ if (isset($_GET['from'])) {
         }
       });
     });
+
+    function previewSubmission(path, title) {
+      const modal = document.getElementById('previewModal');
+      const previewContent = document.getElementById('previewContent');
+      const previewTitle = document.getElementById('previewTitle');
+      
+      // Set the title
+      previewTitle.textContent = title;
+      
+      // Get file extension
+      const extension = path.split('.').pop().toLowerCase();
+      
+      // Clear previous content
+      previewContent.innerHTML = '';
+      
+      // Show modal
+      modal.classList.remove('hidden');
+      
+      // Handle different file types
+      if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+        previewContent.innerHTML = `<img src="${path}" class="max-w-full h-[93%] object-contain mx-auto" onerror="handleImageError(this)">`;
+      } else if (extension === 'pdf') {
+        previewContent.innerHTML = `<embed src="${path}" type="application/pdf" class="w-full h-full" onerror="handlePdfError(this)">`;
+      } else {
+        previewContent.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-file-alt text-4xl text-blue-500 mb-3"></i>
+            <p class="text-gray-600 dark:text-gray-300">Preview not available for this file type</p>
+            <a href="${path}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Download File
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    function handleImageError(img) {
+      img.onerror = null; // Prevent infinite loop
+      img.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load image preview</p>
+          <a href="${img.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+
+    function handlePdfError(embed) {
+      embed.onerror = null; // Prevent infinite loop
+      embed.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load PDF preview</p>
+          <a href="${embed.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+
+    function closePreview() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePreview();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closePreview();
+      }
+    });
   </script>
+
+  <!-- Add this modal HTML before the closing body tag -->
+  <div id="previewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
+    <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
+      <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+        <h3 class="text-xl font-semibold dark:text-white" id="previewTitle"></h3>
+        <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-auto">
+        <div id="previewContent" class="w-full h-full flex items-center justify-center">
+          <!-- Content will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

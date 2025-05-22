@@ -162,15 +162,15 @@ $conn->close();
 ?>
 
 <!-- Pinboard Section -->
-<div class="w-[300px] max-w-full min-w-[2s50px]">
-    <div class="bg-white p-[30px] pr-[20px] font-overpass rounded-lg shadow-md h-full">
+<div class="w-[300px] max-w-full min-w-[250px]">
+    <div class="bg-white p-[30px] pr-[20px] font-overpass rounded-lg shadow-md h-[600px]">
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold">Pinboard 📌</h2>
             <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
             <button onclick="openPinboardModal()" class="text-xs text-blue-600 hover:underline">Post Announcement</button>
             <?php endif; ?>
         </div>
-        <div class="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
+        <div class="space-y-4 overflow-y-auto h-[calc(100%-120px)] pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
             <?php if (empty($pinboardPosts)): ?>
                 <div class="text-sm text-gray-600 text-center py-4">
                     No announcements yet.

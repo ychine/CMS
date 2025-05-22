@@ -361,7 +361,7 @@ $conn->close();
         <!-- Main Content -->
         <div class="main-content flex-1 flex flex-col h-full ">
 
-            <div class="header-bar bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
+            <div class="header-bar bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3); z-index: 100;">
                 <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
