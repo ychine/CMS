@@ -38,60 +38,6 @@
         .eye-closed {
             display: none;
         }
-        
-        .account-warning {
-            color: #ff5252;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        /* Updated Toast Styling */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            color: #fff;
-            border-radius: 8px;
-            font-family: 'Onest', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s;
-            backdrop-filter: blur(8px);
-        }
-
-        .toast.success {
-            background-color: rgba(76, 175, 80, 0.95);
-            border-left: 4px solid #2e7d32;
-        }
-
-        .toast.error {
-            background-color: rgba(220, 53, 69, 0.95);
-            border-left: 4px solid #c82333;
-        }
-
-        .toast.warning {
-            background-color: rgba(255, 193, 7, 0.95);
-            border-left: 4px solid #d39e00;
-            color: #000;
-        }
-
-        @keyframes slideIn {
-            from { transform: translate(-50%, 100%); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
-        }
-
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
     </style>
 </head>
 <body>
@@ -115,7 +61,6 @@
                     
                     <div class="tf">
                         <input type="text" id="usernamelogin" name="username">
-                        <div id="account-warning" class="account-warning"></div>
                     </div>
                     <div class="fieldrow">
                         <div class="tfieldname">Password</div>
@@ -162,7 +107,7 @@
                 © 2025 CourseDock. All rights reserved.
                 
                 <a href="./src/about.php">About CourseDock</a>
-                <a href="./src/support.php">Contact our Support</a>
+                <a href="#">Contact our Support</a>
 
             </div>
     </div>
@@ -175,142 +120,13 @@ const passwordField = document.getElementById('passwordlogin');
 const togglePassword = document.getElementById('togglePassword');
 const eyeOpen = document.querySelector('.eye-open');
 const eyeClosed = document.querySelector('.eye-closed');
-const accountWarning = document.getElementById('account-warning');
-
-let loginAttempts = JSON.parse(localStorage.getItem('loginAttempts')) || {};
-
-const MAX_ATTEMPTS = 3;
-const LOCKOUT_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds 86 400 000
-
-function formatTimeRemaining(milliseconds) {
-    const hours = Math.floor(milliseconds / (60 * 60 * 1000));
-    const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / (60 * 1000));
-    
-    if (hours > 0) {
-        return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-}
-
-function showToast(message, type = 'error') {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
- 
-    const icon = document.createElement('span');
-    if (type === 'success') {
-        icon.innerHTML = '✓';
-    } else if (type === 'error') {
-        icon.innerHTML = '✕';
-    } else if (type === 'warning') {
-        icon.innerHTML = '⚠';
-    }
-    
-    const messageSpan = document.createElement('span');
-    messageSpan.textContent = message;
-    
-    toast.appendChild(icon);
-    toast.appendChild(messageSpan);
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
-function isAccountLocked(username) {
-    if (!username) return false;
-    
-    if (loginAttempts[username] && loginAttempts[username].locked) {
-      
-        const now = Date.now();
-        if (loginAttempts[username].timestamp && (now - loginAttempts[username].timestamp > LOCKOUT_DURATION)) {
-    
-            loginAttempts[username].locked = false;
-            loginAttempts[username].count = 0;
-            localStorage.removeItem(`locked_${username}`);
-            localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
-            return false;
-        }
-        return true;
-    }
-    
-    return localStorage.getItem(`locked_${username}`) === 'true';
-}
-
-function updateAccountWarning(username) {
-    if (!username) {
-        accountWarning.style.display = 'none';
-        return;
-    }
-    
-    if (isAccountLocked(username)) {
-      
-        const now = Date.now();
-        const lockTime = loginAttempts[username].timestamp;
-        const timeElapsed = now - lockTime;
-        const timeRemaining = LOCKOUT_DURATION - timeElapsed;
-        
-        if (timeRemaining > 0) {
-            const timeFormatted = formatTimeRemaining(timeRemaining);
-            accountWarning.innerHTML = `
-                This account has been locked due to multiple failed login attempts. 
-                Lockout expires in ${timeFormatted}. 
-                <a href="mailto:support@coursedock.com?subject=Account%20Unlock%20Request&body=Please%20unlock%20my%20account%20(username:%20${encodeURIComponent(username)})" 
-                   style="color: #51D55A; text-decoration: underline; margin-left: 5px;">
-                   Contact Support
-                </a>
-            `;
-        } else {
-            accountWarning.textContent = 'This account has been locked due to multiple failed login attempts. Please contact support.';
-        }
-        
-        accountWarning.style.display = 'block';
-        usernameField.classList.add('error-border');
-    } else if (loginAttempts[username] && loginAttempts[username].count > 0 && loginAttempts[username].count < MAX_ATTEMPTS) {
-        const attemptsLeft = MAX_ATTEMPTS - loginAttempts[username].count;
-        accountWarning.innerHTML = `
-            Warning: ${attemptsLeft} login ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before account lockout.
-            <span style="font-size: 12px; display: block; margin-top: 5px;">
-                After 3 failed attempts, your account will be locked for 24 hours.
-            </span>
-        `;
-        accountWarning.style.display = 'block';
-        
-        
-        if (attemptsLeft === 1) {
-            accountWarning.style.color = '#ff0000';         // Red for last attempt
-        } else if (attemptsLeft === 2) {
-            accountWarning.style.color = '#ff9900';         // Orange for second attempt
-        } else {
-            accountWarning.style.color = '#ff5252';         // Default color
-        }
-    } else {
-        accountWarning.style.display = 'none';
-        accountWarning.style.color = '#ff5252';             // Reset to default color
-    }
-}
-
-function resetLockout(username) {
-    if (loginAttempts[username]) {
-        loginAttempts[username].locked = false;
-        loginAttempts[username].count = 0;
-        localStorage.removeItem(`locked_${username}`);
-        localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
-        updateAccountWarning(username);
-        showToast('Account lockout has been reset.', 'success');
-    }
-}
-
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('reset_lockout') === 'true' && urlParams.get('username')) {
-    const username = urlParams.get('username');
-    resetLockout(username);
-}
 
 togglePassword.addEventListener('click', function () {
+
     const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordField.setAttribute('type', type);
     
+
     eyeOpen.style.display = type === 'password' ? 'block' : 'none';
     eyeClosed.style.display = type === 'password' ? 'none' : 'block';
 });
@@ -320,125 +136,52 @@ form.addEventListener('submit', function(e) {
     const password = passwordField.value.trim();
     const captchaResponse = grecaptcha.getResponse();
 
-    if (isAccountLocked(username)) {
-        e.preventDefault();
-        showToast('This account has been locked due to multiple failed login attempts. Please try again later or contact support.', 'error');
-        return;
-    }
-
     if (username === '' || password === '' || captchaResponse === '') {
         e.preventDefault();
 
         if (username === '') usernameField.classList.add('error-border');
         if (password === '') passwordField.classList.add('error-border');
         if (captchaResponse === '') {
-            showToast('Please complete the CAPTCHA.', 'warning');
+            const toast = document.createElement('div');
+            toast.className = 'toast error';
+            toast.innerText = 'Please complete the CAPTCHA.';
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove(); 
+            }, 3000);
             return;
         }
 
-        showToast('Please fill in all fields.', 'warning');
+        const toast = document.createElement('div');
+        toast.className = 'toast error';
+        toast.innerText = 'Please fill in all fields.';
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove(); 
+        }, 3000);
+
         return;
     }
- 
-    const hiddenInput = document.createElement('input');
-    hiddenInput.type = 'hidden';
-    hiddenInput.name = 'attempted_username';
-    hiddenInput.value = username;
-    form.appendChild(hiddenInput);
 });
 
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('error') === 'invalid') {
-    const username = urlParams.get('username') || '';
+    const toast = document.createElement('div');
+    toast.className = 'toast error';
+    toast.innerText = 'Invalid username or password.';
+    document.body.appendChild(toast);
 
-    if (!loginAttempts[username]) {
-        loginAttempts[username] = {
-            count: 0,
-            locked: false,
-            timestamp: Date.now()
-        };
-    }
-    
-    loginAttempts[username].count++;
-    loginAttempts[username].timestamp = Date.now();
-    
-    localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
-    
-    if (loginAttempts[username].count >= MAX_ATTEMPTS) {
-        loginAttempts[username].locked = true;
-        localStorage.setItem(`locked_${username}`, 'true');
-        localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
-        
-        showToast(`Your account has been locked due to ${MAX_ATTEMPTS} failed login attempts. Please try again after 24 hours or contact support.`, 'error');
-        
-        usernameField.value = username;
-        updateAccountWarning(username);
-    } else {
-        const attemptsLeft = MAX_ATTEMPTS - loginAttempts[username].count;
-        showToast(`Invalid username or password. ${attemptsLeft} ${attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining before account lockout.`, 'warning');
-
-        usernameField.value = username;
-        updateAccountWarning(username);
-    }
-} else if (urlParams.get('locked') === 'true') {
-    const username = urlParams.get('username') || '';
-    showToast('This account has been locked due to multiple failed login attempts. Please try again after 24 hours or contact support.', 'error');
-    
-    if (username) {
-        usernameField.value = username;
-        updateAccountWarning(username);
-    }
-} else if (urlParams.get('success') === 'login') {
-   
-    const username = urlParams.get('username') || '';
-    if (username && loginAttempts[username]) {
-        loginAttempts[username].count = 0;
-        loginAttempts[username].locked = false;
-        localStorage.removeItem(`locked_${username}`);
-        localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
-    }
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
 }
 
-
-document.addEventListener('DOMContentLoaded', function() {
-    
-    const now = Date.now();
-    
-    Object.keys(loginAttempts).forEach(username => {
-        if (loginAttempts[username].timestamp && (now - loginAttempts[username].timestamp > LOCKOUT_DURATION)) {
-           
-            if (loginAttempts[username].locked) {
-                loginAttempts[username].locked = false;
-                loginAttempts[username].count = 0;
-                localStorage.removeItem(`locked_${username}`);
-            } else if (loginAttempts[username].count > 0) {
-               
-                delete loginAttempts[username];
-            }
-        }
-    });
-    
-    localStorage.setItem('loginAttempts', JSON.stringify(loginAttempts));
-    
-    const username = usernameField.value.trim();
-    if (username) {
-        updateAccountWarning(username);
-    }
-});
-
 usernameField.addEventListener('input', () => {
-    const username = usernameField.value.trim();
-    
-    if (username !== '') {
+    if (usernameField.value.trim() !== '') {
         usernameField.classList.remove('error-border');
     }
-
-    updateAccountWarning(username);
-});
-
-usernameField.addEventListener('blur', () => {
-    const username = usernameField.value.trim();
-    updateAccountWarning(username);
 });
 
 passwordField.addEventListener('input', () => {
@@ -446,27 +189,6 @@ passwordField.addEventListener('input', () => {
         passwordField.classList.remove('error-border');
     }
 });
-
-
-function checkLockoutTime(username) {
-    if (!loginAttempts[username] || !loginAttempts[username].locked) {
-        console.log(`User ${username} is not locked.`);
-        return;
-    }
-    
-    const now = Date.now();
-    const lockTime = loginAttempts[username].timestamp;
-    const timeElapsed = now - lockTime;
-    const timeRemaining = LOCKOUT_DURATION - timeElapsed;
-    
-    if (timeRemaining > 0) {
-        const hoursRemaining = Math.floor(timeRemaining / (60 * 60 * 1000));
-        const minutesRemaining = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
-        console.log(`User ${username} lockout expires in ${hoursRemaining}h ${minutesRemaining}m.`);
-    } else {
-        console.log(`User ${username} lockout has expired but hasn't been reset yet.`);
-    }
-}
 </script>
 </body>
 </html>
