@@ -17,7 +17,7 @@ function getMailer() {
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
     $mail->Username = "coursedock@gmail.com";
-    $mail->Password = "gnsj vuuh cgkn nbxi";
+    $mail->Password = "gnsjvuuhcgknnbxi";
 
     $mail->isHtml(true);
 
