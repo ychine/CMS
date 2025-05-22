@@ -162,7 +162,7 @@ $conn->close();
 ?>
 
 <!-- Pinboard Section -->
-<div class="w-[450px] max-w-full min-w-[450px]">
+<div class="w-[300px] max-w-full min-w-[2s50px]">
     <div class="bg-white p-[30px] pr-[20px] font-overpass rounded-lg shadow-md h-full">
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold">Pinboard 📌</h2>
@@ -177,7 +177,7 @@ $conn->close();
                 </div>
             <?php else: ?>
                 <?php foreach ($pinboardPosts as $post): ?>
-                    <div class="relative bg-gray-100 rounded-xl p-3 py-8 shadow-sm flex flex-col">
+                    <div class="relative bg-gray-100 rounded-xl pl-3 pr-3 py-8 shadow-sm flex flex-col">
                         <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
                         <form method="POST" class="absolute top-2 right-2">
                             <input type="hidden" name="pin_id" value="<?php echo $post['PinID']; ?>">
@@ -218,12 +218,12 @@ $conn->close();
                 </div>
                 <div class="space-y-4">
                     <?php if (empty($syllabusFormats)): ?>
-                        <div class="text-sm text-gray-600 text-center py-4">
+                        <div class="text-sm text-gray-600 pl-3 pr-3 text-center py-4">
                             No syllabus format uploaded yet.
                         </div>
                     <?php else: ?>
                         <?php foreach ($syllabusFormats as $format): ?>
-                            <div class="relative bg-gray-100 rounded-xl p-3 py-6 shadow-sm flex flex-col">
+                            <div class="relative bg-gray-100 rounded-xl py-8  flex flex-col">
                                 <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
                                 <form method="POST" class="absolute top-2 right-2">
                                     <input type="hidden" name="format_id" value="<?php echo $format['FormatID']; ?>">
@@ -235,8 +235,8 @@ $conn->close();
                                 </form>
                                 <?php endif; ?>
                                 <div class="flex flex-row items-start">
-                                    <div class="w-1.5 h-full bg-blue-400 rounded-full mr-4"></div>
-                                    <div class="flex-1 flex flex-col">
+                                    <div class="w-1.5 h-full bg-blue-400 rounded-full"></div>
+                                    <div class="flex-1 flex flex-col px-4">
                                         <h3 class="font-bold text-lg tracking-tight mb-1 break-words" style="color: #0D5191;"><?php echo htmlspecialchars($format['Title']); ?></h3>
                                         <div class="flex items-center gap-2">
                                             <a href="uploads/syllabus_formats/<?php echo htmlspecialchars($format['FilePath']); ?>" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">

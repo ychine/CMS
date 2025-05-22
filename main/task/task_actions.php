@@ -52,20 +52,30 @@ if (isset($_POST['action'])) {
         }
         
         if ($taskID) {
-       
+            // First delete team members records
+            $deleteTeamMembersSql = "DELETE tm FROM teammembers tm 
+                                   INNER JOIN submissions s ON tm.SubmissionID = s.SubmissionID 
+                                   WHERE s.TaskID = ?";
+            $deleteTeamMembersStmt = $conn->prepare($deleteTeamMembersSql);
+            $deleteTeamMembersStmt->bind_param("i", $taskID);
+            $deleteTeamMembersStmt->execute();
+            $deleteTeamMembersStmt->close();
+            
+            // Then delete submissions
             $deleteSubmissionsSql = "DELETE FROM submissions WHERE TaskID = ?";
             $deleteSubmissionsStmt = $conn->prepare($deleteSubmissionsSql);
             $deleteSubmissionsStmt->bind_param("i", $taskID);
             $deleteSubmissionsStmt->execute();
             $deleteSubmissionsStmt->close();
             
-      
+            // Then delete task assignments
             $deleteAssignmentsSql = "DELETE FROM task_assignments WHERE TaskID = ?";
             $deleteAssignmentsStmt = $conn->prepare($deleteAssignmentsSql);
             $deleteAssignmentsStmt->bind_param("i", $taskID);
             $deleteAssignmentsStmt->execute();
             $deleteAssignmentsStmt->close();
             
+            // Finally delete the task
             $deleteTaskSql = "DELETE FROM tasks WHERE TaskID = ?";
             $deleteTaskStmt = $conn->prepare($deleteTaskSql);
             $deleteTaskStmt->bind_param("i", $taskID);
