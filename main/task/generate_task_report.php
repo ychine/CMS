@@ -132,7 +132,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     $sheet->getStyle('A2:F2')->applyFromArray($subtitleStyle);
 
    
-    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Co-Authors', 'Status', 'Submission Date'];
+    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Co-Authors', 'Status', 'Submission Date', 'Due Date'];
     $sheet->fromArray($headers, NULL, 'A4');
 
  
@@ -169,6 +169,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
         $sheet->setCellValue('E' . $row, $coauthors);
         $sheet->setCellValue('F' . $row, $a['Status']);
         $sheet->setCellValue('G' . $row, $a['SubmissionDate'] ?: '-');
+        $sheet->setCellValue('H' . $row, $task['DueDate']);
         $row++;
     }
 
@@ -184,10 +185,10 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             'vertical' => Alignment::VERTICAL_CENTER
         ]
     ];
-    $sheet->getStyle('A5:G' . ($row-1))->applyFromArray($dataStyle);
+    $sheet->getStyle('A5:H' . ($row-1))->applyFromArray($dataStyle);
 
 
-    foreach (range('A', 'G') as $col) {
+    foreach (range('A', 'H') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
@@ -380,6 +381,7 @@ function statusBadge($status) {
                 <th>Co-Authors</th>
                 <th>Status</th>
                 <th>Submission Date</th>
+                <th>Due Date</th>
             </tr>
             <?php foreach ($assignments as $a): ?>
             <tr>
@@ -390,6 +392,7 @@ function statusBadge($status) {
                 <td><?= !empty($a['CoAuthors']) ? htmlspecialchars(implode(', ', $a['CoAuthors'])) : '-' ?></td>
                 <td><?= statusBadge($a['Status']) ?></td>
                 <td><?= $a['SubmissionDate'] ? htmlspecialchars($a['SubmissionDate']) : '-' ?></td>
+                <td><?= htmlspecialchars($task['DueDate']) ?></td>
             </tr>
             <?php endforeach; ?>
         </table>
