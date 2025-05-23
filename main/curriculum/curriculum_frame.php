@@ -901,29 +901,27 @@ $conn->close();
                 fetch('assign_personnel.php', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        personnel_id: personnelId,
-                        course_title: courseTitle,
-                        curriculum: curriculumName,
-                        program_id: programId
-                    })
+                    body: `personnel_id=${personnelId}&course_title=${encodeURIComponent(courseTitle)}&curriculum=${encodeURIComponent(curriculumName)}&program_id=${programId}`
                 })
-                .then(async res => {
-                    const text = await res.text();
-                    console.log("Raw response from assign_personnel.php:", text);
-                    try {
-                        const json = JSON.parse(text);
-                        console.log("Parsed JSON:", json);
-                    } catch (e) {
-                        console.error("Error parsing JSON:", e);
-                        alert("Raw error: " + text); 
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show a success message (no reload)
+                        alert('Professor assigned successfully!');
+                        // Optionally, you can update the dropdown or highlight it here
+                    } else {
+                        // Show error message
+                        alert(data.message || 'Failed to assign personnel');
+                        // Reset the dropdown to its previous value
+                        this.value = '';
                     }
                 })
-                .catch(err => {
-                    console.error("Network error:", err);
-                    alert("Network error");
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while assigning personnel');
+                    this.value = '';
                 });
             });
         });

@@ -179,6 +179,80 @@ if (isset($_POST['action'])) {
             $updateStmt->close();
         }
     }
+    else if ($_POST['action'] === 'modify_task') {
+        $taskId = $_POST['task_id'];
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+        $dueDate = $_POST['due_date'];
+        $schoolYear = $_POST['school_year'];
+        $term = $_POST['term'];
+        
+        // Update task details
+        $updateTaskSql = "UPDATE tasks SET 
+                         Title = ?, 
+                         Description = ?, 
+                         DueDate = ?, 
+                         SchoolYear = ?, 
+                         Term = ? 
+                         WHERE TaskID = ?";
+        $updateTaskStmt = $conn->prepare($updateTaskSql);
+        $updateTaskStmt->bind_param("sssssi", $title, $description, $dueDate, $schoolYear, $term, $taskId);
+        
+        if ($updateTaskStmt->execute()) {
+            // Handle course assignment removals
+            if (isset($_POST['remove_assignment']) && is_array($_POST['remove_assignment'])) {
+                foreach ($_POST['remove_assignment'] as $assignment) {
+                    list($programId, $courseCode) = explode('|', $assignment);
+                    // Delete the task assignment for this course and task
+                    $deleteAssignmentSql = "DELETE FROM task_assignments WHERE TaskID = ? AND ProgramID = ? AND CourseCode = ?";
+                    $deleteAssignmentStmt = $conn->prepare($deleteAssignmentSql);
+                    $deleteAssignmentStmt->bind_param("iis", $taskId, $programId, $courseCode);
+                    $deleteAssignmentStmt->execute();
+                    $deleteAssignmentStmt->close();
+                }
+            }
+            // Handle course assignment additions
+            if (isset($_POST['add_assignment']) && is_array($_POST['add_assignment'])) {
+                foreach ($_POST['add_assignment'] as $assignment) {
+                    list($programId, $courseCode) = explode('|', $assignment);
+                    // Get PersonnelID and FacultyID for this course
+                    $profQuery = "SELECT PersonnelID, FacultyID FROM program_courses WHERE ProgramID = ? AND CourseCode = ?";
+                    $profStmt = $conn->prepare($profQuery);
+                    $profStmt->bind_param("is", $programId, $courseCode);
+                    $profStmt->execute();
+                    $profResult = $profStmt->get_result();
+                    if ($profRow = $profResult->fetch_assoc()) {
+                        $personnelId = $profRow['PersonnelID'];
+                        $facultyId = $profRow['FacultyID'];
+                        // Insert new task assignment
+                        $insertAssignmentSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, Status) VALUES (?, ?, ?, ?, 'Pending')";
+                        $insertAssignmentStmt = $conn->prepare($insertAssignmentSql);
+                        $insertAssignmentStmt->bind_param("iisi", $taskId, $programId, $courseCode, $facultyId);
+                        $insertAssignmentStmt->execute();
+                        $insertAssignmentStmt->close();
+                    }
+                    $profStmt->close();
+                }
+            }
+            
+            // Add audit log entry
+            $logDesc = "Modified task: " . htmlspecialchars($title);
+            $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description) 
+                       SELECT ?, ?, CONCAT(FirstName, ' ', LastName), ? 
+                       FROM personnel WHERE PersonnelID = ?";
+            $logStmt = $conn->prepare($logSql);
+            $logStmt->bind_param("iisi", $facultyID, $personnelID, $logDesc, $personnelID);
+            $logStmt->execute();
+            $logStmt->close();
+            
+            header("Location: task_frame.php?message=Task modified successfully");
+        } else {
+            header("Location: task_frame.php?error=Failed to modify task");
+        }
+        
+        $updateTaskStmt->close();
+        exit();
+    }
 }
 
 $conn->close();

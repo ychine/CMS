@@ -870,6 +870,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                             Generate Report
                                                         </button>
                                                     </li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item hover:bg-blue-50 hover:text-blue-700 w-full text-left" style="display:flex;align-items:center;gap:10px;" onclick="openModifyTaskModal(<?php echo $task['TaskID']; ?>)">
+                                                            <span style="display:inline-flex;align-items:center;">
+                                                                <!-- Edit Icon -->
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </span>
+                                                            Modify Task
+                                                        </button>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -1778,6 +1789,100 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             </div>
         </div>
 
+        <!-- Modify Task Modal -->
+        <div id="modifyTaskModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+            <div class="bg-white p-8 rounded-xl shadow-2xl w-[900px] border-2 border-gray-400 font-onest modal-animate max-h-[90vh] flex flex-col">
+                <div class="flex-none">
+                    <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">✏️ Modify Task</h2>
+                    <hr class="border-gray-400 mb-6">
+                </div>
+                
+                <form method="POST" action="task_actions.php" class="flex-1 overflow-y-auto pr-2">
+                    <input type="hidden" name="action" value="modify_task">
+                    <input type="hidden" name="task_id" id="modifyTaskId">
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Task Title:</label>
+                            <input type="text" name="title" id="modifyTaskTitle" required 
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Task Description:</label>
+                            <textarea name="description" id="modifyTaskDescription" required
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                rows="5" style="white-space: pre-wrap;"></textarea>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Due Date:</label>
+                            <input type="date" name="due_date" id="modifyTaskDueDate" required
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="block text-lg font-semibold text-gray-700">School Year:</label>
+                                <input type="text" name="school_year" id="modifyTaskSchoolYear" required
+                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-lg font-semibold text-gray-700">Term:</label>
+                                <select name="term" id="modifyTaskTerm" required
+                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500">
+                                    <option value="1st">1st</option>
+                                    <option value="2nd">2nd</option>
+                                    <option value="Summer">Summer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Assigned Courses:</label>
+                            <div id="modifyTaskCourses" class="space-y-2">
+                                <!-- Course assignments will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Add Courses to Task:</label>
+                            <div>
+                                <button type="button" onclick="toggleAddCourseDropdown(event)" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold mb-2">+ Add Course</button>
+                                <div id="addCourseDropdown" class="hidden border border-gray-300 rounded-lg bg-white p-4 max-h-72 overflow-y-auto">
+                                    <div class="mb-4">
+                                        <input type="text" id="addCourseSearch" placeholder="Search courses..." 
+                                            class="w-full p-2 border border-gray-300 rounded-lg mb-2"
+                                            oninput="filterAddCourseList()">
+                                        <select id="addCourseProfFilter" 
+                                            class="w-full p-2 border border-gray-300 rounded-lg"
+                                            onchange="filterAddCourseList()">
+                                            <option value="all">All Professors</option>
+                                            <option value="assigned">With Professor</option>
+                                            <option value="unassigned">Without Professor</option>
+                                        </select>
+                                    </div>
+                                    <div id="addCourseList">
+                                        <!-- Available courses will be loaded here by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
+                        <button type="button" onclick="closeModifyTaskModal()" 
+                            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
+                            Cancel
+                        </button>
+                        <button type="submit" onclick="return validateModifyTaskForm()"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
 
             if (localStorage.getItem('darkMode') === 'enabled') {
@@ -2065,6 +2170,197 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             document.getElementById('confirmDiscardTaskBtn').onclick = function() {
                 document.getElementById('discardTaskForm').submit();
             };
+
+            function openModifyTaskModal(taskId) {
+                // Fetch task details
+                fetch('get_task_details.php?task_id=' + taskId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const task = data.task;
+                            document.getElementById('modifyTaskId').value = taskId;
+                            document.getElementById('modifyTaskTitle').value = task.Title;
+                            document.getElementById('modifyTaskDescription').value = task.Description;
+                            document.getElementById('modifyTaskDueDate').value = task.DueDate;
+                            document.getElementById('modifyTaskSchoolYear').value = task.SchoolYear;
+                            document.getElementById('modifyTaskTerm').value = task.Term;
+
+                            // Populate course assignments
+                            const coursesContainer = document.getElementById('modifyTaskCourses');
+                            coursesContainer.innerHTML = '';
+                            
+                            task.Courses.forEach(course => {
+                                const courseDiv = document.createElement('div');
+                                courseDiv.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+                                courseDiv.innerHTML = `
+                                    <div class="flex-1">
+                                        <span class="font-medium">${course.CourseCode}</span> - 
+                                        <span class="text-gray-600">${course.CourseTitle}</span>
+                                        <br>
+                                        <span class="text-sm text-gray-500">
+                                            ${course.AssignedTo ? `Assigned to: ${course.AssignedTo}` : 'No assigned professor'}
+                                        </span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="remove_assignment[]" 
+                                                value="${course.ProgramID}|${course.CourseCode}"
+                                                class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                            <span class="ml-2 text-sm text-gray-600">Remove Assignment</span>
+                                        </label>
+                                    </div>
+                                `;
+                                coursesContainer.appendChild(courseDiv);
+                            });
+
+                            document.getElementById('modifyTaskModal').classList.remove('hidden');
+                        } else {
+                            alert('Error loading task details');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error loading task details');
+                    });
+            }
+
+            function closeModifyTaskModal() {
+                document.getElementById('modifyTaskModal').classList.add('hidden');
+            }
+
+            function validateModifyTaskForm() {
+                const title = document.getElementById('modifyTaskTitle').value.trim();
+                const description = document.getElementById('modifyTaskDescription').value.trim();
+                const dueDate = document.getElementById('modifyTaskDueDate').value;
+                const schoolYear = document.getElementById('modifyTaskSchoolYear').value.trim();
+                const term = document.getElementById('modifyTaskTerm').value;
+
+                if (!title) {
+                    alert('Please enter a task title');
+                    return false;
+                }
+                if (!description) {
+                    alert('Please enter a task description');
+                    return false;
+                }
+                if (!dueDate) {
+                    alert('Please select a due date');
+                    return false;
+                }
+                if (!schoolYear) {
+                    alert('Please enter a school year');
+                    return false;
+                }
+                if (!term) {
+                    alert('Please select a term');
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Add to existing window.onclick event handler
+            window.onclick = function(event) {
+                const previewModal = document.getElementById('previewModal');
+                const revisionModal = document.getElementById('revisionModal');
+                const modifyTaskModal = document.getElementById('modifyTaskModal');
+                
+                if (event.target === previewModal) {
+                    closePreviewModal();
+                }
+                if (event.target === revisionModal) {
+                    closeRevisionModal();
+                }
+                if (event.target === modifyTaskModal) {
+                    closeModifyTaskModal();
+                }
+            }
+
+            // Add to existing keydown event handler
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "Escape") {
+                    closePreviewModal();
+                    closeRevisionModal();
+                    closeModifyTaskModal();
+                }
+            });
+
+            function toggleAddCourseDropdown(event) {
+                if (event) {
+                    event.stopPropagation();
+                }
+                const dropdown = document.getElementById('addCourseDropdown');
+                dropdown.classList.toggle('hidden');
+            }
+
+            // Add click event listener to close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('addCourseDropdown');
+                const addCourseBtn = document.querySelector('button[onclick="toggleAddCourseDropdown()"]');
+                if (dropdown && !dropdown.contains(event.target) && !addCourseBtn.contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // Store loaded courses for filtering
+            let _addCourseListData = [];
+
+            function loadAvailableCoursesForTask(taskId) {
+                fetch('get_available_courses_for_task.php?task_id=' + taskId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.courses.length > 0) {
+                            _addCourseListData = data.courses;
+                            renderAddCourseList(_addCourseListData);
+                        } else {
+                            _addCourseListData = [];
+                            document.getElementById('addCourseList').innerHTML = '<div class="text-gray-500">No available courses to add.</div>';
+                        }
+                    });
+            }
+
+            function renderAddCourseList(courses) {
+                const addCourseList = document.getElementById('addCourseList');
+                addCourseList.innerHTML = '';
+                if (!courses.length) {
+                    addCourseList.innerHTML = '<div class="text-gray-500">No available courses to add.</div>';
+                    return;
+                }
+                courses.forEach(course => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center gap-2 mb-2 p-2 rounded hover:bg-gray-50';
+                    div.innerHTML = `
+                        <input type="checkbox" name="add_assignment[]" value="${course.ProgramID}|${course.CourseCode}" class="mr-2">
+                        <span class="font-medium">${course.CourseCode}</span> -
+                        <span>${course.Title}</span>
+                        <span class="text-sm text-gray-500 ml-2">(${course.CurriculumName})</span>
+                        <span class="text-sm ml-2 ${course.AssignedTo ? 'text-gray-600' : 'text-red-600'}">
+                            ${course.AssignedTo ? 'Assigned to: ' + course.AssignedTo : 'No assigned professor'}
+                        </span>
+                    `;
+                    addCourseList.appendChild(div);
+                });
+            }
+
+            function filterAddCourseList() {
+                const search = document.getElementById('addCourseSearch').value.toLowerCase();
+                const profFilter = document.getElementById('addCourseProfFilter').value;
+                let filtered = _addCourseListData.filter(course => {
+                    const matchesSearch = course.CourseCode.toLowerCase().includes(search) || course.Title.toLowerCase().includes(search);
+                    let matchesProf = true;
+                    if (profFilter === 'assigned') matchesProf = !!course.AssignedTo;
+                    else if (profFilter === 'unassigned') matchesProf = !course.AssignedTo;
+                    return matchesSearch && matchesProf;
+                });
+                renderAddCourseList(filtered);
+            }
+
+            // Patch openModifyTaskModal to also load available courses
+            const _openModifyTaskModal = openModifyTaskModal;
+            openModifyTaskModal = function(taskId) {
+                _openModifyTaskModal(taskId);
+                loadAvailableCoursesForTask(taskId);
+            }
         </script>
     </div>
 </body>
