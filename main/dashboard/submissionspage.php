@@ -1,6 +1,18 @@
 <?php
 session_start();
 
+function getAssignmentStatusLabel($status) {
+    switch ($status) {
+        case 'Pending':
+            return 'No Submission';
+        case 'Submitted':
+            return 'Submitted for Review';
+        case 'Completed':
+            return 'Reviewed & Approved';
+        default:
+            return $status;
+    }
+}
 
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
@@ -1111,7 +1123,7 @@ if (isset($_GET['from'])) {
                     </div>
                     <div class="status">
                       <span class="status-label <?php echo strtolower($assignment['AssignmentStatus']); ?>">
-                        <?php echo $assignment['AssignmentStatus']; ?>
+                        <?php echo getAssignmentStatusLabel($assignment['AssignmentStatus']); ?>
                       </span>
                       
                       <?php if ($assignment['AssignmentStatus'] == 'Completed'): ?>
