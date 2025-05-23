@@ -224,10 +224,10 @@ if (isset($_POST['action'])) {
                     if ($profRow = $profResult->fetch_assoc()) {
                         $personnelId = $profRow['PersonnelID'];
                         $facultyId = $profRow['FacultyID'];
-                        // Insert new task assignment
-                        $insertAssignmentSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, Status) VALUES (?, ?, ?, ?, 'Pending')";
+                        // Insert new task assignment with PersonnelID
+                        $insertAssignmentSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status) VALUES (?, ?, ?, ?, ?, 'Pending')";
                         $insertAssignmentStmt = $conn->prepare($insertAssignmentSql);
-                        $insertAssignmentStmt->bind_param("iisi", $taskId, $programId, $courseCode, $facultyId);
+                        $insertAssignmentStmt->bind_param("iisis", $taskId, $programId, $courseCode, $facultyId, $personnelId);
                         $insertAssignmentStmt->execute();
                         $insertAssignmentStmt->close();
                     }
