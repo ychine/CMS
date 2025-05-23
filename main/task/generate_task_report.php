@@ -234,6 +234,19 @@ function statusBadge($status) {
     $s = $map[$status] ?? ['#64748b', '#f1f5f9', '#334155', $status];
     return "<span style='background:{$s[1]};color:{$s[2]};padding:4px 12px;border-radius:999px;font-size:0.95em;font-weight:600;display:inline-block;'>{$s[3]}</span>";
 }
+
+function getAssignmentStatusLabel($status) {
+    switch ($status) {
+        case 'Pending':
+            return 'No Submission';
+        case 'Submitted':
+            return 'Submitted for Review';
+        case 'Completed':
+            return 'Reviewed & Approved';
+        default:
+            return $status;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -390,7 +403,7 @@ function statusBadge($status) {
                 <td><?= htmlspecialchars($a['ProgramName']) ?></td>
                 <td><?= htmlspecialchars($a['AssignedTo']) ?: '<span style="color:red;">Unassigned</span>' ?></td>
                 <td><?= !empty($a['CoAuthors']) ? htmlspecialchars(implode(', ', $a['CoAuthors'])) : '-' ?></td>
-                <td><?= statusBadge($a['Status']) ?></td>
+                <td><?= getAssignmentStatusLabel($a['Status']) ?></td>
                 <td><?= $a['SubmissionDate'] ? htmlspecialchars($a['SubmissionDate']) : '-' ?></td>
                 <td><?= htmlspecialchars($task['DueDate']) ?></td>
             </tr>

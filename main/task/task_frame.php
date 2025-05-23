@@ -1,6 +1,18 @@
 <?php
 session_start();
 
+function getAssignmentStatusLabel($status) {
+    switch ($status) {
+        case 'Pending':
+            return 'No Submission';
+        case 'Submitted':
+            return 'Submitted for Review';
+        case 'Completed':
+            return 'Reviewed & Approved';
+        default:
+            return $status;
+    }
+}
 
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
@@ -953,7 +965,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                                     echo 'pending bg-yellow-100 text-yellow-700';
                                                                 }
                                                             ?>">
-                                                            <?php echo $course['AssignmentStatus']; ?>
+                                                            <?php echo getAssignmentStatusLabel($course['AssignmentStatus']); ?>
                                                         </span>
                                                         <?php
                                                         if ($task['UserRole'] === 'DN' || $task['UserRole'] === 'COR') {
@@ -2377,6 +2389,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             openModifyTaskModal = function(taskId) {
                 _openModifyTaskModal(taskId);
                 loadAvailableCoursesForTask(taskId);
+            }
+
+            function getAssignmentStatusLabel($status) {
+                switch ($status) {
+                    case 'Pending':
+                        return 'No Submission';
+                    case 'Submitted':
+                        return 'Submitted for Review';
+                    case 'Completed':
+                        return 'Reviewed & Approved';
+                    default:
+                        return $status;
+                }
             }
         </script>
     </div>
