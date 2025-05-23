@@ -1849,7 +1849,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                             <div>
                                 <button type="button" onclick="toggleAddCourseDropdown(event)" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold mb-2">+ Add Course</button>
                                 <div id="addCourseDropdown" class="hidden border border-gray-300 rounded-lg bg-white p-4 max-h-72 overflow-y-auto">
-                                    <div class="mb-4">
+                                    <div class="mb-4 grid grid-cols-1 gap-2">
                                         <input type="text" id="addCourseSearch" placeholder="Search courses..." 
                                             class="w-full p-2 border border-gray-300 rounded-lg mb-2"
                                             oninput="filterAddCourseList()">
@@ -1859,6 +1859,25 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             <option value="all">All Professors</option>
                                             <option value="assigned">With Professor</option>
                                             <option value="unassigned">Without Professor</option>
+                                        </select>
+                                        <select id="addCourseCurriculumFilter" 
+                                            class="w-full p-2 border border-gray-300 rounded-lg"
+                                            onchange="filterAddCourseList()">
+                                            <option value="all">All Curricula</option>
+                                            <?php
+                                            $curriculaQuery = "SELECT DISTINCT cu.ID, cu.Name FROM curricula cu 
+                                                             JOIN program_courses pc ON cu.ID = pc.CurriculumID 
+                                                             WHERE pc.FacultyID = ? 
+                                                             ORDER BY cu.Name";
+                                            $curriculaStmt = $conn->prepare($curriculaQuery);
+                                            $curriculaStmt->bind_param("i", $facultyID);
+                                            $curriculaStmt->execute();
+                                            $curriculaResult = $curriculaStmt->get_result();
+                                            while ($curriculum = $curriculaResult->fetch_assoc()) {
+                                                echo '<option value="' . htmlspecialchars($curriculum['Name']) . '">' . htmlspecialchars($curriculum['Name']) . '</option>';
+                                            }
+                                            $curriculaStmt->close();
+                                            ?>
                                         </select>
                                     </div>
                                     <div id="addCourseList">
@@ -2296,7 +2315,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             // Add click event listener to close dropdown when clicking outside
             document.addEventListener('click', function(event) {
                 const dropdown = document.getElementById('addCourseDropdown');
-                const addCourseBtn = document.querySelector('button[onclick="toggleAddCourseDropdown()"]');
+                const addCourseBtn = document.querySelector('button[onclick="toggleAddCourseDropdown(event)"]');
                 if (dropdown && !dropdown.contains(event.target) && !addCourseBtn.contains(event.target)) {
                     dropdown.classList.add('hidden');
                 }
@@ -2345,12 +2364,15 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             function filterAddCourseList() {
                 const search = document.getElementById('addCourseSearch').value.toLowerCase();
                 const profFilter = document.getElementById('addCourseProfFilter').value;
+                const curriculumFilter = document.getElementById('addCourseCurriculumFilter').value;
                 let filtered = _addCourseListData.filter(course => {
                     const matchesSearch = course.CourseCode.toLowerCase().includes(search) || course.Title.toLowerCase().includes(search);
                     let matchesProf = true;
                     if (profFilter === 'assigned') matchesProf = !!course.AssignedTo;
                     else if (profFilter === 'unassigned') matchesProf = !course.AssignedTo;
-                    return matchesSearch && matchesProf;
+                    let matchesCurriculum = true;
+                    if (curriculumFilter !== 'all' && course.CurriculumName !== curriculumFilter) matchesCurriculum = false;
+                    return matchesSearch && matchesProf && matchesCurriculum;
                 });
                 renderAddCourseList(filtered);
             }
