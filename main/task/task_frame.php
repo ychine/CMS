@@ -829,14 +829,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         ?>
             <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
                 <?php if (empty($tasks) && !$onCompletedTab): ?>
-                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                    <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                         <p class="text-gray-500">No tasks available. Create your first task!</p>
                     </div>
                 <?php else: ?>
                     <?php if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR'): ?>
                         <!-- All Tasks for DN, PH, and COR -->
                         <?php if (!isset($_GET['view']) || $_GET['view'] === 'all' || $_GET['view'] === 'created'): ?>
-                        <div class="mb-6">
+                        <div class="mb-4">
                             <h2 class="text-2xl font-bold text-gray-800 mb-2 font-overpass">
                                 <?php echo (isset($_GET['view']) && $_GET['view'] === 'created') ? 'Tasks Created by You' : 'All Tasks'; ?>
                             </h2>
@@ -1067,7 +1067,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         <div class="mt-0">
                             <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Tasks Assigned to You</h2>
                             <?php if (empty($assignedTasks)): ?>
-                                <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                                <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                                     <p class="text-gray-500">No tasks have been assigned to you yet.</p>
                                 </div>
                             <?php else: ?>
@@ -1539,7 +1539,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         if (count($myCompletedCourses) > 0):
                             $renderedTaskIds[] = $task['TaskID'];
                     ?>
-                        <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                        <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                              onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                             <div class="flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between">
                                 <div class="flex items-center gap-3">
@@ -1582,7 +1582,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 <?php endif; ?>
             <?php else: ?>
                 <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
-                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                    <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                         <p class="text-gray-500">No completed tasks found. Keep going, you're almost there!</p>
                     </div>
                 </div>
@@ -1613,7 +1613,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <?php if (empty($ongoingTasks)): ?>
                         <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
                             <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
-                                <p class="text-gray-500">No tasks available. Create your first task!</p>
+                                <p class="text-gray-500">No tasks for now. Tasks will appear here once they are assigned to you.</p>
                             </div>
                         </div>
                     <?php else: ?>
@@ -1658,7 +1658,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Completed Tasks</h2>
                     <?php if (empty($completedTasks)): ?>
                         <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
-                            <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                            <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                                 <p class="text-gray-500">No completed tasks found. Keep going, you're almost there!</p>
                             </div>
                         </div>

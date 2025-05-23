@@ -260,11 +260,13 @@ $conn->close();
             <option value="COR" <?php echo $member['Role'] === 'COR' ? 'selected' : ''; ?>>COORDINATOR</option>
             <option value="FM" <?php echo $member['Role'] === 'FM' ? 'selected' : ''; ?>>FACULTY</option>
         </select>
+        <?php if ($member['AccountID'] != $accountID): ?>
         <button class="delete-button" data-account-id="<?php echo $member['AccountID']; ?>" title="Remove Member">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 hover:text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>
+        <?php endif; ?>
     <?php else: ?>
 
     <?php endif; ?>
