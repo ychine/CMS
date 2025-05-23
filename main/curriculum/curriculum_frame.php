@@ -875,6 +875,30 @@ $conn->close();
   </div>
 </div>
 
+<!-- Error Modal for Assignment -->
+<div id="assignErrorModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background: rgba(0,0,0,0.15);">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-[400px] border-2 border-gray-400 font-onest modal-animate relative">
+        <h2 class="text-2xl font-overpass font-bold mb-2 text-blue-800">Cannot Reassign Professor</h2>
+        <hr class="border-gray-400 mb-6">
+        <p class="text-lg text-gray-700 mb-6" id="assignErrorMessage">There are pending or ongoing tasks for this course.</p>
+        <div class="flex justify-end gap-4 pt-4">
+            <button type="button" onclick="closeAssignErrorModal()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal for Assignment -->
+<div id="assignSuccessModal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background: rgba(0,0,0,0.15);">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-[400px] border-2 border-gray-400 font-onest modal-animate relative">
+        <h2 class="text-2xl font-overpass font-bold mb-2 text-green-700">Success</h2>
+        <hr class="border-gray-400 mb-6">
+        <p class="text-lg text-gray-700 mb-6" id="assignSuccessMessage">Professor assigned successfully!</p>
+        <div class="flex justify-end gap-4 pt-4">
+            <button type="button" onclick="closeAssignSuccessModal()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-semibold">OK</button>
+        </div>
+    </div>
+</div>
+
 <script>
    
     const userRole = "<?php echo $userRole; ?>";
@@ -908,25 +932,32 @@ $conn->close();
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Show a success message (no reload)
-                        alert('Professor assigned successfully!');
+                        // Show a success modal (no reload)
+                        showAssignSuccessModal('Professor assigned successfully!');
                         // Optionally, you can update the dropdown or highlight it here
                     } else {
-                        // Show error message
-                        alert(data.message || 'Failed to assign personnel');
+                        // Show error modal instead of alert
+                        showAssignErrorModal(data.message || 'Failed to assign personnel');
                         // Reset the dropdown to its previous value
                         this.value = '';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while assigning personnel');
+                    showAssignErrorModal('An error occurred while assigning personnel');
                     this.value = '';
                 });
             });
         });
     });
 
+    function showAssignErrorModal(message) {
+        document.getElementById('assignErrorMessage').textContent = message;
+        document.getElementById('assignErrorModal').classList.remove('hidden');
+    }
+    function closeAssignErrorModal() {
+        document.getElementById('assignErrorModal').classList.add('hidden');
+    }
 
     function confirmDelete(programId, programName) {
         programToDelete = programId;
@@ -1529,7 +1560,14 @@ $conn->close();
         });
     });
 
-    
+    function showAssignSuccessModal(message) {
+        document.getElementById('assignSuccessMessage').textContent = message;
+        document.getElementById('assignSuccessModal').classList.remove('hidden');
+    }
+    function closeAssignSuccessModal() {
+        document.getElementById('assignSuccessModal').classList.add('hidden');
+    }
+
 </script>
 
 <?php if (isset($_SESSION['success'])): ?>
