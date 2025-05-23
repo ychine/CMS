@@ -170,7 +170,7 @@ $conn->close();
             <button onclick="openPinboardModal()" class="text-xs text-blue-600 hover:underline">Post Announcement</button>
             <?php endif; ?>
         </div>
-        <div class="space-y-4 overflow-y-auto h-[calc(100%-120px)] pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
+        <div class="space-y-4 overflow-y-auto h-[calc(100%-100px)] pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
             <?php if (empty($pinboardPosts)): ?>
                 <div class="text-sm text-gray-600 text-center py-4">
                     No announcements yet.

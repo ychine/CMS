@@ -1071,7 +1071,7 @@ if (isset($_GET['from'])) {
                   <p>Deadline: <?php echo date("F j, g:i a", strtotime($task['DueDate'])); ?></p>
                 </div>
               </div>
-              <div class="task-content mb-2 p-[20px]">
+              <div class="task-content mb-2 p-[10px]">
                 <p class="text-base font-onest font-light"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                 <?php if (!empty($task['RevisionReason'])): ?>
                   <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -1463,8 +1463,7 @@ if (isset($_GET['from'])) {
       const modal = document.getElementById('previewModal');
       const previewContent = document.getElementById('previewContent');
       const previewTitle = document.getElementById('previewTitle');
-      
-      // Set the title
+  
       previewTitle.textContent = title;
       
       // Get file extension

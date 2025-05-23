@@ -1384,7 +1384,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         </div>
 
         <!-- Revision Modal -->
-        <div id="revisionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div id="revisionModal" class="hidden fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-[600px]">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold">Request Revision</h2>
