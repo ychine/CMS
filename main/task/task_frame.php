@@ -213,8 +213,8 @@ if (isset($_POST['create_task'])) {
         $taskID = $taskStmt->insert_id;
         
         if (isset($_POST['assigned']) && is_array($_POST['assigned'])) {
-            $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, Status) 
-                                    VALUES (?, ?, ?, ?, 'Pending')";
+            $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status) 
+                                    VALUES (?, ?, ?, ?, ?, 'Pending')";
             $assignmentStmt = $conn->prepare($assignmentInsertSql);
 
             foreach ($_POST['assigned'] as $assignment) {
@@ -222,9 +222,6 @@ if (isset($_POST['create_task'])) {
                 if (count($parts) == 2) {
                     $programID = $parts[0];
                     $courseCode = $parts[1];
-
-                    $assignmentStmt->bind_param("iisi", $taskID, $programID, $courseCode, $facultyID);
-                    $assignmentStmt->execute();
 
                     // Get the assigned professor's PersonnelID for this course
                     $profQuery = "SELECT PersonnelID FROM program_courses WHERE ProgramID = ? AND CourseCode = ? AND FacultyID = ?";
@@ -234,6 +231,9 @@ if (isset($_POST['create_task'])) {
                     $profResult = $profStmt->get_result();
                     if ($profRow = $profResult->fetch_assoc()) {
                         $assignedPersonnelID = $profRow['PersonnelID'];
+                        $assignmentStmt->bind_param("iisii", $taskID, $programID, $courseCode, $facultyID, $assignedPersonnelID);
+                        $assignmentStmt->execute();
+
                         if ($assignedPersonnelID) {
                             // Get the AccountID for this PersonnelID
                             $accQuery = "SELECT AccountID FROM personnel WHERE PersonnelID = ?";
@@ -1162,7 +1162,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                 <?php echo $task['Status']; ?>
                                             </span>
                                         </div>
-                                        <div class="flex flex-col md:items-end text-sm text-gray-500">
+                                        <div class="flex flex-col md:items-end align-right text-sm text-gray-500">
                                             <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
                                             <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
                                             <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
@@ -1353,11 +1353,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             </label>
                                         </div>
                                     <?php 
-                                        // Check if the next item has a different program
+                                       
                                         $nextIndex = $index + 1;
                                         if (!isset($facultyCoursePairs[$nextIndex]) || 
                                             $facultyCoursePairs[$nextIndex]['ProgramName'] != $currentProgram) {
-                                            echo '</div>'; // Close program section
+                                            echo '</div>'; 
                                         }
                                         endforeach; 
                                     ?>
