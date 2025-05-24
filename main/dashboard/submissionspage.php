@@ -198,36 +198,22 @@ if (isset($_GET['task_id'])) {
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
-                ta.RevisionReason
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
                 FROM tasks t
-                JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                WHERE t.TaskID = ? AND t.FacultyID = ?";
-    
-    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-        $tasksSql .= " AND pc.PersonnelID = ?";
-    }
-    
-    $tasksSql .= " GROUP BY t.TaskID ORDER BY t.CreatedAt DESC";
+                WHERE t.TaskID = ? AND t.FacultyID = ?
+                GROUP BY t.TaskID";
     
     $tasksStmt = $conn->prepare($tasksSql);
-    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-        $tasksStmt->bind_param("iii", $taskID, $facultyID, $personnelID);
-    } else {
-        $tasksStmt->bind_param("ii", $taskID, $facultyID);
-    }
+    $tasksStmt->bind_param("ii", $taskID, $facultyID);
 } else if ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR') {
-   
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
-                ta.RevisionReason
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
                 FROM tasks t
-                JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
                 WHERE t.FacultyID = ?
                 GROUP BY t.TaskID
@@ -235,17 +221,14 @@ if (isset($_GET['task_id'])) {
     $tasksStmt = $conn->prepare($tasksSql);
     $tasksStmt->bind_param("i", $facultyID);
 } else {
-
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
-                ta.RevisionReason
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
                 FROM tasks t
-                JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                WHERE pc.PersonnelID = ? AND t.FacultyID = ?
+                WHERE ta.PersonnelID = ? AND t.FacultyID = ?
                 GROUP BY t.TaskID
                 ORDER BY t.CreatedAt DESC";
     $tasksStmt = $conn->prepare($tasksSql);
@@ -256,7 +239,6 @@ $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
 
 while ($taskRow = $tasksResult->fetch_assoc()) {
-   
     $assignmentsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.Status as AssignmentStatus, 
                     ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
@@ -264,16 +246,14 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                     per.PersonnelID as PersonnelID,
                     CONCAT(apr.FirstName, ' ', apr.LastName) as ApprovedBy
                     FROM task_assignments ta
-                    JOIN courses c ON ta.CourseCode = c.CourseCode
-                    JOIN programs p ON ta.ProgramID = p.ProgramID
-                    LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-                    LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                    LEFT JOIN courses c ON ta.CourseCode = c.CourseCode
+                    LEFT JOIN programs p ON ta.ProgramID = p.ProgramID
+                    LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
                     LEFT JOIN personnel apr ON ta.ApprovedBy = apr.PersonnelID
                     WHERE ta.TaskID = ?";
     
     if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-       
-        $assignmentsSql .= " AND pc.PersonnelID = ?";
+        $assignmentsSql .= " AND ta.PersonnelID = ?";
     }
     
     $assignmentsSql .= " ORDER BY p.ProgramName, ta.CourseCode";
@@ -294,36 +274,6 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
         $assignments[] = $assignmentRow;
     }
     $assignmentsStmt->close();
-    
-    // When displaying each assignment in the task view, fetch and display co-authors
-    foreach ($assignments as &$assignment) {
-        // Find the submission for this assignment
-        if (!empty($assignment['SubmissionPath'])) {
-            $submissionPath = $assignment['SubmissionPath'];
-            // Get SubmissionID
-            $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
-            $subStmt->bind_param("s", $submissionPath);
-            $subStmt->execute();
-            $subRes = $subStmt->get_result();
-            if ($subRow = $subRes->fetch_assoc()) {
-                $submissionID = $subRow['SubmissionID'];
-                // Get co-authors
-                $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
-                $coStmt->bind_param("i", $submissionID);
-                $coStmt->execute();
-                $coRes = $coStmt->get_result();
-                $coauthorsList = [];
-                while ($coRow = $coRes->fetch_assoc()) {
-                    $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
-                }
-                $assignment['CoAuthors'] = $coauthorsList;
-                $coStmt->close();
-            }
-            $subStmt->close();
-        } else {
-            $assignment['CoAuthors'] = [];
-        }
-    }
     
     $taskRow['Assignments'] = $assignments;
     $tasks[] = $taskRow;
