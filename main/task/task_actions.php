@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
     exit();
@@ -12,7 +11,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Check if user is Dean or Coordinator
 $accountID = $_SESSION['AccountID'];
 $checkRoleSql = "SELECT Role FROM personnel WHERE AccountID = ?";
 $checkStmt = $conn->prepare($checkRoleSql);
@@ -30,7 +28,7 @@ if (isset($_POST['action'])) {
     $action = $_POST['action'];
     
     if ($action === 'discard') {
-        // Get the personnel ID of the Dean/Coordinator
+        
         $personnelSql = "SELECT PersonnelID FROM personnel WHERE AccountID = ?";
         $personnelStmt = $conn->prepare($personnelSql);
         $personnelStmt->bind_param("i", $accountID);
@@ -38,8 +36,7 @@ if (isset($_POST['action'])) {
         $personnelResult = $personnelStmt->get_result();
         $personnelData = $personnelResult->fetch_assoc();
         $personnelID = $personnelData['PersonnelID'];
-        
-        // Get the TaskID - either directly or from task_assignment_id
+ 
         $taskID = null;
         if (isset($_POST['task_id'])) {
             $taskID = $_POST['task_id'];
@@ -55,21 +52,30 @@ if (isset($_POST['action'])) {
         }
         
         if ($taskID) {
-            // Delete all submissions for this task
+            // First delete team members records
+            $deleteTeamMembersSql = "DELETE tm FROM teammembers tm 
+                                   INNER JOIN submissions s ON tm.SubmissionID = s.SubmissionID 
+                                   WHERE s.TaskID = ?";
+            $deleteTeamMembersStmt = $conn->prepare($deleteTeamMembersSql);
+            $deleteTeamMembersStmt->bind_param("i", $taskID);
+            $deleteTeamMembersStmt->execute();
+            $deleteTeamMembersStmt->close();
+            
+            // Then delete submissions
             $deleteSubmissionsSql = "DELETE FROM submissions WHERE TaskID = ?";
             $deleteSubmissionsStmt = $conn->prepare($deleteSubmissionsSql);
             $deleteSubmissionsStmt->bind_param("i", $taskID);
             $deleteSubmissionsStmt->execute();
             $deleteSubmissionsStmt->close();
             
-            // Delete all task assignments for this task
+            // Then delete task assignments
             $deleteAssignmentsSql = "DELETE FROM task_assignments WHERE TaskID = ?";
             $deleteAssignmentsStmt = $conn->prepare($deleteAssignmentsSql);
             $deleteAssignmentsStmt->bind_param("i", $taskID);
             $deleteAssignmentsStmt->execute();
             $deleteAssignmentsStmt->close();
             
-            // Delete the task itself
+            // Finally delete the task
             $deleteTaskSql = "DELETE FROM tasks WHERE TaskID = ?";
             $deleteTaskStmt = $conn->prepare($deleteTaskSql);
             $deleteTaskStmt->bind_param("i", $taskID);
@@ -87,10 +93,9 @@ if (isset($_POST['action'])) {
         $taskAssignmentID = $_POST['task_assignment_id'];
         
         if ($action === 'revise') {
-            // Get the revision reason
+         
             $revisionReason = isset($_POST['revision_reason']) ? $_POST['revision_reason'] : '';
-            
-            // Update status to Pending for revision
+       
             $updateSql = "UPDATE task_assignments 
                          SET Status = 'Pending', 
                              SubmissionPath = NULL, 
@@ -110,7 +115,7 @@ if (isset($_POST['action'])) {
             $updateStmt->close();
         } 
         else if ($action === 'complete') {
-            // Get the personnel ID of the Dean
+            
             $personnelSql = "SELECT PersonnelID FROM personnel WHERE AccountID = ?";
             $personnelStmt = $conn->prepare($personnelSql);
             $personnelStmt->bind_param("i", $accountID);
@@ -119,7 +124,7 @@ if (isset($_POST['action'])) {
             $personnelData = $personnelResult->fetch_assoc();
             $personnelID = $personnelData['PersonnelID'];
             
-            // First get the TaskID for this assignment
+        
             $getTaskSql = "SELECT TaskID FROM task_assignments WHERE TaskAssignmentID = ?";
             $getTaskStmt = $conn->prepare($getTaskSql);
             $getTaskStmt->bind_param("i", $taskAssignmentID);
@@ -129,7 +134,7 @@ if (isset($_POST['action'])) {
             $taskID = $taskData['TaskID'];
             $getTaskStmt->close();
             
-            // Update task_assignments status to Completed
+         
             $updateSql = "UPDATE task_assignments 
                          SET Status = 'Completed', 
                              ApprovalDate = NOW(),
@@ -140,7 +145,7 @@ if (isset($_POST['action'])) {
             $updateStmt->bind_param("ii", $personnelID, $taskAssignmentID);
             
             if ($updateStmt->execute()) {
-                // Check if all assignments for this task are completed
+                
                 $checkAllCompletedSql = "SELECT COUNT(*) as total, 
                                        SUM(CASE WHEN Status = 'Completed' THEN 1 ELSE 0 END) as completed 
                                        FROM task_assignments WHERE TaskID = ?";
@@ -151,7 +156,7 @@ if (isset($_POST['action'])) {
                 $checkData = $checkResult->fetch_assoc();
                 $checkStmt->close();
                 
-                // If all assignments are completed, mark the task as completed
+          
                 if ($checkData['total'] == $checkData['completed']) {
                     $updateTaskSql = "UPDATE tasks SET Status = 'Completed' WHERE TaskID = ?";
                     $updateTaskStmt = $conn->prepare($updateTaskSql);
@@ -159,7 +164,7 @@ if (isset($_POST['action'])) {
                     $updateTaskStmt->execute();
                     $updateTaskStmt->close();
                 } else {
-                    // At least one assignment is completed, mark as In Progress
+                  
                     $updateTaskSql = "UPDATE tasks SET Status = 'In Progress' WHERE TaskID = ?";
                     $updateTaskStmt = $conn->prepare($updateTaskSql);
                     $updateTaskStmt->bind_param("i", $taskID);
@@ -173,6 +178,80 @@ if (isset($_POST['action'])) {
             }
             $updateStmt->close();
         }
+    }
+    else if ($_POST['action'] === 'modify_task') {
+        $taskId = $_POST['task_id'];
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+        $dueDate = $_POST['due_date'];
+        $schoolYear = $_POST['school_year'];
+        $term = $_POST['term'];
+        
+        // Update task details
+        $updateTaskSql = "UPDATE tasks SET 
+                         Title = ?, 
+                         Description = ?, 
+                         DueDate = ?, 
+                         SchoolYear = ?, 
+                         Term = ? 
+                         WHERE TaskID = ?";
+        $updateTaskStmt = $conn->prepare($updateTaskSql);
+        $updateTaskStmt->bind_param("sssssi", $title, $description, $dueDate, $schoolYear, $term, $taskId);
+        
+        if ($updateTaskStmt->execute()) {
+            // Handle course assignment removals
+            if (isset($_POST['remove_assignment']) && is_array($_POST['remove_assignment'])) {
+                foreach ($_POST['remove_assignment'] as $assignment) {
+                    list($programId, $courseCode) = explode('|', $assignment);
+                    // Delete the task assignment for this course and task
+                    $deleteAssignmentSql = "DELETE FROM task_assignments WHERE TaskID = ? AND ProgramID = ? AND CourseCode = ?";
+                    $deleteAssignmentStmt = $conn->prepare($deleteAssignmentSql);
+                    $deleteAssignmentStmt->bind_param("iis", $taskId, $programId, $courseCode);
+                    $deleteAssignmentStmt->execute();
+                    $deleteAssignmentStmt->close();
+                }
+            }
+            // Handle course assignment additions
+            if (isset($_POST['add_assignment']) && is_array($_POST['add_assignment'])) {
+                foreach ($_POST['add_assignment'] as $assignment) {
+                    list($programId, $courseCode) = explode('|', $assignment);
+                    // Get PersonnelID and FacultyID for this course
+                    $profQuery = "SELECT PersonnelID, FacultyID FROM program_courses WHERE ProgramID = ? AND CourseCode = ?";
+                    $profStmt = $conn->prepare($profQuery);
+                    $profStmt->bind_param("is", $programId, $courseCode);
+                    $profStmt->execute();
+                    $profResult = $profStmt->get_result();
+                    if ($profRow = $profResult->fetch_assoc()) {
+                        $personnelId = $profRow['PersonnelID'];
+                        $facultyId = $profRow['FacultyID'];
+                        // Insert new task assignment with PersonnelID
+                        $insertAssignmentSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status) VALUES (?, ?, ?, ?, ?, 'Pending')";
+                        $insertAssignmentStmt = $conn->prepare($insertAssignmentSql);
+                        $insertAssignmentStmt->bind_param("iisis", $taskId, $programId, $courseCode, $facultyId, $personnelId);
+                        $insertAssignmentStmt->execute();
+                        $insertAssignmentStmt->close();
+                    }
+                    $profStmt->close();
+                }
+            }
+            
+            // Add audit log entry
+            $logDesc = "Modified task: " . htmlspecialchars($title);
+            $logSql = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description) 
+                       SELECT ?, ?, CONCAT(FirstName, ' ', LastName), ? 
+                       FROM personnel WHERE PersonnelID = ?";
+            $logStmt = $conn->prepare($logSql);
+            $logStmt->bind_param("iisi", $facultyID, $personnelID, $logDesc, $personnelID);
+            $logStmt->execute();
+            $logStmt->close();
+            
+            header("Location: task_frame.php?message=Task modified successfully");
+        } else {
+            header("Location: task_frame.php?error=Failed to modify task");
+        }
+        
+        $updateTaskStmt->close();
+        exit();
     }
 }
 

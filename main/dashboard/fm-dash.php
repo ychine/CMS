@@ -243,17 +243,18 @@ $totalStmt->close();
                 
                 <div class="flex gap-5 flex-1 max-w-[900px]">
                     <!-- Tasks -->
-                    <div class="flex-1 bg-white p-[30px] pb-[20px] font-overpass rounded-lg shadow-md h-[210px]">
+                    <div class="flex-1 bg-white p-[30px] pb-[20px] font-overpass rounded-lg shadow-md h-[210px] relative" id="tasksContainer">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-bold">Tasks</h2>
                             <a href="../task/task_frame.php" class="text-sm text-blue-600 hover:underline">See all tasks</a>
                         </div>
 
                         <?php
-                        $taskQuery = "SELECT DISTINCT t.TaskID, t.Title, t.DueDate, ta.Status 
+                        $taskQuery = "SELECT DISTINCT t.TaskID, t.Title, t.DueDate, ta.Status, ta.CourseCode, c.Title AS CourseTitle 
                                     FROM tasks t 
                                     JOIN task_assignments ta ON t.TaskID = ta.TaskID 
                                     JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID 
+                                    JOIN courses c ON ta.CourseCode = c.CourseCode
                                     WHERE pc.PersonnelID = ? 
                                     AND ta.Status != 'Completed'
                                     ORDER BY t.DueDate ASC";
@@ -264,7 +265,7 @@ $totalStmt->close();
                         ?>
 
                         <?php if ($taskResult->num_rows > 0): ?>
-                            <div class="space-y-3 max-h-[120px] overflow-y-auto pr-2">
+                            <div class="space-y-3 max-h-[120px] overflow-y-auto pr-2" id="tasksList">
                                 <?php while ($task = $taskResult->fetch_assoc()): ?>
                                     <a href="submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=fm-dash" class="block">
                                         <?php
@@ -280,10 +281,13 @@ $totalStmt->close();
                                                 $borderColor = '#ef4444'; // rose
                                         }
                                         ?>
-                                        <div class="bg-gray-100 border border-gray-200 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid <?php echo $borderColor; ?>">
+                                        <div class="bg-gray-100 border border-gray-200 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid <?php echo $borderColor; ?>;">
                                             <div class="flex items-center justify-between">
                                                 <div class="flex-1">
                                                     <div class="font-medium font-onest text-sm"><?php echo htmlspecialchars($task['Title']); ?></div>
+                                                    <div class="text-xs text-blue-700 font-semibold mt-1">
+                                                        <?php echo htmlspecialchars($task['CourseCode']); ?> - <?php echo htmlspecialchars($task['CourseTitle']); ?>
+                                                    </div>
                                                     <div class="text-xs text-gray-500 mt-1">
                                                         Due: <?php echo date('M d, Y', strtotime($task['DueDate'])); ?>
                                                     </div>
@@ -316,6 +320,10 @@ $totalStmt->close();
                                 <span class="text-lg text-gray-500">No active tasks</span>
                             </div>
                         <?php endif; ?>
+                        <!-- Resize handle -->
+                        <div class="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center" id="resizeHandle">
+                            <div class="w-12 h-1 bg-gray-300 rounded-full"></div>
+                        </div>
                     </div>
                     <!-- Faculty -->
                     <div class="w-[300px] bg-white p-[30px] pb-[20px] rounded-lg shadow-md font-overpass h-[210px]">
@@ -384,17 +392,44 @@ $totalStmt->close();
                             }
                         }
                     }
-          }
+                }
             }
         });
-    });
 
-    if (localStorage.getItem('darkMode') === 'enabled') {
-        document.body.classList.add('dark');
-    }
+        // Resize functionality
+        const tasksContainer = document.getElementById('tasksContainer');
+        const tasksList = document.getElementById('tasksList');
+        const resizeHandle = document.getElementById('resizeHandle');
+        let startY, startHeight;
+
+        resizeHandle.addEventListener('mousedown', initResize);
+
+        function initResize(e) {
+            startY = e.clientY;
+            startHeight = parseInt(document.defaultView.getComputedStyle(tasksContainer).height, 10);
+            document.documentElement.style.cursor = 'ns-resize';
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+        }
+
+        function resize(e) {
+            const newHeight = startHeight + (e.clientY - startY);
+            if (newHeight > 210) { // Minimum height
+                tasksContainer.style.height = newHeight + 'px';
+                tasksList.style.maxHeight = (newHeight - 90) + 'px'; // Adjust for padding and header
+            }
+        }
+
+        function stopResize() {
+            document.documentElement.style.cursor = '';
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark');
+        }
+    });
     </script>
 </body>
 </html>
-<?php
-
-?>

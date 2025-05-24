@@ -43,8 +43,30 @@ if ($row = $res->fetch_assoc()) {
 }
 $stmt->close();
 
-// Update assignment
-$stmt = $conn->prepare("UPDATE program_courses SET PersonnelID = ? WHERE CurriculumID = ? AND CourseCode = ?");
+// Check for pending tasks
+$checkTasksStmt = $conn->prepare("
+    SELECT COUNT(*) as pending_count 
+    FROM task_assignments ta 
+    JOIN tasks t ON ta.TaskID = t.TaskID 
+    WHERE ta.CourseCode = ? 
+    AND ta.ProgramID = ? 
+    AND ta.Status IN ('Pending', 'In Progress')
+");
+$checkTasksStmt->bind_param("si", $courseCode, $programId);
+$checkTasksStmt->execute();
+$tasksResult = $checkTasksStmt->get_result();
+$pendingTasks = $tasksResult->fetch_assoc()['pending_count'];
+$checkTasksStmt->close();
+
+if ($pendingTasks > 0) {
+    echo json_encode([
+        "success" => false, 
+        "message" => "Cannot reassign professor. There are pending or ongoing tasks for this course."
+    ]);
+    exit;
+}
+
+$stmt = $conn->prepare("UPDATE program_courses SET PersonnelID = ? WHERE CurriculumID = ? AND CourseCode = ?");          // Update assignment for course
 $stmt->bind_param("iis", $personnelId, $curriculumId, $courseCode);
 $success = $stmt->execute();
 $stmt->close();

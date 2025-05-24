@@ -265,7 +265,7 @@ $conn->close();
                                         <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #f59e0b;">
                                             <div class="flex items-center w-full">
                                                 <div class="text-2xl font-bold mr-2 font-onest"><?php echo $pendingCount; ?></div>
-                                                <div class="text-xs whitespace-nowrap">Pending Review</div>
+                                                <div class="text-xs font-onest whitespace-nowrap">Pending Review</div>
                                                 <div class="ml-auto">
                                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -279,7 +279,7 @@ $conn->close();
                                         <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #ef4444;">
                                             <div class="flex items-center w-full">
                                                 <div class="text-2xl font-bold mr-2 font-onest"><?php echo $unaccomplishedCount; ?></div>
-                                                <div class="text-xs whitespace-nowrap">Unaccomplished</div>
+                                                <div class="text-xs font-onest whitespace-nowrap">Unaccomplished</div>
                                                 <div class="ml-auto">
                                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -293,7 +293,7 @@ $conn->close();
                                         <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #10b981;">
                                             <div class="flex items-center w-full">
                                                 <div class="text-2xl font-bold mr-2 font-onest"><?php echo $completeCount; ?></div>
-                                                <div class="text-xs whitespace-nowrap">Complete</div>
+                                                <div class="text-xs font-onest whitespace-nowrap">Complete</div>
                                                 <div class="ml-auto">
                                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -334,12 +334,12 @@ $conn->close();
                             </div>
 
                             <div class="flex items-start gap-4">
-                                <!-- Donut Chart (Left) -->
+                                <!-- Donut Chart-->
                                 <div class="faculty-chart-container" style="width: 100px; height: 100px;">
                                     <canvas id="facultyDonutChart"></canvas>
                                 </div>
 
-                                <!-- Role Labels (Right) -->
+                                <!-- Role Labels -->
                                 <div class="grid grid-cols-1 gap-1 flex-1">
                                     <?php foreach($roleLabels as $code => $label): ?>
                                         <div class="flex items-center bg-gray-100 rounded px-2 py-1">
@@ -353,7 +353,7 @@ $conn->close();
                         </div>
                     </div>
 
-                    <!-- Pending Submissions Section -->
+                    <!-- Pending Submissions -->
                     <h2 class="pl-2 text-2xl pt-5 font-overpass font-bold">Pending Submissions</h2>
                     <div class="bg-white p-[30px] rounded-lg shadow-md font-overpass">
                         <?php if (!empty($pendingSubmissions)): ?>
@@ -394,7 +394,7 @@ $conn->close();
                         <?php endif; ?>
                     </div>
                 </div>
-                <!-- Pinboard on the far right -->
+                <!-- Pinboard sa right -->
                 <?php include 'pinboard.php'; ?>
             </div>
         </div>

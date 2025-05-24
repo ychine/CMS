@@ -315,12 +315,6 @@ $conn->close();
                     <span class="link-text">Dashboard</span>
                 </a>
 
-                <a href="task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Tasks</span>
-                </a>
-
-
                 <a href="faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
@@ -329,6 +323,11 @@ $conn->close();
                 <a href="curriculum/curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curricula</span>
+                </a>
+
+                <a href="task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Tasks</span>
                 </a>
                 
                 <?php if ($row['Role'] === 'DN'): ?>
@@ -361,7 +360,7 @@ $conn->close();
         <!-- Main Content -->
         <div class="main-content flex-1 flex flex-col h-full ">
 
-            <div class="header-bar bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3);">
+            <div class="header-bar bg-white px-[50px] py-[20px] h-[67px] flex justify-between items-center w-full box-border" style="box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.3); z-index: 100;">
                 <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
@@ -382,14 +381,14 @@ $conn->close();
                         </button> 
                         <!-- Notification Dropdown -->
                         <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                            <div class="p-4 bg-white rounded-t-lg relative" style="z-index: 2;">
+                            <div class="p-4 shadow-md">
                                 <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
                             </div>
-                            <div id="notificationList" class="max-h-96 overflow-y-auto bg-white relative" style="z-index: 1;">
+                            <div id="notificationList" class="max-h-96 z-2 overflow-y-auto">
                                 <!-- Notifications will be loaded here -->
                             </div>
                             <div class="p-4 border-t border-gray-200 text-center">
-                                <a href="task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
+                                <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
                             </div>
                         </div>
                     </div>
@@ -686,11 +685,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const menu = document.getElementById('userMenu');
     const icon = document.getElementById('dropdown-icon');
     
-    if (!menu) return; // Safety check
+    if (!menu) return;
     
     menu.classList.toggle('hidden');
     
-    // Rotate icon when menu is open
+  
     if (icon) {
       if (menu.classList.contains('hidden')) {
         icon.classList.remove('rotate-180');
@@ -700,7 +699,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
-  // Close menu when clicking outside
   document.addEventListener('click', function(event) {
     const menu = document.getElementById('userMenu');
     const profileContainer = document.querySelector('.profile-container');
@@ -722,7 +720,6 @@ if (localStorage.getItem('darkMode') === 'enabled') {
   </script>
 
 <script>
-// Add this to your existing JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     const notificationButton = document.getElementById('notificationButton');
     const notificationDropdown = document.getElementById('notificationDropdown');
@@ -759,7 +756,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    // Load notifications
     function loadNotifications() {
         fetch('src/scripts/get_notifications.php')
             .then(response => response.json())
@@ -775,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const notificationElement = document.createElement('div');
                     notificationElement.className = `p-4 border-b hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
                     notificationElement.innerHTML = `
-                        <div class="flex items-start">
+                        <div class="flex items-start z-0">
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-gray-900">${notification.title}</p>
                                 <p class="text-sm text-gray-500">${notification.message}</p>
@@ -814,7 +810,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Mark notification as read
     function markAsRead(notificationId) {
         const formData = new FormData();
         formData.append('notification_id', notificationId);
@@ -826,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update the notification count badge
+               
                 const badge = notificationButton.querySelector('span');
                 if (badge) {
                     const currentCount = parseInt(badge.textContent);

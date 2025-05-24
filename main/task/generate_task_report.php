@@ -57,7 +57,33 @@ $assignStmt->execute();
 $assignResult = $assignStmt->get_result();
 while ($row = $assignResult->fetch_assoc()) $assignments[] = $row;
 
-// Automated summary
+// After fetching $assignments, attach co-authors to each assignment
+foreach ($assignments as &$a) {
+    if (!empty($a['SubmissionPath'])) {
+        $submissionPath = $a['SubmissionPath'];
+        $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
+        $subStmt->bind_param("s", $submissionPath);
+        $subStmt->execute();
+        $subRes = $subStmt->get_result();
+        if ($subRow = $subRes->fetch_assoc()) {
+            $submissionID = $subRow['SubmissionID'];
+            $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
+            $coStmt->bind_param("i", $submissionID);
+            $coStmt->execute();
+            $coRes = $coStmt->get_result();
+            $coauthorsList = [];
+            while ($coRow = $coRes->fetch_assoc()) {
+                $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
+            }
+            $a['CoAuthors'] = $coauthorsList;
+            $coStmt->close();
+        }
+        $subStmt->close();
+    } else {
+        $a['CoAuthors'] = [];
+    }
+}
+
 $total = count($assignments);
 $completed = 0;
 $pending = 0;
@@ -68,21 +94,20 @@ foreach ($assignments as $a) {
     else $pending++;
 }
 
-// Excel export
 if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     $spreadsheet = new Spreadsheet();
     $sheet = $spreadsheet->getActiveSheet();
     $sheet->setTitle('Task Report');
 
-    // Add task information
+
     $sheet->setCellValue('A1', 'Task Report: ' . $task['Title']);
     $sheet->setCellValue('A2', 'School Year: ' . $task['SchoolYear'] . ' | Term: ' . $task['Term']);
     
-    // Merge cells for title
+
     $sheet->mergeCells('A1:F1');
     $sheet->mergeCells('A2:F2');
     
-    // Style task information
+   
     $titleStyle = [
         'font' => [
             'bold' => true,
@@ -106,11 +131,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     ];
     $sheet->getStyle('A2:F2')->applyFromArray($subtitleStyle);
 
-    // Set headers (moved down 2 rows)
-    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Status', 'Submission Date'];
+   
+    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Co-Authors', 'Status', 'Submission Date', 'Due Date'];
     $sheet->fromArray($headers, NULL, 'A4');
 
-    // Style headers
+ 
     $headerStyle = [
         'font' => [
             'bold' => true,
@@ -133,19 +158,22 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     ];
     $sheet->getStyle('A4:F4')->applyFromArray($headerStyle);
 
-    // Add data (starting from row 5)
+   
     $row = 5;
     foreach ($assignments as $a) {
+        $coauthors = !empty($a['CoAuthors']) ? implode(', ', $a['CoAuthors']) : '-';
         $sheet->setCellValue('A' . $row, $a['CourseCode']);
         $sheet->setCellValue('B' . $row, $a['CourseTitle']);
         $sheet->setCellValue('C' . $row, $a['ProgramName']);
         $sheet->setCellValue('D' . $row, $a['AssignedTo'] ?: 'Unassigned');
-        $sheet->setCellValue('E' . $row, $a['Status']);
-        $sheet->setCellValue('F' . $row, $a['SubmissionDate'] ?: '-');
+        $sheet->setCellValue('E' . $row, $coauthors);
+        $sheet->setCellValue('F' . $row, $a['Status']);
+        $sheet->setCellValue('G' . $row, $a['SubmissionDate'] ?: '-');
+        $sheet->setCellValue('H' . $row, $task['DueDate']);
         $row++;
     }
 
-    // Style data rows
+ 
     $dataStyle = [
         'borders' => [
             'bottom' => [
@@ -157,18 +185,18 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             'vertical' => Alignment::VERTICAL_CENTER
         ]
     ];
-    $sheet->getStyle('A5:F' . ($row-1))->applyFromArray($dataStyle);
+    $sheet->getStyle('A5:H' . ($row-1))->applyFromArray($dataStyle);
 
-    // Auto-size columns
-    foreach (range('A', 'F') as $col) {
+
+    foreach (range('A', 'H') as $col) {
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
-    // Add summary sheet
+  
     $summarySheet = $spreadsheet->createSheet();
     $summarySheet->setTitle('Summary');
     
-    // Add summary data
+  
     $summarySheet->setCellValue('A1', 'Task Summary');
     $summarySheet->setCellValue('A3', 'Total Assignments');
     $summarySheet->setCellValue('B3', $total);
@@ -179,16 +207,16 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     $summarySheet->setCellValue('A6', 'Pending');
     $summarySheet->setCellValue('B6', $pending);
 
-    // Style summary sheet
+  
     $summarySheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
     $summarySheet->getStyle('A3:B6')->getFont()->setSize(12);
     $summarySheet->getColumnDimension('A')->setAutoSize(true);
     $summarySheet->getColumnDimension('B')->setAutoSize(true);
 
-    // Set active sheet back to main report
+ 
     $spreadsheet->setActiveSheetIndex(0);
 
-    // Create the Excel file
+
     $writer = new Xlsx($spreadsheet);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     header('Content-Disposition: attachment;filename="task_report_' . $taskId . '.xlsx"');
@@ -205,6 +233,19 @@ function statusBadge($status) {
     ];
     $s = $map[$status] ?? ['#64748b', '#f1f5f9', '#334155', $status];
     return "<span style='background:{$s[1]};color:{$s[2]};padding:4px 12px;border-radius:999px;font-size:0.95em;font-weight:600;display:inline-block;'>{$s[3]}</span>";
+}
+
+function getAssignmentStatusLabel($status) {
+    switch ($status) {
+        case 'Pending':
+            return 'No Submission';
+        case 'Submitted':
+            return 'Submitted for Review';
+        case 'Completed':
+            return 'Reviewed & Approved';
+        default:
+            return $status;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -350,8 +391,10 @@ function statusBadge($status) {
                 <th>Course Title</th>
                 <th>Program Name</th>
                 <th>Assigned Professor</th>
+                <th>Co-Authors</th>
                 <th>Status</th>
                 <th>Submission Date</th>
+                <th>Due Date</th>
             </tr>
             <?php foreach ($assignments as $a): ?>
             <tr>
@@ -359,8 +402,10 @@ function statusBadge($status) {
                 <td><?= htmlspecialchars($a['CourseTitle']) ?></td>
                 <td><?= htmlspecialchars($a['ProgramName']) ?></td>
                 <td><?= htmlspecialchars($a['AssignedTo']) ?: '<span style="color:red;">Unassigned</span>' ?></td>
-                <td><?= statusBadge($a['Status']) ?></td>
+                <td><?= !empty($a['CoAuthors']) ? htmlspecialchars(implode(', ', $a['CoAuthors'])) : '-' ?></td>
+                <td><?= getAssignmentStatusLabel($a['Status']) ?></td>
                 <td><?= $a['SubmissionDate'] ? htmlspecialchars($a['SubmissionDate']) : '-' ?></td>
+                <td><?= htmlspecialchars($task['DueDate']) ?></td>
             </tr>
             <?php endforeach; ?>
         </table>

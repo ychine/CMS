@@ -260,12 +260,6 @@ $conn->close();
                     <span class="link-text">Dashboard</span>
                 </a>
 
-
-                <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Tasks</span>
-                </a>
-
                 <a href="../faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
@@ -274,6 +268,11 @@ $conn->close();
                 <a href="../curriculum/curriculum.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curricula</span>
+                </a>
+                
+                <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Tasks</span>
                 </a>
 
                 <?php if ($row['Role'] === 'DN'): ?>
@@ -544,19 +543,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationDropdown = document.getElementById('notificationDropdown');
     const notificationList = document.getElementById('notificationList');
 
-    // Load notifications immediately on page load
     loadNotifications();
-
-    // Load notifications every 30 seconds
+    //30 seconds
     setInterval(loadNotifications, 30000);
 
-    // Toggle notification dropdown
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
         if (notificationDropdown.classList.contains('hidden')) {
-            // Show dropdown with animation
+        
             notificationDropdown.classList.remove('hidden');
-            // Use setTimeout to ensure the transition works
+           
             setTimeout(() => {
                 notificationDropdown.classList.remove('opacity-0', 'scale-95');
                 notificationDropdown.classList.add('opacity-100', 'scale-100');
@@ -575,7 +571,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Close dropdown when clicking outside with animation
     document.addEventListener('click', function(e) {
         if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
             notificationDropdown.classList.remove('opacity-100', 'scale-100');
@@ -623,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 else if (userRole === 'Program Head') fromParam = 'ph-dash';
                                 else if (userRole === 'College Dean') fromParam = 'dn-dash';
                                 else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
-                                iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                iframe.src = `../dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
                         }
@@ -674,9 +669,9 @@ document.addEventListener('DOMContentLoaded', function() {
             notifDot.className = 'absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50';
             notificationButton.appendChild(notifDot);
         }
-        // Check for unread notifications in the list
+      
         const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
-        // Show the dot only if there are unread notifications
+    
         if (hasUnread) {
             notifDot.style.display = '';
         } else {

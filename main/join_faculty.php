@@ -15,7 +15,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['faculty_code'])) {
     $facultyCode = trim($_POST['faculty_code']);
     $accountID = $_SESSION['AccountID'];
 
-    // Check if faculty code exists
     $query = "SELECT FacultyID FROM faculties WHERE JoinCode = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $facultyCode);

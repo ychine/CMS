@@ -1,114 +1,124 @@
 <?php
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['Username'])) {
-    header("Location: ../../index.php");
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
     exit();
 }
 
-// Validate request method
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit();
-}
-
-// Check if required fields are set
-$requiredFields = ['program_id', 'curriculum_id', 'course_code', 'course_title'];
-foreach ($requiredFields as $field) {
-    if (!isset($_POST[$field]) || empty($_POST[$field])) {
-        echo json_encode(['success' => false, 'message' => "Missing required field: $field"]);
-        exit();
-    }
-}
-
-// Get form data
-$programId = $_POST['program_id'];
-$curriculumId = $_POST['curriculum_id'];
-$courseCode = $_POST['course_code'];
-$courseTitle = $_POST['course_title'];
-
-// Connect to database
 $conn = new mysqli("localhost", "root", "", "cms");
 if ($conn->connect_error) {
-    echo json_encode(['success' => false, 'message' => "Connection failed: " . $conn->connect_error]);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
     exit();
 }
 
-// Start transaction
+// Get faculty ID
+$accountID = $_SESSION['AccountID'];
+$facultyQuery = "SELECT FacultyID FROM personnel WHERE AccountID = ?";
+$facultyStmt = $conn->prepare($facultyQuery);
+$facultyStmt->bind_param("i", $accountID);
+$facultyStmt->execute();
+$facultyResult = $facultyStmt->get_result();
+
+if ($facultyRow = $facultyResult->fetch_assoc()) {
+    $facultyID = $facultyRow['FacultyID'];
+} else {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Faculty not found']);
+    exit();
+}
+$facultyStmt->close();
+
+// Get form data
+$programID = $_POST['program_id'];
+$curriculumID = $_POST['curriculum_id'];
+$selectedCourses = json_decode($_POST['selected_courses'], true);
+$yearID = isset($_POST['year_id']) ? $_POST['year_id'] : null;
+$semesterID = isset($_POST['semester_id']) ? $_POST['semester_id'] : null;
+
+if (empty($programID) || empty($curriculumID) || empty($yearID) || empty($semesterID)) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Program, curriculum, year, and semester are required']);
+    exit();
+}
+
+if (empty($selectedCourses)) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'No courses selected']);
+    exit();
+}
+
+$success = true;
+$addedCourses = [];
+$errors = [];
+
 $conn->begin_transaction();
 
 try {
-    // Check if the course already exists in this specific curriculum
-    $checkCourseStmt = $conn->prepare("
-        SELECT pc.CourseCode 
-        FROM program_courses pc 
-        WHERE pc.ProgramID = ? AND pc.CurriculumID = ? AND pc.CourseCode = ?
-    ");
-    $checkCourseStmt->bind_param("iis", $programId, $curriculumId, $courseCode);
-    $checkCourseStmt->execute();
-    $result = $checkCourseStmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        echo json_encode(['success' => false, 'message' => "Course $courseCode is already added to this curriculum"]);
-        exit();
-    }
-    $checkCourseStmt->close();
+    foreach ($selectedCourses as $course) {
+        $courseCode = $course['code'];
+        $courseTitle = $course['title'];
 
-    // Check if course exists in courses table
-    $checkCourseStmt = $conn->prepare("SELECT CourseCode FROM courses WHERE CourseCode = ?");
-    $checkCourseStmt->bind_param("s", $courseCode);
-    $checkCourseStmt->execute();
-    $result = $checkCourseStmt->get_result();
-    
-    if ($result->num_rows === 0) {
-        // Course doesn't exist, so insert it
-        $insertCourseStmt = $conn->prepare("INSERT INTO courses (CourseCode, Title) VALUES (?, ?)");
-        $insertCourseStmt->bind_param("ss", $courseCode, $courseTitle);
         
-        if (!$insertCourseStmt->execute()) {
-            throw new Exception("Failed to insert course: " . $insertCourseStmt->error);
+        $checkCourse = "SELECT CourseCode FROM courses WHERE CourseCode = ?";                                      // check if course exist
+        $stmt = $conn->prepare($checkCourse);
+        $stmt->bind_param("s", $courseCode);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+          
+            $insertCourse = "INSERT INTO courses (CourseCode, Title) VALUES (?, ?)";                               // adding course
+            $stmt = $conn->prepare($insertCourse);
+            $stmt->bind_param("ss", $courseCode, $courseTitle);
+            $stmt->execute();
         }
-        $insertCourseStmt->close();
-    }
-    $checkCourseStmt->close();
 
-    // Get the faculty ID from the session
-    $accountID = $_SESSION['AccountID'];
-    $facultyIdStmt = $conn->prepare("SELECT FacultyID FROM personnel WHERE AccountID = ?");
-    $facultyIdStmt->bind_param("i", $accountID);
-    $facultyIdStmt->execute();
-    $facultyResult = $facultyIdStmt->get_result();
-    
-    if ($facultyRow = $facultyResult->fetch_assoc()) {
-        $facultyID = $facultyRow['FacultyID'];
-    } else {
-        throw new Exception("Faculty ID not found for account");
-    }
-    $facultyIdStmt->close();
+        
+        $checkExisting = "SELECT CourseCode FROM program_courses WHERE CurriculumID = ? AND CourseCode = ?";        // validation if course ifs in curriculum
+        $stmt = $conn->prepare($checkExisting);
+        $stmt->bind_param("is", $curriculumID, $courseCode);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    // Add the course to the program_courses table
-    $insertProgramCourseStmt = $conn->prepare("
-        INSERT INTO program_courses (ProgramID, CurriculumID, CourseCode, FacultyID) 
-        VALUES (?, ?, ?, ?)
-    ");
-    $insertProgramCourseStmt->bind_param("iisi", $programId, $curriculumId, $courseCode, $facultyID);
-    
-    if (!$insertProgramCourseStmt->execute()) {
-        throw new Exception("Failed to add course to curriculum: " . $insertProgramCourseStmt->error);
+        if ($result->num_rows === 0) {
+          
+            $insertProgramCourse = "INSERT INTO program_courses (ProgramID, CurriculumID, CourseCode, FacultyID, YearID, SemesterID) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($insertProgramCourse);
+            $stmt->bind_param("iisiii", $programID, $curriculumID, $courseCode, $facultyID, $yearID, $semesterID);
+            $stmt->execute();
+            $addedCourses[] = $courseCode;
+        } else {
+            $errors[] = "Course $courseCode is already in this curriculum";
+        }
     }
-    $insertProgramCourseStmt->close();
 
-    // Commit transaction
+    if (empty($addedCourses)) {
+        throw new Exception("No new courses were added");
+    }
+
     $conn->commit();
     
-    // Success response
-    echo json_encode(['success' => true, 'message' => "Course $courseCode - $courseTitle added successfully"]);
+    $message = count($addedCourses) . " course(s) added successfully";
+    if (!empty($errors)) {
+        $message .= ". " . implode(", ", $errors);
+    }
+    
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'message' => $message
+    ]);
 
 } catch (Exception $e) {
-    // Roll back transaction on error
     $conn->rollback();
-    echo json_encode(['success' => false, 'message' => "Error: " . $e->getMessage()]);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
 
 $conn->close();

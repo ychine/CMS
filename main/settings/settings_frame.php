@@ -78,6 +78,7 @@
       background: #60a5fa;
     }
   </style>
+  
 </head>
 <body>
   <div class="settings-card">
@@ -92,8 +93,10 @@
     </div>
     <div class="mt-4 text-sm text-gray-500">Toggle dark mode for the site.</div>
   </div>
+
+
   <script>
-    // On load, set dark mode if previously chosen
+  
     if (localStorage.getItem('darkMode') === 'enabled') {
       document.body.classList.add('dark');
       document.getElementById('darkModeToggle').checked = true;

@@ -444,10 +444,6 @@ $conn->close();
                     <span class="link-text">Dashboard</span>
                 </a>
 
-                <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Tasks</span>
-                </a>
 
                 <a href="../faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
@@ -457,6 +453,11 @@ $conn->close();
                 <a href="../curriculum/curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curricula</span>
+                </a>
+                
+                <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Tasks</span>
                 </a>
 
                 <?php if ($row['Role'] === 'DN'): ?>
@@ -579,7 +580,7 @@ $conn->close();
             
 
             <!-- Dynamic Content -->
-            <iframe id="contentIframe" src="audit_log_frame.php" class="w-full flex-1 fade-in" frameborder="0" style="z-index: 0;"></iframe>
+            <iframe id="contentIframe" src="audit_log_frame.php" class="w-full flex-1 fade-in" frameborder="0" style="z-index: 0    ;"></iframe>
 
         </div>
     </div>
@@ -796,7 +797,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 else if (userRole === 'Program Head') fromParam = 'ph-dash';
                                 else if (userRole === 'College Dean') fromParam = 'dn-dash';
                                 else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
-                                iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                iframe.src = `../dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
                         }

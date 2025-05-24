@@ -1,6 +1,18 @@
 <?php
 session_start();
 
+function getAssignmentStatusLabel($status) {
+    switch ($status) {
+        case 'Pending':
+            return 'No Submission';
+        case 'Submitted':
+            return 'Submitted for Review';
+        case 'Completed':
+            return 'Reviewed & Approved';
+        default:
+            return $status;
+    }
+}
 
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
@@ -17,6 +29,14 @@ $facultyName = "Faculty";
 $userRole = "";
 $facultyID = null;
 $message = "";
+
+// Add role mapping array
+$roleMap = [
+    'DN' => 'College Dean',
+    'PH' => 'Program Head',
+    'FM' => 'Faculty Member',
+    'COR' => 'Courseware Coordinator'
+];
 
 $sql = "SELECT personnel.PersonnelID, personnel.FacultyID, personnel.Role, faculties.Faculty 
         FROM personnel 
@@ -36,11 +56,26 @@ if ($result && $result->num_rows > 0) {
 }
 $stmt->close();
 
+// Fetch all faculty members except the current user for co-author selection
+$coauthors = [];
+if ($facultyID) {
+    $coauthorQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ? AND PersonnelID != ? ORDER BY FirstName, LastName";
+    $coauthorStmt = $conn->prepare($coauthorQuery);
+    $coauthorStmt->bind_param("ii", $facultyID, $personnelID);
+    $coauthorStmt->execute();
+    $coauthorResult = $coauthorStmt->get_result();
+    while ($row = $coauthorResult->fetch_assoc()) {
+        $coauthors[] = $row;
+    }
+    $coauthorStmt->close();
+}
+
 // Handle file upload and submission
 if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['task_file'])) {
     $taskID = $_POST['task_id'];
     $courseCode = $_POST['course_code'];
     $programID = $_POST['program_id'];
+    $selectedCoauthors = isset($_POST['coauthors']) ? $_POST['coauthors'] : [];
     
     // Check if directory exists, if not create it
     $uploadDir = "../../uploads/tasks/{$taskID}/";
@@ -70,6 +105,16 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
         $insertStmt = $conn->prepare($insertSql);
         $insertStmt->bind_param("iisssiss", $facultyID, $taskID, $courseCode, $programID, $relativePath, $personnelID, $schoolYear, $term);
         if($insertStmt->execute()) {
+            $submissionID = $conn->insert_id;
+            // Save co-authors in teammembers table
+            if (!empty($selectedCoauthors)) {
+                $tmStmt = $conn->prepare("INSERT INTO teammembers (SubmissionID, MembersID) VALUES (?, ?)");
+                foreach ($selectedCoauthors as $coauthorID) {
+                    $tmStmt->bind_param("ii", $submissionID, $coauthorID);
+                    $tmStmt->execute();
+                }
+                $tmStmt->close();
+            }
             $message = "File uploaded successfully.";
         } else {
             $message = "Error inserting submission: " . $insertStmt->error;
@@ -92,7 +137,6 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
     }
 }
 
-// Handle task approval (Dean only)
 if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $taskAssignmentID = $_POST['task_assignment_id'];
     
@@ -103,7 +147,7 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $approveStmt->bind_param("ii", $personnelID, $taskAssignmentID);
     
     if($approveStmt->execute()) {
-        // Check if all assignments for this task are completed
+      
         $checkAllCompletedSql = "SELECT TaskID FROM task_assignments 
                                 WHERE TaskAssignmentID = ?";
         $checkStmt = $conn->prepare($checkAllCompletedSql);
@@ -114,7 +158,7 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
         $taskID = $taskData['TaskID'];
         $checkStmt->close();
         
-        // Count total vs completed assignments for this task
+    
         $countSql = "SELECT COUNT(*) as total, 
                     SUM(CASE WHEN Status = 'Completed' THEN 1 ELSE 0 END) as completed 
                     FROM task_assignments WHERE TaskID = ?";
@@ -125,7 +169,6 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
         $countData = $countResult->fetch_assoc();
         $countStmt->close();
         
-        // If all assignments are completed, mark the task as completed
         if ($countData['total'] == $countData['completed']) {
             $updateTaskSql = "UPDATE tasks SET Status = 'Completed' WHERE TaskID = ?";
             $updateTaskStmt = $conn->prepare($updateTaskSql);
@@ -133,7 +176,7 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
             $updateTaskStmt->execute();
             $updateTaskStmt->close();
         } else {
-            // At least one assignment is completed, mark as In Progress
+            
             $updateTaskSql = "UPDATE tasks SET Status = 'In Progress' WHERE TaskID = ?";
             $updateTaskStmt = $conn->prepare($updateTaskSql);
             $updateTaskStmt->bind_param("i", $taskID);
@@ -148,10 +191,8 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $approveStmt->close();
 }
 
-// Fetch tasks based on user role
 $tasks = [];
 
-// Check if task_id is provided in URL
 if (isset($_GET['task_id'])) {
     $taskID = $_GET['task_id'];
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
@@ -178,7 +219,7 @@ if (isset($_GET['task_id'])) {
         $tasksStmt->bind_param("ii", $taskID, $facultyID);
     }
 } else if ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR') {
-    // Dean, Program Head, and Coordinator see all tasks in their faculty
+   
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
@@ -194,7 +235,7 @@ if (isset($_GET['task_id'])) {
     $tasksStmt = $conn->prepare($tasksSql);
     $tasksStmt->bind_param("i", $facultyID);
 } else {
-    // Regular faculty members see only tasks assigned to them
+
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
@@ -215,7 +256,7 @@ $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
 
 while ($taskRow = $tasksResult->fetch_assoc()) {
-    // For each task, get the courses and their assignment details
+   
     $assignmentsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.Status as AssignmentStatus, 
                     ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
@@ -231,7 +272,7 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                     WHERE ta.TaskID = ?";
     
     if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-        // Regular faculty members only see their own assignments
+       
         $assignmentsSql .= " AND pc.PersonnelID = ?";
     }
     
@@ -253,6 +294,36 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
         $assignments[] = $assignmentRow;
     }
     $assignmentsStmt->close();
+    
+    // When displaying each assignment in the task view, fetch and display co-authors
+    foreach ($assignments as &$assignment) {
+        // Find the submission for this assignment
+        if (!empty($assignment['SubmissionPath'])) {
+            $submissionPath = $assignment['SubmissionPath'];
+            // Get SubmissionID
+            $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
+            $subStmt->bind_param("s", $submissionPath);
+            $subStmt->execute();
+            $subRes = $subStmt->get_result();
+            if ($subRow = $subRes->fetch_assoc()) {
+                $submissionID = $subRow['SubmissionID'];
+                // Get co-authors
+                $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
+                $coStmt->bind_param("i", $submissionID);
+                $coStmt->execute();
+                $coRes = $coStmt->get_result();
+                $coauthorsList = [];
+                while ($coRow = $coRes->fetch_assoc()) {
+                    $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
+                }
+                $assignment['CoAuthors'] = $coauthorsList;
+                $coStmt->close();
+            }
+            $subStmt->close();
+        } else {
+            $assignment['CoAuthors'] = [];
+        }
+    }
     
     $taskRow['Assignments'] = $assignments;
     $tasks[] = $taskRow;
@@ -278,7 +349,7 @@ if (isset($_GET['from'])) {
       break;
   }
 } else {
-  // Default based on user role
+
   switch ($userRole) {
     case 'FM':
       $backUrl = '../../main/dashboard/fm-dash.php';
@@ -989,7 +1060,7 @@ if (isset($_GET['from'])) {
         <?php if (!empty($tasks)): ?>
           <div class="section-header mb-8" style="position: relative; min-height: 48px; display: flex; align-items: center;">
             <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
-            <h3 class="task-title font-overpass" style="font-family: 'Overpass', sans-serif; margin-left: 0;">
+            <h3 class="task-title font-onest" style="font-family: 'Onest', sans-serif; margin-left: 0;">
               <?php echo htmlspecialchars($tasks[0]['Title']); ?>
             </h3>
             <span class="course-code" style="margin-left: 1rem;">
@@ -1005,15 +1076,15 @@ if (isset($_GET['from'])) {
                   <div class="faculty-avatar"></div>
                   <div class="faculty-details">
                     <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
-                    <p class="faculty-role font-light"><?php echo htmlspecialchars($task['CreatorRole']); ?></p>
+                    <p class="faculty-role font-light"><?php echo htmlspecialchars($roleMap[$task['CreatorRole']] ?? $task['CreatorRole']); ?></p>
                   </div>
                 </div>
                 <div class="deadline">
                   <p>Deadline: <?php echo date("F j, g:i a", strtotime($task['DueDate'])); ?></p>
                 </div>
               </div>
-              <div class="task-content mb-2">
-                <p class="text-base font-light">"<?php echo htmlspecialchars($task['Description']); ?>"</p>
+              <div class="task-content mb-2 p-[10px]">
+                <p class="text-base font-onest font-light"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                 <?php if (!empty($task['RevisionReason'])): ?>
                   <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <h4 class="font-medium text-yellow-800 mb-2">Revision Requested</h4>
@@ -1031,7 +1102,7 @@ if (isset($_GET['from'])) {
               
               <?php if (!empty($task['Assignments'])): ?>
                 <?php foreach ($task['Assignments'] as $assignment): ?>
-                  <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3">
+                  <div class="course-card <?php echo $assignment['AssignmentStatus'] == 'Completed' ? 'completed' : ($assignment['AssignmentStatus'] == 'Submitted' ? 'submitted' : 'pending'); ?> mb-3" <?php if (!empty($assignment['SubmissionPath'])): ?> onclick="previewSubmission('<?php echo '../../' . htmlspecialchars($assignment['SubmissionPath']); ?>', '<?php echo htmlspecialchars($assignment['CourseCode'] . ' - ' . $assignment['CourseTitle']); ?>')" style="cursor: pointer;" <?php endif; ?>>
                     <div class="course-info">
                       <p class="course-name font-semibold"><?php echo htmlspecialchars($assignment['CourseCode'] . ' ' . $assignment['CourseTitle']); ?></p>
                       <div class="course-badges">
@@ -1040,6 +1111,9 @@ if (isset($_GET['from'])) {
                       </div>
                       <p class="text-xs text-gray-600 font-light"><?php echo htmlspecialchars($assignment['ProgramName']); ?></p>
                       <p class="text-xs text-gray-600 font-light">Assigned to: <?php echo !empty($assignment['AssignedTo']) ? htmlspecialchars($assignment['AssignedTo']) : 'No assigned professor'; ?></p>
+                      <?php if (!empty($assignment['CoAuthors'])): ?>
+                        <p class="text-xs text-gray-600 font-light">Co-Authors: <?php echo htmlspecialchars(implode(', ', $assignment['CoAuthors'])); ?></p>
+                      <?php endif; ?>
                       <?php if (!empty($assignment['RevisionReason'])): ?>
                         <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
                           <span class="font-medium text-yellow-800">Revision Requested:</span>
@@ -1049,7 +1123,7 @@ if (isset($_GET['from'])) {
                     </div>
                     <div class="status">
                       <span class="status-label <?php echo strtolower($assignment['AssignmentStatus']); ?>">
-                        <?php echo $assignment['AssignmentStatus']; ?>
+                        <?php echo getAssignmentStatusLabel($assignment['AssignmentStatus']); ?>
                       </span>
                       
                       <?php if ($assignment['AssignmentStatus'] == 'Completed'): ?>
@@ -1124,6 +1198,32 @@ if (isset($_GET['from'])) {
               <input type="hidden" name="task_id" id="taskID">
               <input type="hidden" name="course_code" id="courseCode">
               <input type="hidden" name="program_id" id="programID">
+              <!-- Co-author checkboxes -->
+              <?php if (!empty($coauthors)): ?>
+              <div class="mb-6">
+                <label class="block mb-2 font-semibold text-gray-700">Select Co-Authors:</label>
+                <div class="rounded-2xl shadow-lg bg-white border border-gray-200 p-4" style="max-width: 350px;">
+                  <div class="sticky top-0 z-10 bg-white pb-2">
+                    <input type="text" id="coauthorSearch" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition text-base" placeholder="Search co-authors...">
+                  </div>
+                  <div class="mb-2 mt-2">
+                    <label class="flex items-center space-x-3 px-2 py-2 rounded-lg cursor-pointer transition bg-blue-50 hover:bg-blue-100 font-semibold">
+                      <input type="checkbox" id="coauthorNone" name="coauthors_none" value="none" class="form-checkbox h-5 w-5 text-blue-600 transition-all duration-150">
+                      <span class="text-blue-700">None</span>
+                    </label>
+                  </div>
+                  <div id="coauthorList" class="flex flex-col gap-y-1 overflow-y-auto pr-1" style="min-width: 200px; max-height: 220px;">
+                    <?php foreach ($coauthors as $coauthor): ?>
+                      <label class="flex items-center space-x-3 px-2 py-2 rounded-lg cursor-pointer transition hover:bg-blue-50 coauthor-item">
+                        <input type="checkbox" name="coauthors[]" value="<?php echo $coauthor['PersonnelID']; ?>" class="form-checkbox h-5 w-5 text-blue-600 coauthor-checkbox transition-all duration-150">
+                        <span class="text-gray-800 coauthor-name text-base font-medium"><?php echo htmlspecialchars($coauthor['FirstName'] . ' ' . $coauthor['LastName']); ?></span>
+                      </label>
+                    <?php endforeach; ?>
+                  </div>
+                </div>
+              </div>
+              <?php endif; ?>
+              <!-- End co-author checkboxes -->
               <div class="file-input-container mb-6">
                 <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
                   <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
@@ -1157,20 +1257,20 @@ if (isset($_GET['from'])) {
   </div>
   
   <script>
-    // Add event listener for task selector change
+   
     document.addEventListener('DOMContentLoaded', function() {
-      // Enable dark mode for all roles if set in localStorage
+     
       if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
       }
-      // Check if there are tasks
+    
       const taskSelector = document.getElementById('taskSelector');
       if (taskSelector) {
         taskSelector.addEventListener('change', updateTaskSelection);
       }
-      // Real-time status updates for tasks (for demonstration - in production, you'd use WebSockets or AJAX)
+     
       setInterval(function() {
-        // This would normally check for updates from the server
+        
         console.log('Checking for task updates...');
       }, 30000); // Every 30 seconds
     });
@@ -1193,7 +1293,6 @@ if (isset($_GET['from'])) {
         return;
       }
 
-      // Get the selected task data
       const taskData = <?php echo json_encode($uploadableTasks); ?>[selector.value];
 
       // Set hidden fields
@@ -1231,7 +1330,7 @@ if (isset($_GET['from'])) {
         submitBtn.disabled = true;
       }
 
-      // Show upload form
+      
       uploadForm.classList.remove('hidden');
     }
 
@@ -1245,7 +1344,7 @@ if (isset($_GET['from'])) {
         fileName.textContent = fileInput.files[0].name;
         selectedFile.classList.remove('hidden');
         submitBtn.disabled = false;
-        // Preview file if possible
+   
         previewFile(fileInput.files[0]);
       } else {
         selectedFile.classList.add('hidden');
@@ -1273,24 +1372,55 @@ if (isset($_GET['from'])) {
       if (validImageTypes.includes(fileType)) {
         const reader = new FileReader();
         reader.onload = function(e) {
-          filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview">`;
+          filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" onerror="handleImageError(this)">`;
           filePreview.classList.remove('hidden');
         }
         reader.readAsDataURL(file);
       } else if (fileType === 'application/pdf') {
         const objectUrl = URL.createObjectURL(file);
-        filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview">`;
+        filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview" onerror="handlePdfError(this)">`;
         filePreview.classList.remove('hidden');
       } else {
-        filePreview.innerHTML = `<div class=\"doc-preview\">
-          <i class=\"fas fa-file-alt text-4xl text-blue-500\"></i>
-          <p class=\"mt-2\">Preview not available for this file type</p>
-        </div>`;
+        filePreview.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-file-alt text-4xl text-blue-500 mb-3"></i>
+            <p class="text-gray-600 dark:text-gray-300">Preview not available for this file type</p>
+            <a href="${file.name}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Download File
+            </a>
+          </div>
+        `;
         filePreview.classList.remove('hidden');
       }
     }
 
-    // Function to toggle task details (for future use)
+    function handleImageError(img) {
+      img.onerror = null; // Prevent infinite loop
+      img.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load image preview</p>
+          <a href="${img.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+
+    function handlePdfError(embed) {
+      embed.onerror = null; // Prevent infinite loop
+      embed.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load PDF preview</p>
+          <a href="${embed.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+
+   
     function toggleTaskDetails(taskId) {
       const detailsSection = document.getElementById('task-details-' + taskId);
       if (detailsSection.classList.contains('hidden')) {
@@ -1300,9 +1430,9 @@ if (isset($_GET['from'])) {
       }
     }
 
-    // Function to handle task notifications (for future implementation)
+  
     function notifyTaskUpdate(taskId, status) {
-      // This would show a notification when a task is updated
+     
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded';
       notification.innerText = `Task ${taskId} has been ${status}`;
@@ -1311,6 +1441,131 @@ if (isset($_GET['from'])) {
         notification.remove();
       }, 3000);
     }
+
+    // Co-author search filter
+    const coauthorSearch = document.getElementById('coauthorSearch');
+    const coauthorList = document.getElementById('coauthorList');
+    coauthorSearch.addEventListener('input', function() {
+      const term = this.value.toLowerCase();
+      coauthorList.querySelectorAll('.coauthor-item').forEach(function(label) {
+        const name = label.querySelector('.coauthor-name').textContent.toLowerCase();
+        label.style.display = name.includes(term) ? '' : 'none';
+      });
+    });
+    // None option logic
+    const noneBox = document.getElementById('coauthorNone');
+    const coauthorCheckboxes = coauthorList.querySelectorAll('.coauthor-checkbox');
+    noneBox.addEventListener('change', function() {
+      if (this.checked) {
+        coauthorCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+      } else {
+        coauthorCheckboxes.forEach(cb => { cb.disabled = false; });
+      }
+    });
+    coauthorCheckboxes.forEach(cb => {
+      cb.addEventListener('change', function() {
+        if (this.checked) {
+          noneBox.checked = false;
+          noneBox.dispatchEvent(new Event('change'));
+        }
+      });
+    });
+
+    function previewSubmission(path, title) {
+      const modal = document.getElementById('previewModal');
+      const previewContent = document.getElementById('previewContent');
+      const previewTitle = document.getElementById('previewTitle');
+  
+      previewTitle.textContent = title;
+      
+      // Get file extension
+      const extension = path.split('.').pop().toLowerCase();
+      
+      // Clear previous content
+      previewContent.innerHTML = '';
+      
+      // Show modal
+      modal.classList.remove('hidden');
+      
+      // Handle different file types
+      if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+        previewContent.innerHTML = `<img src="${path}" class="max-w-full h-[93%] object-contain mx-auto" onerror="handleImageError(this)">`;
+      } else if (extension === 'pdf') {
+        previewContent.innerHTML = `<embed src="${path}" type="application/pdf" class="w-full h-full" onerror="handlePdfError(this)">`;
+      } else {
+        previewContent.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-file-alt text-4xl text-blue-500 mb-3"></i>
+            <p class="text-gray-600 dark:text-gray-300">Preview not available for this file type</p>
+            <a href="${path}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              Download File
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    function handleImageError(img) {
+      img.onerror = null; // Prevent infinite loop
+      img.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load image preview</p>
+          <a href="${img.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+
+    function handlePdfError(embed) {
+      embed.onerror = null; // Prevent infinite loop
+      embed.parentElement.innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+          <p class="text-gray-600 dark:text-gray-300">Unable to load PDF preview</p>
+          <a href="${embed.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Download File
+          </a>
+        </div>
+      `;
+    }
+
+    function closePreview() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePreview();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closePreview();
+      }
+    });
   </script>
+
+  <!-- Add this modal HTML before the closing body tag -->
+  <div id="previewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
+    <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
+      <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+        <h3 class="text-xl font-semibold dark:text-white" id="previewTitle"></h3>
+        <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-auto">
+        <div id="previewContent" class="w-full h-full flex items-center justify-center">
+          <!-- Content will be inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

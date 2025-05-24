@@ -99,7 +99,7 @@ $conn->close();
     <link href="../../src/tailwind/output.css" rel="stylesheet" />
     <link href="../../src/styles.css" rel="stylesheet" />
     <link href="../../src/sidebar.css" rel="stylesheet" />
-    <title>Faculty | CourseDock</title>
+    <title>Edit Profile | CourseDock</title>
     <link href="../../img/cdicon.svg" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -275,11 +275,6 @@ $conn->close();
                     <span class="link-text">Dashboard</span>
                 </a>
 
-                <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
-                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
-                    <span class="link-text">Tasks</span>
-                </a>
-
                 <a href="../faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
@@ -288,6 +283,11 @@ $conn->close();
                 <a href="../curriculum/curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curricula</span>
+                </a>
+
+                <a href="../task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                    <img src="../../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
+                    <span class="link-text">Tasks</span>
                 </a>
 
                 <?php if ($row['Role'] === 'DN'): ?>
@@ -555,25 +555,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadNotifications();
 
-
+    // 30s
     setInterval(loadNotifications, 30000);
 
-   
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
         if (notificationDropdown.classList.contains('hidden')) {
-      
+    
             notificationDropdown.classList.remove('hidden');
-     
+         
             setTimeout(() => {
                 notificationDropdown.classList.remove('opacity-0', 'scale-95');
                 notificationDropdown.classList.add('opacity-100', 'scale-100');
             }, 10);
         } else {
-   
+        
             notificationDropdown.classList.remove('opacity-100', 'scale-100');
             notificationDropdown.classList.add('opacity-0', 'scale-95');
-         
+            
             setTimeout(() => {
                 notificationDropdown.classList.add('hidden');
             }, 300);
@@ -583,6 +582,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+
+    document.addEventListener('click', function(e) {
+        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+            notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            notificationDropdown.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+            }, 300);
+        }
+    });
 
     function loadNotifications() {
         fetch('../src/scripts/get_notifications.php')
@@ -621,7 +630,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 else if (userRole === 'Program Head') fromParam = 'ph-dash';
                                 else if (userRole === 'College Dean') fromParam = 'dn-dash';
                                 else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
-                                iframe.src = `dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                iframe.src = `../dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
                         }
@@ -672,9 +681,9 @@ document.addEventListener('DOMContentLoaded', function() {
             notifDot.className = 'absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50';
             notificationButton.appendChild(notifDot);
         }
-        // Check for unread notifications in the list
+      
         const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
-        // Show the dot only if there are unread notifications
+      
         if (hasUnread) {
             notifDot.style.display = '';
         } else {

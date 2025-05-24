@@ -35,7 +35,7 @@ if ($facultyRow = $facultyResult->fetch_assoc()) {
 }
 $facultyIdStmt->close();
 
-// Get curricula for the selected program where the faculty has access
+
 $curriculaStmt = $conn->prepare("
     SELECT id, name 
     FROM curricula 
@@ -57,7 +57,6 @@ $curriculaStmt->close();
 
 $conn->close();
 
-// Return the curricula as JSON
 header('Content-Type: application/json');
 echo json_encode(['success' => true, 'curricula' => $curricula]);
 ?>

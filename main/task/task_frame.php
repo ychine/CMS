@@ -1,6 +1,18 @@
 <?php
 session_start();
 
+function getAssignmentStatusLabel($status) {
+    switch ($status) {
+        case 'Pending':
+            return 'No Submission';
+        case 'Submitted':
+            return 'Submitted for Review';
+        case 'Completed':
+            return 'Reviewed & Approved';
+        default:
+            return $status;
+    }
+}
 
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
@@ -108,7 +120,7 @@ if ($userRole === 'FM') {
         JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
         LEFT JOIN personnel p ON p.AccountID = ?
         LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
-        WHERE pc.PersonnelID = ? AND ta.Status != 'Completed'
+        WHERE pc.PersonnelID = ? AND ta.Status IN ('Pending', 'In Progress')
         GROUP BY t.TaskID
         ORDER BY t.CreatedAt DESC";
     $ongoingTasksStmt = $conn->prepare($ongoingTasksSql);
@@ -119,12 +131,11 @@ if ($userRole === 'FM') {
     while ($taskRow = $ongoingTasksResult->fetch_assoc()) {
         $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
             p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
             FROM task_assignments ta
             JOIN courses c ON ta.CourseCode = c.CourseCode
             JOIN programs p ON ta.ProgramID = p.ProgramID
-            LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-            LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+            LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
             WHERE ta.TaskID = ?
             ORDER BY p.ProgramName, ta.CourseCode";
         $coursesStmt = $conn->prepare($coursesSql);
@@ -164,12 +175,11 @@ if ($userRole === 'FM') {
     while ($taskRow = $completedTasksResult->fetch_assoc()) {
         $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
             p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
             FROM task_assignments ta
             JOIN courses c ON ta.CourseCode = c.CourseCode
             JOIN programs p ON ta.ProgramID = p.ProgramID
-            LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-            LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+            LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
             WHERE ta.TaskID = ?
             ORDER BY p.ProgramName, ta.CourseCode";
         $coursesStmt = $conn->prepare($coursesSql);
@@ -203,8 +213,8 @@ if (isset($_POST['create_task'])) {
         $taskID = $taskStmt->insert_id;
         
         if (isset($_POST['assigned']) && is_array($_POST['assigned'])) {
-            $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, Status) 
-                                    VALUES (?, ?, ?, ?, 'Pending')";
+            $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status) 
+                                    VALUES (?, ?, ?, ?, ?, 'Pending')";
             $assignmentStmt = $conn->prepare($assignmentInsertSql);
 
             foreach ($_POST['assigned'] as $assignment) {
@@ -212,9 +222,6 @@ if (isset($_POST['create_task'])) {
                 if (count($parts) == 2) {
                     $programID = $parts[0];
                     $courseCode = $parts[1];
-
-                    $assignmentStmt->bind_param("iisi", $taskID, $programID, $courseCode, $facultyID);
-                    $assignmentStmt->execute();
 
                     // Get the assigned professor's PersonnelID for this course
                     $profQuery = "SELECT PersonnelID FROM program_courses WHERE ProgramID = ? AND CourseCode = ? AND FacultyID = ?";
@@ -224,6 +231,9 @@ if (isset($_POST['create_task'])) {
                     $profResult = $profStmt->get_result();
                     if ($profRow = $profResult->fetch_assoc()) {
                         $assignedPersonnelID = $profRow['PersonnelID'];
+                        $assignmentStmt->bind_param("iisii", $taskID, $programID, $courseCode, $facultyID, $assignedPersonnelID);
+                        $assignmentStmt->execute();
+
                         if ($assignedPersonnelID) {
                             // Get the AccountID for this PersonnelID
                             $accQuery = "SELECT AccountID FROM personnel WHERE PersonnelID = ?";
@@ -349,12 +359,11 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
 
     $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                   p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-                  ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+                  ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
                   FROM task_assignments ta
                   JOIN courses c ON ta.CourseCode = c.CourseCode
                   JOIN programs p ON ta.ProgramID = p.ProgramID
-                  LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-                  LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                  LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
                   WHERE ta.TaskID = ?
                   ORDER BY p.ProgramName, ta.CourseCode";
     $coursesStmt = $conn->prepare($coursesSql);
@@ -820,19 +829,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         ?>
             <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
                 <?php if (empty($tasks) && !$onCompletedTab): ?>
-                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                    <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                         <p class="text-gray-500">No tasks available. Create your first task!</p>
                     </div>
                 <?php else: ?>
                     <?php if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR'): ?>
                         <!-- All Tasks for DN, PH, and COR -->
                         <?php if (!isset($_GET['view']) || $_GET['view'] === 'all' || $_GET['view'] === 'created'): ?>
-                        <div class="mb-8">
+                        <div class="mb-4">
                             <h2 class="text-2xl font-bold text-gray-800 mb-2 font-overpass">
                                 <?php echo (isset($_GET['view']) && $_GET['view'] === 'created') ? 'Tasks Created by You' : 'All Tasks'; ?>
                             </h2>
                             <?php foreach ($tasks as $task): ?>
-                                <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-20 relative cursor-pointer"
+                                <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-12 relative cursor-pointer"
                                      onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
                                         <!-- 3-dot menu trigger -->
@@ -870,6 +879,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                             Generate Report
                                                         </button>
                                                     </li>
+                                                    <li>
+                                                        <button type="button" class="dropdown-item hover:bg-blue-50 hover:text-blue-700 w-full text-left" style="display:flex;align-items:center;gap:10px;" onclick="openModifyTaskModal(<?php echo $task['TaskID']; ?>)">
+                                                            <span style="display:inline-flex;align-items:center;">
+                                                                <!-- Edit Icon -->
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </span>
+                                                            Modify Task
+                                                        </button>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </div>
@@ -903,7 +923,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                         </div>
                                     </div>
-                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="font-medium text-gray-700">Progress:</span>
                                         <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -945,7 +965,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                                     echo 'pending bg-yellow-100 text-yellow-700';
                                                                 }
                                                             ?>">
-                                                            <?php echo $course['AssignmentStatus']; ?>
+                                                            <?php echo getAssignmentStatusLabel($course['AssignmentStatus']); ?>
                                                         </span>
                                                         <?php
                                                         if ($task['UserRole'] === 'DN' || $task['UserRole'] === 'COR') {
@@ -1018,15 +1038,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         
                         $assignedTasks = [];
                         while ($taskRow = $assignedTasksResult->fetch_assoc()) {
-                            // Fetch the courses and assigned professors for each task
+                            
                             $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                                         p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-                                        ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+                                        ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
                                         FROM task_assignments ta
                                         JOIN courses c ON ta.CourseCode = c.CourseCode
                                         JOIN programs p ON ta.ProgramID = p.ProgramID
-                                        LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-                                        LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                                        LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
                                         WHERE ta.TaskID = ?
                                         ORDER BY p.ProgramName, ta.CourseCode";
                             $coursesStmt = $conn->prepare($coursesSql);
@@ -1048,7 +1067,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         <div class="mt-0">
                             <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Tasks Assigned to You</h2>
                             <?php if (empty($assignedTasks)): ?>
-                                <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                                <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                                     <p class="text-gray-500">No tasks have been assigned to you yet.</p>
                                 </div>
                             <?php else: ?>
@@ -1084,7 +1103,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                 <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                             </div>
                                         </div>
-                                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                         <div class="flex items-center gap-3 mb-2">
                                             <span class="font-medium text-gray-700">Progress:</span>
                                             <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1143,13 +1162,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                 <?php echo $task['Status']; ?>
                                             </span>
                                         </div>
-                                        <div class="flex flex-col md:items-end text-sm text-gray-500">
+                                        <div class="flex flex-col md:items-end align-right text-sm text-gray-500">
                                             <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
                                             <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
                                             <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                         </div>
                                     </div>
-                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="font-medium text-gray-700">Progress:</span>
                                         <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1211,7 +1230,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 <label class="block text-lg font-semibold text-gray-700">Task Description:</label>
                                 <textarea name="description" placeholder="Describe the task" 
                                     class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
-                                    rows="3"></textarea>
+                                    rows="5" style="white-space: pre-wrap;"></textarea>
                             </div>
                             
                             <div class="space-y-2">
@@ -1334,11 +1353,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             </label>
                                         </div>
                                     <?php 
-                                        // Check if the next item has a different program
+                                       
                                         $nextIndex = $index + 1;
                                         if (!isset($facultyCoursePairs[$nextIndex]) || 
                                             $facultyCoursePairs[$nextIndex]['ProgramName'] != $currentProgram) {
-                                            echo '</div>'; // Close program section
+                                            echo '</div>'; 
                                         }
                                         endforeach; 
                                     ?>
@@ -1373,7 +1392,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         </div>
 
         <!-- Revision Modal -->
-        <div id="revisionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div id="revisionModal" class="hidden fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-[600px]">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold">Request Revision</h2>
@@ -1430,12 +1449,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             while ($taskRow = $completedTasksResult->fetch_assoc()) {
                 $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                             p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-                            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate
+                            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
                             FROM task_assignments ta
                             JOIN courses c ON ta.CourseCode = c.CourseCode
                             JOIN programs p ON ta.ProgramID = p.ProgramID
-                            LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-                            LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                            LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
                             WHERE ta.TaskID = ?
                             ORDER BY p.ProgramName, ta.CourseCode";
                 $coursesStmt = $conn->prepare($coursesSql);
@@ -1456,14 +1474,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             ?>
             <?php if (!empty($completedTasks)): ?>
                 <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Completed Tasks</h2>
-                <?php foreach ($completedTasks as $task): ?>
-                    <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
-                         onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                <?php if (in_array($userRole, ['DN', 'PH', 'COR'])): ?>
+                    <?php foreach ($completedTasks as $task): ?>
+                        <?php
+                        $completedCourses = array_filter($task['Courses'], function($course) {
+                            return $course['AssignmentStatus'] === 'Completed';
+                        });
+                        if (count($completedCourses) > 0):
+                        ?>
+                        <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                             onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                             <div class="flex items-center gap-3">
                                 <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
-                                    <!-- History Icon -->
                                     <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
                                         <circle cx="12" cy="12" r="9" />
@@ -1471,43 +1494,95 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                     Completed
                                 </span>
                             </div>
-                            
+                            <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                             <div class="flex flex-col md:items-end text-sm text-gray-500">
                                 <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
                                 <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
                                 <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                             </div>
-                        </div>
-                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
-                        <div class="mt-2">
-                            <span class="font-medium text-gray-700">Completed Courses (<?php echo $task['AssignedCourses']; ?>):</span>
-                            <?php if (!empty($task['Courses'])): ?>
-                                <div class="mt-1 pl-2 border-l-2 border-gray-100 max-h-[120px] overflow-y-auto">
-                                    <?php foreach ($task['Courses'] as $course): ?>
-                                        <div class="flex items-center justify-between py-1 px-2 rounded-lg mb-1 course-card completed bg-green-50">
-                                            <div>
-                                                <span class="font-semibold text-gray-800"><?php echo htmlspecialchars($course['CourseCode']); ?></span>
-                                                <span class="text-gray-600">- <?php echo htmlspecialchars($course['CourseTitle']); ?></span>
-                                                <br>
-                                                <span class="ml-2 text-xs text-gray-500">Completed by: <?php echo htmlspecialchars($course['AssignedTo']); ?></span>
-                                            </div>
-                                            <div class="flex flex-col items-end gap-1">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold status-badge completed bg-green-100 text-green-700">
-                                                    Completed
-                                                </span>
-                                            </div>
-                                        </div>
+                            <div class="text-blue-700 font-semibold text-base mb-2 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="9"/>
+                                    <path d="M9 12l2 2 4-4"/>
+                                </svg>
+                                Completed Courses:
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-4 mb-4 shadow-sm">
+                                <ul class="space-y-2">
+                                    <?php foreach ($completedCourses as $course): ?>
+                                        <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                            <span class="inline-block bg-green-200 text-green-900 font-semibold px-2 py-1 rounded text-xs">
+                                                <?php echo htmlspecialchars($course['CourseCode']); ?>
+                                            </span>
+                                            <span class="font-medium text-gray-800"><?php echo htmlspecialchars($course['CourseTitle']); ?></span>
+                                            <span class="text-xs text-gray-500">
+                                                <?php if (!empty($course['AssignedTo'])): ?>
+                                                    Assigned to: <?php echo htmlspecialchars($course['AssignedTo']); ?>
+                                                <?php else: ?>
+                                                    <span class="text-red-500">No assigned professor</span>
+                                                <?php endif; ?>
+                                            </span>
+                                        </li>
                                     <?php endforeach; ?>
-                                </div>
-                            <?php else: ?>
-                                <p class="text-gray-400 italic pl-3">No courses assigned</p>
-                            <?php endif; ?>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <?php $renderedTaskIds = array();
+                    foreach ($completedTasks as $task):
+                        if (in_array($task['TaskID'], $renderedTaskIds)) continue; // Prevent duplicate cards
+                        $myCompletedCourses = array_filter($task['Courses'], function($course) use ($personnelID) {
+                            return $course['AssignmentStatus'] === 'Completed' && isset($course['PersonnelID']) && $course['PersonnelID'] == $personnelID;
+                        });
+                        if (count($myCompletedCourses) > 0):
+                            $renderedTaskIds[] = $task['TaskID'];
+                    ?>
+                        <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                             onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
+                            <div class="flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between">
+                                <div class="flex items-center gap-3">
+                                    <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
+                                        <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/>
+                                            <circle cx="12" cy="12" r="9"/>
+                                        </svg>
+                                        Completed
+                                    </span>
+                                </div>
+                                <div class="flex flex-col md:items-end text-sm text-gray-500">
+                                    <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
+                                    <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
+                                    <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
+                                </div>
+                            </div>
+                            <?php foreach ($myCompletedCourses as $course): ?>
+                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
+                                    <div class="flex items-center gap-2 text-blue-700 font-semibold text-base">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="9"/>
+                                            <path d="M9 12l2 2 4-4"/>
+                                        </svg>
+                                        <?php echo htmlspecialchars($course['CourseCode']); ?> - <?php echo htmlspecialchars($course['CourseTitle']); ?>
+                                    </div>
+                                    <div class="text-sm text-gray-700 font-medium md:text-right">
+                                        <?php if (!empty($course['AssignedTo'])): ?>
+                                            Assigned to: <?php echo htmlspecialchars($course['AssignedTo']); ?>
+                                        <?php else: ?>
+                                            <span class="text-red-500">No assigned professor</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif;
+                    endforeach; ?>
+                <?php endif; ?>
             <?php else: ?>
                 <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
-                    <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                    <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                         <p class="text-gray-500">No completed tasks found. Keep going, you're almost there!</p>
                     </div>
                 </div>
@@ -1538,11 +1613,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <?php if (empty($ongoingTasks)): ?>
                         <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
                             <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
-                                <p class="text-gray-500">No tasks available. Create your first task!</p>
+                                <p class="text-gray-500">No tasks for now. Tasks will appear here once they are assigned to you.</p>
                             </div>
                         </div>
                     <?php else: ?>
                         <?php foreach ($ongoingTasks as $task): ?>
+                            <?php
+                            // Only show courses assigned to the current user
+                            $myOngoingCourses = array_filter($task['Courses'], function($course) use ($personnelID) {
+                                return isset($course['PersonnelID']) && $course['PersonnelID'] == $personnelID && in_array($course['AssignmentStatus'], ['Pending', 'In Progress']);
+                            });
+                            ?>
+                            <?php foreach ($myOngoingCourses as $course): ?>
                             <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
@@ -1562,8 +1644,12 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                         <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                     </div>
                                 </div>
-                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                <div class="text-blue-700 font-semibold text-base mb-1">
+                                    <?php echo htmlspecialchars($course['CourseCode']); ?> - <?php echo htmlspecialchars($course['CourseTitle']); ?>
+                                </div>
+                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                             </div>
+                            <?php endforeach; ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
@@ -1572,34 +1658,113 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <h2 class="text-2xl font-bold text-gray-800 mb-4 font-overpass">Completed Tasks</h2>
                     <?php if (empty($completedTasks)): ?>
                         <div class="grid grid-cols-1 w-full md:w-[80%] px-4">
-                            <div class="bg-white p-[25px] font-overpass rounded-lg shadow-md flex justify-center items-center">
+                            <div class="bg-white p-[25px] font-onest rounded-lg shadow-md flex justify-center items-center">
                                 <p class="text-gray-500">No completed tasks found. Keep going, you're almost there!</p>
                             </div>
                         </div>
                     <?php else: ?>
                         <?php foreach ($completedTasks as $task): ?>
+                            <?php
+                            if (in_array($userRole, ['DN', 'PH', 'COR'])) {
+                                $completedCourses = array_filter($task['Courses'], function($course) {
+                                    return $course['AssignmentStatus'] === 'Completed';
+                                });
+                                if (count($completedCourses) > 0) {
+                            ?>
+                            <!-- DN/PH/COR card -->
                             <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
-                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-                                    <div class="flex items-center gap-3">
-                                        <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
-                                            <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
-                                                <circle cx="12" cy="12" r="9" />
-                                            </svg>
-                                            Completed
-                                        </span>
-                                    </div>
-                                    <div class="flex flex-col md:items-end text-sm text-gray-500">
-                                        <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
-                                        <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
-                                        <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
-                                    </div>
+                                <div class="flex items-center gap-3">
+                                    <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
+                                        <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+                                            <circle cx="12" cy="12" r="9" />
+                                        </svg>
+                                        Completed
+                                    </span>
                                 </div>
-                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo htmlspecialchars($task['Description']); ?></p>
+                                <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
+                                <div class="flex flex-col md:items-end text-sm text-gray-500">
+                                    <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
+                                    <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
+                                    <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
+                                </div>
+                                <div class="text-blue-700 font-semibold text-base mb-2 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="9"/>
+                                        <path d="M9 12l2 2 4-4"/>
+                                    </svg>
+                                    Completed Courses:
+                                </div>
+                                <div class="bg-green-50 rounded-lg p-4 mb-4 shadow-sm">
+                                    <ul class="space-y-2">
+                                        <?php foreach ($completedCourses as $course): ?>
+                                            <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                                <span class="inline-block bg-green-200 text-green-900 font-semibold px-2 py-1 rounded text-xs">
+                                                    <?php echo htmlspecialchars($course['CourseCode']); ?>
+                                                </span>
+                                                <span class="font-medium text-gray-800"><?php echo htmlspecialchars($course['CourseTitle']); ?></span>
+                                                <span class="text-xs text-gray-500">
+                                                    <?php if (!empty($course['AssignedTo'])): ?>
+                                                        Assigned to: <?php echo htmlspecialchars($course['AssignedTo']); ?>
+                                                    <?php else: ?>
+                                                        <span class="text-red-500">No assigned professor</span>
+                                                    <?php endif; ?>
+                                                </span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
                             </div>
-                        <?php endforeach; ?>
+                            <?php
+                                }
+                            } else {
+                                $myCompletedCourses = array_filter($task['Courses'], function($course) use ($personnelID) {
+                                    return $course['AssignmentStatus'] === 'Completed' && isset($course['PersonnelID']) && $course['PersonnelID'] == $personnelID;
+                                });
+                                if (count($myCompletedCourses) > 0): ?>
+                                    <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                                 onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
+                                    <div class="flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
+                                                <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/>
+                                                    <circle cx="12" cy="12" r="9"/>
+                                                </svg>
+                                                Completed
+                                            </span>
+                                        </div>
+                                        <div class="flex flex-col md:items-end text-sm text-gray-500">
+                                            <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
+                                            <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
+                                            <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
+                                        </div>
+                                    </div>
+                                    <?php foreach ($myCompletedCourses as $course): ?>
+                                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-2">
+                                            <div class="flex items-center gap-2 text-blue-700 font-semibold text-base">
+                                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <circle cx="12" cy="12" r="9"/>
+                                                    <path d="M9 12l2 2 4-4"/>
+                                                </svg>
+                                                <?php echo htmlspecialchars($course['CourseCode']); ?> - <?php echo htmlspecialchars($course['CourseTitle']); ?>
+                                            </div>
+                                            <div class="text-sm text-gray-700 font-medium md:text-right">
+                                                <?php if (!empty($course['AssignedTo'])): ?>
+                                                    Assigned to: <?php echo htmlspecialchars($course['AssignedTo']); ?>
+                                                <?php else: ?>
+                                                    <span class="text-red-500">No assigned professor</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif;
+                            }
+                        endforeach; ?>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -1631,9 +1796,122 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             </div>
         </div>
 
+        <!-- Modify Task Modal -->
+        <div id="modifyTaskModal" class="hidden fixed inset-0 flex items-center justify-center z-50">
+            <div class="bg-white p-8 rounded-xl shadow-2xl w-[900px] border-2 border-gray-400 font-onest modal-animate max-h-[90vh] flex flex-col">
+                <div class="flex-none">
+                    <h2 class="text-3xl font-overpass font-bold mb-2 text-blue-800">✏️ Modify Task</h2>
+                    <hr class="border-gray-400 mb-6">
+                </div>
+                
+                <form method="POST" action="task_actions.php" class="flex-1 overflow-y-auto pr-2">
+                    <input type="hidden" name="action" value="modify_task">
+                    <input type="hidden" name="task_id" id="modifyTaskId">
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Task Title:</label>
+                            <input type="text" name="title" id="modifyTaskTitle" required 
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Task Description:</label>
+                            <textarea name="description" id="modifyTaskDescription" required
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                rows="5" style="white-space: pre-wrap;"></textarea>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Due Date:</label>
+                            <input type="date" name="due_date" id="modifyTaskDueDate" required
+                                class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="block text-lg font-semibold text-gray-700">School Year:</label>
+                                <input type="text" name="school_year" id="modifyTaskSchoolYear" required
+                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-lg font-semibold text-gray-700">Term:</label>
+                                <select name="term" id="modifyTaskTerm" required
+                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500">
+                                    <option value="1st">1st</option>
+                                    <option value="2nd">2nd</option>
+                                    <option value="Summer">Summer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Assigned Courses:</label>
+                            <div id="modifyTaskCourses" class="space-y-2">
+                                <!-- Course assignments will be loaded here -->
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-lg font-semibold text-gray-700">Add Courses to Task:</label>
+                            <div>
+                                <button type="button" onclick="toggleAddCourseDropdown(event)" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg font-semibold mb-2">+ Add Course</button>
+                                <div id="addCourseDropdown" class="hidden border border-gray-300 rounded-lg bg-white p-4 max-h-72 overflow-y-auto">
+                                    <div class="mb-4 grid grid-cols-1 gap-2">
+                                        <input type="text" id="addCourseSearch" placeholder="Search courses..." 
+                                            class="w-full p-2 border border-gray-300 rounded-lg mb-2"
+                                            oninput="filterAddCourseList()">
+                                        <select id="addCourseProfFilter" 
+                                            class="w-full p-2 border border-gray-300 rounded-lg"
+                                            onchange="filterAddCourseList()">
+                                            <option value="all">All Professors</option>
+                                            <option value="assigned">With Professor</option>
+                                            <option value="unassigned">Without Professor</option>
+                                        </select>
+                                        <select id="addCourseCurriculumFilter" 
+                                            class="w-full p-2 border border-gray-300 rounded-lg"
+                                            onchange="filterAddCourseList()">
+                                            <option value="all">All Curricula</option>
+                                            <?php
+                                            $curriculaQuery = "SELECT DISTINCT cu.ID, cu.Name FROM curricula cu 
+                                                             JOIN program_courses pc ON cu.ID = pc.CurriculumID 
+                                                             WHERE pc.FacultyID = ? 
+                                                             ORDER BY cu.Name";
+                                            $curriculaStmt = $conn->prepare($curriculaQuery);
+                                            $curriculaStmt->bind_param("i", $facultyID);
+                                            $curriculaStmt->execute();
+                                            $curriculaResult = $curriculaStmt->get_result();
+                                            while ($curriculum = $curriculaResult->fetch_assoc()) {
+                                                echo '<option value="' . htmlspecialchars($curriculum['Name']) . '">' . htmlspecialchars($curriculum['Name']) . '</option>';
+                                            }
+                                            $curriculaStmt->close();
+                                            ?>
+                                        </select>
+                                    </div>
+                                    <div id="addCourseList">
+                                        <!-- Available courses will be loaded here by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
+                        <button type="button" onclick="closeModifyTaskModal()" 
+                            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
+                            Cancel
+                        </button>
+                        <button type="submit" onclick="return validateModifyTaskForm()"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-semibold">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
 
-        if (localStorage.getItem('darkMode') === 'enabled') {
+            if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark');
             }
             
@@ -1657,7 +1935,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
             function openTaskModal() {
                 document.getElementById('taskModal').classList.remove('hidden');
-                // Reset filters when opening
+
                 document.getElementById('courseSearch').value = '';
                 document.getElementById('filterType').value = 'all';
                 filterCourses();
@@ -1668,7 +1946,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
 
             function closeTaskModal() {
                 document.getElementById('taskModal').classList.add('hidden');
-                // Reset filters when closing
+              
                 document.getElementById('courseSearch').value = '';
                 document.getElementById('filterType').value = 'all';
                 filterCourses();
@@ -1685,7 +1963,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 const courseItems = document.querySelectorAll('.course-item');
                 let visibleCount = 0;
                 
-                // Show/hide program titles based on if any courses in that program are visible
+               
                 const programSections = {};
                 
                 courseItems.forEach(item => {
@@ -1696,10 +1974,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     const programSection = item.closest('.program-section');
                     const programId = programSection ? programSection.dataset.program : null;
                     
-                    // Match search term
+                    
                     const matchesSearch = courseCode.includes(searchTerm) || courseTitle.includes(searchTerm);
                     
-                    // Match filter type
+                    
                     let matchesFilter = true;
                     if (filterType === 'assigned' && hasProfessor === 'no') {
                         matchesFilter = false;
@@ -1707,7 +1985,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         matchesFilter = false;
                     }
 
-                    // Match curriculum filter
+                   
                     let matchesCurriculum = true;
                     if (curriculumFilter !== 'all' && curriculumId !== curriculumFilter) {
                         matchesCurriculum = false;
@@ -1737,7 +2015,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     }
                 });
                 
-                // Update the counter
+               
                 const counterText = visibleCount === 1 
                     ? "Showing 1 course" 
                     : `Showing ${visibleCount} courses`;
@@ -1748,22 +2026,22 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 const btn = document.getElementById('selectAllBtn');
                 const checkboxes = document.querySelectorAll('.course-item:not([style*="display: none"]) .course-checkbox:not([disabled])');
                 
-                // Check if all visible checkboxes are checked
+                
                 const allChecked = Array.from(checkboxes).every(cb => cb.checked);
                 
-                // Toggle checkboxes
+            
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = !allChecked;
                 });
                 
-                // Update button text
+          
                 btn.textContent = allChecked ? 'Select All' : 'Deselect All';
             }
 
             function openPreviewModal(filePath, taskId) {
                 const modal = document.getElementById('previewModal');
                 const content = document.getElementById('previewContent');
-                // Determine file type
+               
                 const ext = filePath.split('.').pop().toLowerCase();
                 if (["pdf"].includes(ext)) {
                     content.innerHTML = `<embed src="${filePath}" type="application/pdf" style="width:100%;height:85vh;">`;
@@ -1793,7 +2071,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 modal.classList.add('hidden');
             }
 
-            // Close modals when clicking outside
+         
             window.onclick = function(event) {
                 const previewModal = document.getElementById('previewModal');
                 const revisionModal = document.getElementById('revisionModal');
@@ -1806,7 +2084,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 }
             }
 
-            // Close modals with Escape key
+           
             document.addEventListener('keydown', function(e) {
                 if (e.key === "Escape") {
                     closePreviewModal();
@@ -1814,7 +2092,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 }
             });
 
-            // Add view switching functionality
             document.querySelectorAll('input[name="taskView"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     const view = this.value;
@@ -1832,7 +2109,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 const term = document.querySelector('select[name="term"]').value;
                 const selectedCourses = document.querySelectorAll('input[name="assigned[]"]:checked');
 
-                // Validate required fields
+             
                 if (!title) {
                     alert('Please enter a task title');
                     return false;
@@ -1854,7 +2131,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     return false;
                 }
 
-                // Validate course selection
                 if (selectedCourses.length === 0) {
                     alert('Please select at least one course to assign the task to');
                     return false;
@@ -1863,18 +2139,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 return true;
             }
 
-            // Toggle the 3-dot menu
             function toggleTaskMenu(btn) {
-                // Close any other open menus
+                
                 document.querySelectorAll('.task-menu-dropdown').forEach(menu => {
                     if (menu !== btn.nextElementSibling) menu.classList.add('hidden');
                 });
-                // Toggle this menu
+            
                 const menu = btn.nextElementSibling;
                 menu.classList.toggle('hidden');
             }
 
-            // Close menu when clicking outside
+          
             window.addEventListener('click', function(event) {
                 document.querySelectorAll('.task-menu-dropdown').forEach(menu => {
                     if (!menu.contains(event.target) && !event.target.closest('button[onclick^="toggleTaskMenu"]')) {
@@ -1883,11 +2158,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 });
             });
 
-            // Generate report function
             function generateTaskReport(taskId) {
-                // Show the modal
+               
                 document.getElementById('reportModal').classList.remove('hidden');
-                // Set the iframe source
                 document.getElementById('reportFrame').src = 'generate_task_report.php?task_id=' + taskId;
             }
 
@@ -1896,7 +2169,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                 document.getElementById('reportFrame').src = '';
             }
 
-            // Optional: Close modal when clicking outside the modal content
+            //closing modals
             window.addEventListener('click', function(event) {
                 const modal = document.getElementById('reportModal');
                 if (event.target === modal) {
@@ -1923,6 +2196,213 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             document.getElementById('confirmDiscardTaskBtn').onclick = function() {
                 document.getElementById('discardTaskForm').submit();
             };
+
+            function openModifyTaskModal(taskId) {
+                // Fetch task details
+                fetch('get_task_details.php?task_id=' + taskId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const task = data.task;
+                            document.getElementById('modifyTaskId').value = taskId;
+                            document.getElementById('modifyTaskTitle').value = task.Title;
+                            document.getElementById('modifyTaskDescription').value = task.Description;
+                            document.getElementById('modifyTaskDueDate').value = task.DueDate;
+                            document.getElementById('modifyTaskSchoolYear').value = task.SchoolYear;
+                            document.getElementById('modifyTaskTerm').value = task.Term;
+
+                            // Populate course assignments
+                            const coursesContainer = document.getElementById('modifyTaskCourses');
+                            coursesContainer.innerHTML = '';
+                            
+                            task.Courses.forEach(course => {
+                                const courseDiv = document.createElement('div');
+                                courseDiv.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+                                courseDiv.innerHTML = `
+                                    <div class="flex-1">
+                                        <span class="font-medium">${course.CourseCode}</span> - 
+                                        <span class="text-gray-600">${course.CourseTitle}</span>
+                                        <br>
+                                        <span class="text-sm text-gray-500">
+                                            ${course.AssignedTo ? `Assigned to: ${course.AssignedTo}` : 'No assigned professor'}
+                                        </span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="remove_assignment[]" 
+                                                value="${course.ProgramID}|${course.CourseCode}"
+                                                class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                                            <span class="ml-2 text-sm text-gray-600">Remove Assignment</span>
+                                        </label>
+                                    </div>
+                                `;
+                                coursesContainer.appendChild(courseDiv);
+                            });
+
+                            document.getElementById('modifyTaskModal').classList.remove('hidden');
+                        } else {
+                            alert('Error loading task details');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error loading task details');
+                    });
+            }
+
+            function closeModifyTaskModal() {
+                document.getElementById('modifyTaskModal').classList.add('hidden');
+            }
+
+            function validateModifyTaskForm() {
+                const title = document.getElementById('modifyTaskTitle').value.trim();
+                const description = document.getElementById('modifyTaskDescription').value.trim();
+                const dueDate = document.getElementById('modifyTaskDueDate').value;
+                const schoolYear = document.getElementById('modifyTaskSchoolYear').value.trim();
+                const term = document.getElementById('modifyTaskTerm').value;
+
+                if (!title) {
+                    alert('Please enter a task title');
+                    return false;
+                }
+                if (!description) {
+                    alert('Please enter a task description');
+                    return false;
+                }
+                if (!dueDate) {
+                    alert('Please select a due date');
+                    return false;
+                }
+                if (!schoolYear) {
+                    alert('Please enter a school year');
+                    return false;
+                }
+                if (!term) {
+                    alert('Please select a term');
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Add to existing window.onclick event handler
+            window.onclick = function(event) {
+                const previewModal = document.getElementById('previewModal');
+                const revisionModal = document.getElementById('revisionModal');
+                const modifyTaskModal = document.getElementById('modifyTaskModal');
+                
+                if (event.target === previewModal) {
+                    closePreviewModal();
+                }
+                if (event.target === revisionModal) {
+                    closeRevisionModal();
+                }
+                if (event.target === modifyTaskModal) {
+                    closeModifyTaskModal();
+                }
+            }
+
+            // Add to existing keydown event handler
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "Escape") {
+                    closePreviewModal();
+                    closeRevisionModal();
+                    closeModifyTaskModal();
+                }
+            });
+
+            function toggleAddCourseDropdown(event) {
+                if (event) {
+                    event.stopPropagation();
+                }
+                const dropdown = document.getElementById('addCourseDropdown');
+                dropdown.classList.toggle('hidden');
+            }
+
+            // Add click event listener to close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const dropdown = document.getElementById('addCourseDropdown');
+                const addCourseBtn = document.querySelector('button[onclick="toggleAddCourseDropdown(event)"]');
+                if (dropdown && !dropdown.contains(event.target) && !addCourseBtn.contains(event.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // Store loaded courses for filtering
+            let _addCourseListData = [];
+
+            function loadAvailableCoursesForTask(taskId) {
+                fetch('get_available_courses_for_task.php?task_id=' + taskId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.courses.length > 0) {
+                            _addCourseListData = data.courses;
+                            renderAddCourseList(_addCourseListData);
+                        } else {
+                            _addCourseListData = [];
+                            document.getElementById('addCourseList').innerHTML = '<div class="text-gray-500">No available courses to add.</div>';
+                        }
+                    });
+            }
+
+            function renderAddCourseList(courses) {
+                const addCourseList = document.getElementById('addCourseList');
+                addCourseList.innerHTML = '';
+                if (!courses.length) {
+                    addCourseList.innerHTML = '<div class="text-gray-500">No available courses to add.</div>';
+                    return;
+                }
+                courses.forEach(course => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center gap-2 mb-2 p-2 rounded hover:bg-gray-50';
+                    div.innerHTML = `
+                        <input type="checkbox" name="add_assignment[]" value="${course.ProgramID}|${course.CourseCode}" class="mr-2">
+                        <span class="font-medium">${course.CourseCode}</span> -
+                        <span>${course.Title}</span>
+                        <span class="text-sm text-gray-500 ml-2">(${course.CurriculumName})</span>
+                        <span class="text-sm ml-2 ${course.AssignedTo ? 'text-gray-600' : 'text-red-600'}">
+                            ${course.AssignedTo ? 'Assigned to: ' + course.AssignedTo : 'No assigned professor'}
+                        </span>
+                    `;
+                    addCourseList.appendChild(div);
+                });
+            }
+
+            function filterAddCourseList() {
+                const search = document.getElementById('addCourseSearch').value.toLowerCase();
+                const profFilter = document.getElementById('addCourseProfFilter').value;
+                const curriculumFilter = document.getElementById('addCourseCurriculumFilter').value;
+                let filtered = _addCourseListData.filter(course => {
+                    const matchesSearch = course.CourseCode.toLowerCase().includes(search) || course.Title.toLowerCase().includes(search);
+                    let matchesProf = true;
+                    if (profFilter === 'assigned') matchesProf = !!course.AssignedTo;
+                    else if (profFilter === 'unassigned') matchesProf = !course.AssignedTo;
+                    let matchesCurriculum = true;
+                    if (curriculumFilter !== 'all' && course.CurriculumName !== curriculumFilter) matchesCurriculum = false;
+                    return matchesSearch && matchesProf && matchesCurriculum;
+                });
+                renderAddCourseList(filtered);
+            }
+
+            // Patch openModifyTaskModal to also load available courses
+            const _openModifyTaskModal = openModifyTaskModal;
+            openModifyTaskModal = function(taskId) {
+                _openModifyTaskModal(taskId);
+                loadAvailableCoursesForTask(taskId);
+            }
+
+            function getAssignmentStatusLabel($status) {
+                switch ($status) {
+                    case 'Pending':
+                        return 'No Submission';
+                    case 'Submitted':
+                        return 'Submitted for Review';
+                    case 'Completed':
+                        return 'Reviewed & Approved';
+                    default:
+                        return $status;
+                }
+            }
         </script>
     </div>
 </body>
