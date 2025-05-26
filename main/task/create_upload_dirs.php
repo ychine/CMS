@@ -1,8 +1,6 @@
 <?php
-// Define the base upload directory
 $baseUploadDir = __DIR__ . '/../../uploads/tasks';
 
-// Create the base uploads directory if it doesn't exist
 if (!file_exists($baseUploadDir)) {
     if (mkdir($baseUploadDir, 0777, true)) {
         echo "Created base uploads directory: $baseUploadDir<br>";
@@ -11,7 +9,6 @@ if (!file_exists($baseUploadDir)) {
     }
 }
 
-// Create a .htaccess file to allow access to PDFs and other documents
 $htaccessContent = "Options +Indexes\n<FilesMatch \"\\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt)$\">\n    Order Allow,Deny\n    Allow from all\n</FilesMatch>";
 $htaccessFile = $baseUploadDir . '/.htaccess';
 if (!file_exists($htaccessFile)) {
@@ -22,7 +19,6 @@ if (!file_exists($htaccessFile)) {
     }
 }
 
-// Create a test directory for task ID 1
 $taskDir = $baseUploadDir . '/1';
 if (!file_exists($taskDir)) {
     if (mkdir($taskDir, 0777, true)) {
@@ -32,7 +28,6 @@ if (!file_exists($taskDir)) {
     }
 }
 
-// Set permissions for all created directories
 $directories = [
     $baseUploadDir,
     $taskDir

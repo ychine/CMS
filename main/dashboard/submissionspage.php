@@ -14,6 +14,15 @@ function getAssignmentStatusLabel($status) {
     }
 }
 
+function createNotification($accountID, $title, $message, $taskID = null) {
+    global $conn;
+    $insertQuery = "INSERT INTO notifications (AccountID, Title, Message, TaskID) VALUES (?, ?, ?, ?)";
+    $insertStmt = $conn->prepare($insertQuery);
+    $insertStmt->bind_param("issi", $accountID, $title, $message, $taskID);
+    $insertStmt->execute();
+    $insertStmt->close();
+}
+
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
     exit();
@@ -115,6 +124,23 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
                 }
                 $tmStmt->close();
             }
+            
+            // Notify DN, PH, and COR about the submission
+            $notifyQuery = "SELECT p.AccountID, p.Role 
+                           FROM personnel p 
+                           WHERE p.FacultyID = ? AND p.Role IN ('DN', 'PH', 'COR')";
+            $notifyStmt = $conn->prepare($notifyQuery);
+            $notifyStmt->bind_param("i", $facultyID);
+            $notifyStmt->execute();
+            $notifyResult = $notifyStmt->get_result();
+            
+            while ($row = $notifyResult->fetch_assoc()) {
+                $title = "New Submission";
+                $message = "A new submission has been made for task: " . $taskInfo['Title'];
+                createNotification($row['AccountID'], $title, $message, $taskID);
+            }
+            $notifyStmt->close();
+            
             $message = "File uploaded successfully.";
         } else {
             $message = "Error inserting submission: " . $insertStmt->error;
@@ -189,6 +215,43 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
         $message = "Error approving task: " . $approveStmt->error;
     }
     $approveStmt->close();
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'revise') {
+    $taskAssignmentID = $_POST['task_assignment_id'];
+    $revisionReason = $_POST['revision_reason'];
+    
+    // Get task and assignment details
+    $detailsQuery = "SELECT ta.TaskID, ta.PersonnelID, t.Title, c.CourseCode, c.Title as CourseTitle 
+                    FROM task_assignments ta 
+                    JOIN tasks t ON ta.TaskID = t.TaskID 
+                    JOIN courses c ON ta.CourseCode = c.CourseCode 
+                    WHERE ta.TaskAssignmentID = ?";
+    $detailsStmt = $conn->prepare($detailsQuery);
+    $detailsStmt->bind_param("i", $taskAssignmentID);
+    $detailsStmt->execute();
+    $detailsResult = $detailsStmt->get_result();
+    $details = $detailsResult->fetch_assoc();
+    
+    // Update task assignment status
+    $updateSql = "UPDATE task_assignments 
+                  SET Status = 'Pending', RevisionReason = ? 
+                  WHERE TaskAssignmentID = ?";
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bind_param("si", $revisionReason, $taskAssignmentID);
+    
+    if($updateStmt->execute()) {
+        // Notify the faculty member about the revision request
+        $title = "Revision Requested";
+        $message = "A revision has been requested for your submission in " . $details['CourseCode'] . " - " . $details['CourseTitle'];
+        createNotification($details['PersonnelID'], $title, $message, $details['TaskID']);
+        
+        $message = "Revision request sent successfully.";
+    } else {
+        $message = "Error requesting revision: " . $updateStmt->error;
+    }
+    $updateStmt->close();
+    $detailsStmt->close();
 }
 
 $tasks = [];
@@ -1025,7 +1088,7 @@ if (isset($_GET['from'])) {
                 <div class="faculty-info">
                   <div class="faculty-avatar"></div>
                   <div class="faculty-details">
-                    <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
+                    <p class="faculty-name text-lg font-onest font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
                     <p class="faculty-role font-light"><?php echo htmlspecialchars($roleMap[$task['CreatorRole']] ?? $task['CreatorRole']); ?></p>
                   </div>
                 </div>
@@ -1080,14 +1143,19 @@ if (isset($_GET['from'])) {
                         <br>
                         <p class="signed-by font-light">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
                         <p class="text-xs text-gray-500 font-light"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
-                      <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
-                        <form method="POST" action="../task/task_actions.php" class="mt-1">
-                          <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
-                          <input type="hidden" name="action" value="complete">
-                          <button type="submit" class="approval-btn">
-                            Approve
+                      <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR')): ?>
+                        <div class="flex flex-col gap-1 mt-1">
+                          <form method="POST" action="../task/task_actions.php" class="inline">
+                            <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
+                            <input type="hidden" name="action" value="complete">
+                            <button type="submit" class="text-emerald-600 hover:text-emerald-700 font-medium text-xs font-overpass hover:underline transition-all duration-200">
+                              Mark as Complete
+                            </button>
+                          </form>
+                          <button onclick="event.stopPropagation(); openRevisionModal('<?php echo $assignment['TaskAssignmentID']; ?>', '<?php echo htmlspecialchars($assignment['CourseCode'] . ' - ' . $assignment['CourseTitle']); ?>')" class="text-amber-600 hover:text-amber-700 font-medium text-xs font-overpass hover:underline transition-all duration-200">
+                            Request Revision
                           </button>
-                        </form>
+                        </div>
                       <?php elseif ($assignment['AssignmentStatus'] == 'Submitted'): ?>
                         <p class="text-xs text-gray-500 font-light">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
                       <?php endif; ?>
@@ -1345,7 +1413,7 @@ if (isset($_GET['from'])) {
     }
 
     function handleImageError(img) {
-      img.onerror = null; // Prevent infinite loop
+      img.onerror = null;
       img.parentElement.innerHTML = `
         <div class="text-center py-8">
           <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
@@ -1392,7 +1460,7 @@ if (isset($_GET['from'])) {
       }, 3000);
     }
 
-    // Co-author search filter
+ 
     const coauthorSearch = document.getElementById('coauthorSearch');
     const coauthorList = document.getElementById('coauthorList');
     coauthorSearch.addEventListener('input', function() {
@@ -1402,7 +1470,7 @@ if (isset($_GET['from'])) {
         label.style.display = name.includes(term) ? '' : 'none';
       });
     });
-    // None option logic
+
     const noneBox = document.getElementById('coauthorNone');
     const coauthorCheckboxes = coauthorList.querySelectorAll('.coauthor-checkbox');
     noneBox.addEventListener('change', function() {
@@ -1427,17 +1495,13 @@ if (isset($_GET['from'])) {
       const previewTitle = document.getElementById('previewTitle');
   
       previewTitle.textContent = title;
-      
-      // Get file extension
+    
       const extension = path.split('.').pop().toLowerCase();
       
-      // Clear previous content
       previewContent.innerHTML = '';
-      
-      // Show modal
+   
       modal.classList.remove('hidden');
       
-      // Handle different file types
       if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
         previewContent.innerHTML = `<img src="${path}" class="max-w-full h-[93%] object-contain mx-auto" onerror="handleImageError(this)">`;
       } else if (extension === 'pdf') {
@@ -1517,5 +1581,68 @@ if (isset($_GET['from'])) {
       </div>
     </div>
   </div>
+
+  <!-- Revision Modal -->
+  <div id="revisionModal" class="hidden fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-[600px]">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold font-overpass">Request Revision</h2>
+            <button onclick="closeRevisionModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="POST" action="../task/task_actions.php" class="space-y-4">
+            <input type="hidden" name="task_assignment_id" id="revisionTaskId">
+            <input type="hidden" name="action" value="revise">
+            <div>
+                <label class="block mb-1 font-medium">Reason for Revision:</label>
+                <textarea name="revision_reason" required 
+                          class="w-full p-2 border rounded" 
+                          rows="4" 
+                          placeholder="Please provide specific reasons for requesting a revision..."></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeRevisionModal()" 
+                        class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
+                    Submit Revision Request
+                </button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+  <script>
+    function openRevisionModal(taskId, title) {
+        const modal = document.getElementById('revisionModal');
+        const revisionTaskId = document.getElementById('revisionTaskId');
+        
+        revisionTaskId.value = taskId;
+        modal.classList.remove('hidden');
+    }
+
+    function closeRevisionModal() {
+        const modal = document.getElementById('revisionModal');
+        modal.classList.add('hidden');
+        document.getElementById('revisionReason').value = '';
+    }
+
+    // Close revision modal when clicking outside
+    document.getElementById('revisionModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRevisionModal();
+        }
+    });
+
+    // Close revision modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeRevisionModal();
+        }
+    });
+  </script>
 </body>
 </html>

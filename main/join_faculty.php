@@ -25,13 +25,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['faculty_code'])) {
         $row = $result->fetch_assoc();
         $facultyID = $row['FacultyID'];
 
-        // Update personnel record
         $updateQuery = "UPDATE personnel SET FacultyID = ?, Role = 'FM' WHERE AccountID = ?";
         $updateStmt = $conn->prepare($updateQuery);
         $updateStmt->bind_param("ii", $facultyID, $accountID);
 
         if ($updateStmt->execute()) {
-            // Fetch personnel info for audit logging
+
             $userQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE AccountID = ?";
             $userStmt = $conn->prepare($userQuery);
             $userStmt->bind_param("i", $accountID);
@@ -44,7 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['faculty_code'])) {
                 $fullName = $user['FirstName'] . ' ' . $user['LastName'];
                 $description = "Joined the faculty";
 
-                // Insert into audit log
                 $logQuery = "INSERT INTO auditlog (FacultyID, PersonnelID, FullName, Description) VALUES (?, ?, ?, ?)";
                 $logStmt = $conn->prepare($logQuery);
                 $logStmt->bind_param("iiss", $facultyID, $personnelID, $fullName, $description);
