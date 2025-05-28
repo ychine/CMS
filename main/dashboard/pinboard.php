@@ -163,7 +163,7 @@ $conn->close();
 
 <!-- Pinboard Section -->
 <div class="w-[300px] max-w-full min-w-[250px]">
-    <div class="bg-white p-[30px] pr-[20px] font-overpass rounded-lg shadow-md h-[600px]">
+    <div class="bg-white p-[30px] pr-[20px] font-overpass rounded-sm shadow-md h-[600px]">
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold">Pinboard 📌</h2>
             <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
