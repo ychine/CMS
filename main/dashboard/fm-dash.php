@@ -396,7 +396,6 @@ $totalStmt->close();
             }
         });
 
-        // Resize functionality
         const tasksContainer = document.getElementById('tasksContainer');
         const tasksList = document.getElementById('tasksList');
         const resizeHandle = document.getElementById('resizeHandle');
@@ -414,9 +413,9 @@ $totalStmt->close();
 
         function resize(e) {
             const newHeight = startHeight + (e.clientY - startY);
-            if (newHeight > 210) { // Minimum height
+            if (newHeight > 210) {
                 tasksContainer.style.height = newHeight + 'px';
-                tasksList.style.maxHeight = (newHeight - 90) + 'px'; // Adjust for padding and header
+                tasksList.style.maxHeight = (newHeight - 90) + 'px'; 
             }
         }
 
