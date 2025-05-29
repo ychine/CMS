@@ -100,7 +100,7 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
     if(move_uploaded_file($_FILES["task_file"]["tmp_name"], $targetFilePath)) {
         $relativePath = "uploads/tasks/{$taskID}/" . $fileName;
         // Get school year and term from the task
-        $taskInfoSql = "SELECT SchoolYear, Term FROM tasks WHERE TaskID = ?";
+        $taskInfoSql = "SELECT SchoolYear, Term, Title FROM tasks WHERE TaskID = ?";
         $taskInfoStmt = $conn->prepare($taskInfoSql);
         $taskInfoStmt->bind_param("i", $taskID);
         $taskInfoStmt->execute();
@@ -1216,6 +1216,24 @@ if (isset($_GET['from'])) {
               <input type="hidden" name="task_id" id="taskID">
               <input type="hidden" name="course_code" id="courseCode">
               <input type="hidden" name="program_id" id="programID">
+              
+              <div class="file-input-container mb-6">
+                <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
+                  <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
+                  <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
+                </label>
+                <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
+              </div>
+              <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-file-alt text-blue-500"></i>
+                  <span id="fileName" class="file-name font-medium text-gray-800"></span>
+                </div>
+                <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
+                  <i class="fas fa-times"></i>
+                </span>
+              </div>
+              <div id="filePreview" class="file-preview hidden mb-2"></div>
               <!-- Co-author checkboxes -->
               <?php if (!empty($coauthors)): ?>
               <div class="mb-6">
@@ -1242,25 +1260,8 @@ if (isset($_GET['from'])) {
               </div>
               <?php endif; ?>
               <!-- End co-author checkboxes -->
-              <div class="file-input-container mb-6">
-                <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
-                  <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
-                  <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
-                </label>
-                <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
-              </div>
-              <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
-                <div class="flex items-center gap-2">
-                  <i class="fas fa-file-alt text-blue-500"></i>
-                  <span id="fileName" class="file-name font-medium text-gray-800"></span>
-                </div>
-                <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
-                  <i class="fas fa-times"></i>
-                </span>
-              </div>
-              <div id="filePreview" class="file-preview hidden"></div>
-              <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
-                Submit and Sign
+              <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold font-onest rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
+                Submit
               </button>
             </div>
           </form>
@@ -1568,11 +1569,9 @@ if (isset($_GET['from'])) {
   <!-- Add this modal HTML before the closing body tag -->
   <div id="previewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
     <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
-      <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-        <h3 class="text-xl font-semibold dark:text-white" id="previewTitle"></h3>
-        <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-          <i class="fas fa-times text-xl"></i>
-        </button>
+      <div class="flex justify-between items-center px-4 py-2 border-b dark:border-gray-700">
+        <h3 class="text-sm font-medium dark:text-white" id="previewTitle">File Preview</h3>
+        <button onclick="closePreview()" class="text-gray-700 hover:text-red-600 text-2xl font-bold" title="Close">&times;</button>
       </div>
       <div class="flex-1 overflow-auto">
         <div id="previewContent" class="w-full h-full flex items-center justify-center">

@@ -177,7 +177,7 @@ $conn->close();
                 </div>
             <?php else: ?>
                 <?php foreach ($pinboardPosts as $post): ?>
-                    <div class="relative bg-gray-100 rounded-xl pl-3 pr-3 py-8 shadow-sm flex flex-col">
+                    <div class="relative bg-gray-100 rounded-xl pl-1 pr-3 py-8 shadow-sm flex flex-col">
                         <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
                         <form method="POST" class="absolute top-2 right-2">
                             <input type="hidden" name="pin_id" value="<?php echo $post['PinID']; ?>">

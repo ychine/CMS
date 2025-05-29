@@ -243,7 +243,7 @@ $totalStmt->close();
                 
                 <div class="flex gap-5 flex-1 max-w-[900px]">
                     <!-- Tasks -->
-                    <div class="flex-1 bg-white p-[30px] pb-[20px] font-overpass rounded-lg shadow-md h-[210px] relative" id="tasksContainer">
+                    <div class="flex-1 select-none bg-white p-[30px] pb-[20px] font-overpass rounded-sm shadow-md h-[210px] relative" id="tasksContainer">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-bold">Tasks</h2>
                             <a href="../task/task_frame.php" class="text-sm text-blue-600 hover:underline">See all tasks</a>
@@ -265,7 +265,7 @@ $totalStmt->close();
                         ?>
 
                         <?php if ($taskResult->num_rows > 0): ?>
-                            <div class="space-y-3 max-h-[120px] overflow-y-auto pr-2" id="tasksList">
+                            <div class="space-y-3  max-h-[120px] overflow-y-auto pr-2" id="tasksList">
                                 <?php while ($task = $taskResult->fetch_assoc()): ?>
                                     <a href="submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=fm-dash" class="block">
                                         <?php
@@ -281,7 +281,7 @@ $totalStmt->close();
                                                 $borderColor = '#ef4444'; // rose
                                         }
                                         ?>
-                                        <div class="bg-gray-100 border border-gray-200 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid <?php echo $borderColor; ?>;">
+                                        <div class="bg-gray-100 border select-none border-gray-200 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid <?php echo $borderColor; ?>;">
                                             <div class="flex items-center justify-between">
                                                 <div class="flex-1">
                                                     <div class="font-medium font-onest text-sm"><?php echo htmlspecialchars($task['Title']); ?></div>
@@ -326,7 +326,7 @@ $totalStmt->close();
                         </div>
                     </div>
                     <!-- Faculty -->
-                    <div class="w-[300px] bg-white p-[30px] pb-[20px] rounded-lg shadow-md font-overpass h-[210px]">
+                    <div class="w-[300px] bg-white p-[30px] pb-[20px] rounded-sm shadow-md font-overpass h-[210px]">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-bold">Faculty</h2>
                             <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
