@@ -1486,7 +1486,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         });
                         if (count($completedCourses) > 0):
                         ?>
-                        <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                        <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                              onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                             <div class="flex items-center gap-3">
                                 <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
@@ -1676,7 +1676,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 if (count($completedCourses) > 0) {
                             ?>
                             <!-- DN/PH/COR card -->
-                            <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                            <div class="bg-white p-8 font-onest rounded-2xl border md:w-[80%] border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex items-center gap-3">
                                     <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
@@ -1728,7 +1728,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                     return $course['AssignmentStatus'] === 'Completed' && isset($course['PersonnelID']) && $course['PersonnelID'] == $personnelID;
                                 });
                                 if (count($myCompletedCourses) > 0): ?>
-                                    <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                                    <div class="bg-white p-8 font-onest rounded-2xl md:w-[80%] border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <div class="flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between">
                                         <div class="flex items-center gap-3">

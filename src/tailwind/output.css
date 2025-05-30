@@ -686,9 +686,6 @@
   .w-\[90vw\] {
     width: 90vw;
   }
-  .w-\[100vw\] {
-    width: 100vw;
-  }
   .w-\[180px\] {
     width: 180px;
   }
@@ -1264,9 +1261,6 @@
   }
   .pr-10 {
     padding-right: calc(var(--spacing) * 10);
-  }
-  .pr-12 {
-    padding-right: calc(var(--spacing) * 12);
   }
   .pr-\[10px\] {
     padding-right: 10px;
@@ -2077,23 +2071,9 @@
       color: var(--color-gray-300);
     }
   }
-  .dark\:text-gray-400 {
-    @media (prefers-color-scheme: dark) {
-      color: var(--color-gray-400);
-    }
-  }
   .dark\:text-white {
     @media (prefers-color-scheme: dark) {
       color: var(--color-white);
-    }
-  }
-  .dark\:hover\:text-gray-200 {
-    @media (prefers-color-scheme: dark) {
-      &:hover {
-        @media (hover: hover) {
-          color: var(--color-gray-200);
-        }
-      }
     }
   }
   .\[\&\:\:-webkit-scrollbar\]\:w-2 {

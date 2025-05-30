@@ -76,7 +76,6 @@ while ($row = $res->fetch_assoc()) {
 }
 $stmt->close();
 
-// 2. Fetch all courses for those curricula and nest them
 if (!empty($curriculaMap)) {
     $curriculumIds = implode(',', array_map('intval', array_keys($curriculaMap)));
     $sqlCourses = "
@@ -129,7 +128,7 @@ $semesterNames = ['1st Semester', '2nd Semester', 'Summer'];
 
 foreach ($programs as $programId => &$programData) {
     foreach ($programData['curricula'] as $curriculum => &$years) {
-        // Sort years by their order
+       
         uksort($years, function($a, $b) use ($yearNames) {
             $yearOrderA = array_search($a, $yearNames) !== false ? array_search($a, $yearNames) : PHP_INT_MAX;
             $yearOrderB = array_search($b, $yearNames) !== false ? array_search($b, $yearNames) : PHP_INT_MAX;
@@ -636,7 +635,8 @@ $conn->close();
                                             if (!empty($coauthorsList)) {
                                                 echo "<span class='text-gray-500 ml-2'>Co-Authors: " . htmlspecialchars(implode(', ', $coauthorsList)) . "</span>";
                                             }
-                                            if ($date) echo "<span class='text-gray-400 ml-2'>$date SY $schoolYear</span>";
+                                            if ($date) echo "<span class='text-gray-400 ml-2'>$date</span>";
+                                            if ($schoolYear) echo "<span class='text-gray-600 ml-2 font-medium'>SY $schoolYear</span>";
                                             echo "</li>";
                                         }
                                         echo "</ul>";

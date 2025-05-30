@@ -39,7 +39,6 @@ $userRole = "";
 $facultyID = null;
 $message = "";
 
-// Add role mapping array
 $roleMap = [
     'DN' => 'College Dean',
     'PH' => 'Program Head',
@@ -65,7 +64,6 @@ if ($result && $result->num_rows > 0) {
 }
 $stmt->close();
 
-// Fetch all faculty members except the current user for co-author selection
 $coauthors = [];
 if ($facultyID) {
     $coauthorQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ? AND PersonnelID != ? ORDER BY FirstName, LastName";
@@ -79,14 +77,12 @@ if ($facultyID) {
     $coauthorStmt->close();
 }
 
-// Handle file upload and submission
 if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['task_file'])) {
     $taskID = $_POST['task_id'];
     $courseCode = $_POST['course_code'];
     $programID = $_POST['program_id'];
     $selectedCoauthors = isset($_POST['coauthors']) ? $_POST['coauthors'] : [];
     
-    // Check if directory exists, if not create it
     $uploadDir = "../../uploads/tasks/{$taskID}/";
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0777, true);
@@ -96,10 +92,10 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
     $targetFilePath = $uploadDir . $fileName;
     $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
     
-    // Upload file
+  
     if(move_uploaded_file($_FILES["task_file"]["tmp_name"], $targetFilePath)) {
         $relativePath = "uploads/tasks/{$taskID}/" . $fileName;
-        // Get school year and term from the task
+       
         $taskInfoSql = "SELECT SchoolYear, Term, Title FROM tasks WHERE TaskID = ?";
         $taskInfoStmt = $conn->prepare($taskInfoSql);
         $taskInfoStmt->bind_param("i", $taskID);
@@ -109,6 +105,14 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
         $schoolYear = $taskInfo['SchoolYear'];
         $term = $taskInfo['Term'];
         $taskInfoStmt->close();
+
+       
+        $deleteSql = "DELETE FROM submissions WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?";
+        $deleteStmt = $conn->prepare($deleteSql);
+        $deleteStmt->bind_param("isi", $taskID, $courseCode, $programID);
+        $deleteStmt->execute();
+        $deleteStmt->close();
+
         // Insert a new submission record
         $insertSql = "INSERT INTO submissions (FacultyID, TaskID, CourseCode, ProgramID, SubmissionPath, SubmittedBy, SubmissionDate, SchoolYear, Term) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
         $insertStmt = $conn->prepare($insertSql);
@@ -220,8 +224,7 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
 if (isset($_POST['action']) && $_POST['action'] === 'revise') {
     $taskAssignmentID = $_POST['task_assignment_id'];
     $revisionReason = $_POST['revision_reason'];
-    
-    // Get task and assignment details
+  
     $detailsQuery = "SELECT ta.TaskID, ta.PersonnelID, t.Title, c.CourseCode, c.Title as CourseTitle 
                     FROM task_assignments ta 
                     JOIN tasks t ON ta.TaskID = t.TaskID 
@@ -233,7 +236,6 @@ if (isset($_POST['action']) && $_POST['action'] === 'revise') {
     $detailsResult = $detailsStmt->get_result();
     $details = $detailsResult->fetch_assoc();
     
-    // Update task assignment status
     $updateSql = "UPDATE task_assignments 
                   SET Status = 'Pending', RevisionReason = ? 
                   WHERE TaskAssignmentID = ?";
@@ -241,7 +243,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'revise') {
     $updateStmt->bind_param("si", $revisionReason, $taskAssignmentID);
     
     if($updateStmt->execute()) {
-        // Notify the faculty member about the revision request
+      
         $title = "Revision Requested";
         $message = "A revision has been requested for your submission in " . $details['CourseCode'] . " - " . $details['CourseTitle'];
         createNotification($details['PersonnelID'], $title, $message, $details['TaskID']);
@@ -1072,8 +1074,8 @@ if (isset($_GET['from'])) {
       <?php else: ?>
         <?php if (!empty($tasks)): ?>
           <div class="section-header mb-8" style="position: relative; min-height: 48px; display: flex; align-items: center;">
-            <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
-            <h3 class="task-title font-onest" style="font-family: 'Onest', sans-serif; margin-left: 0;">
+            <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -40px; top: 50%; transform: translateY(-55%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
+            <h3 class="task-title font-onest font-semibold" style="font-family: 'Onest', sans-serif; margin-left: 0;">
               <?php echo htmlspecialchars($tasks[0]['Title']); ?>
             </h3>
             <span class="course-code" style="margin-left: 1rem;">
