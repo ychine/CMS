@@ -163,7 +163,7 @@ $conn->close();
 
 <!-- Pinboard Section -->
 <div class="w-[300px] max-w-full min-w-[250px]">
-    <div class="bg-white p-[30px] pr-[20px] font-overpass rounded-lg shadow-md h-[600px]">
+    <div class="bg-white p-[30px] pr-[20px] font-overpass rounded-sm shadow-md h-[600px]">
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold">Pinboard 📌</h2>
             <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
@@ -177,7 +177,7 @@ $conn->close();
                 </div>
             <?php else: ?>
                 <?php foreach ($pinboardPosts as $post): ?>
-                    <div class="relative bg-gray-100 rounded-xl pl-3 pr-3 py-8 shadow-sm flex flex-col">
+                    <div class="relative bg-gray-100 rounded-xl pl-1 pr-3 py-8 shadow-sm flex flex-col">
                         <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
                         <form method="POST" class="absolute top-2 right-2">
                             <input type="hidden" name="pin_id" value="<?php echo $post['PinID']; ?>">
@@ -196,7 +196,7 @@ $conn->close();
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     <span class="text-xs text-gray-400 font-medium"><?php echo date('M j, Y', strtotime($post['CreatedAt'])); ?></span>
                                 </div>
-                                <p class="text-base leading-relaxed text-gray-700 mb-4 whitespace-pre-line break-words"><?php echo nl2br(htmlspecialchars($post['Message'])); ?></p>
+                                <p class="text-base leading-relaxed font-onest text-gray-700 mb-4 whitespace-pre-line break-words"><?php echo nl2br(htmlspecialchars($post['Message'])); ?></p>
                                 <div class="flex items-center text-xs text-gray-500 font-medium mt-2">
                                      <h3 class="font-bold"><?php echo htmlspecialchars($post['AuthorName']); ?> </h3>
                                     <span class="mx-1">•</span>

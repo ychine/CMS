@@ -40,25 +40,30 @@ $task = $taskResult->fetch_assoc();
 
 // Fetch assignments
 $assignments = [];
-$assignSql = "SELECT ta.*, c.Title as CourseTitle, p.ProgramName, 
+$assignSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, ta.Status, ta.SubmissionDate, ta.RevisionReason,
+                     ta.SubmissionPath, c.Title as CourseTitle, p.ProgramName, 
                      CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo, 
-                     per.Role as ProfessorRole,
-                     ta.SubmissionDate,
-                     ta.RevisionReason
+                     per.Role as ProfessorRole
               FROM task_assignments ta
               JOIN courses c ON ta.CourseCode = c.CourseCode
               JOIN programs p ON ta.ProgramID = p.ProgramID
-              LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-              LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
-              WHERE ta.TaskID = ?";
+              LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
+              WHERE ta.TaskID = ?
+              GROUP BY ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode
+              ORDER BY p.ProgramName, ta.CourseCode";
 $assignStmt = $conn->prepare($assignSql);
 $assignStmt->bind_param("i", $taskId);
 $assignStmt->execute();
 $assignResult = $assignStmt->get_result();
-while ($row = $assignResult->fetch_assoc()) $assignments[] = $row;
 
-// After fetching $assignments, attach co-authors to each assignment
-foreach ($assignments as &$a) {
+
+while ($row = $assignResult->fetch_assoc()) {
+    $assignments[] = $row;
+}
+
+$processedAssignments = [];
+foreach ($assignments as $key => $a) {
+    $processedAssignments[$key] = $a;
     if (!empty($a['SubmissionPath'])) {
         $submissionPath = $a['SubmissionPath'];
         $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
@@ -75,14 +80,15 @@ foreach ($assignments as &$a) {
             while ($coRow = $coRes->fetch_assoc()) {
                 $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
             }
-            $a['CoAuthors'] = $coauthorsList;
+            $processedAssignments[$key]['CoAuthors'] = $coauthorsList;
             $coStmt->close();
         }
         $subStmt->close();
     } else {
-        $a['CoAuthors'] = [];
+        $processedAssignments[$key]['CoAuthors'] = [];
     }
 }
+$assignments = $processedAssignments;
 
 $total = count($assignments);
 $completed = 0;
@@ -104,10 +110,13 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
     $sheet->setCellValue('A2', 'School Year: ' . $task['SchoolYear'] . ' | Term: ' . $task['Term']);
     
 
-    $sheet->mergeCells('A1:F1');
-    $sheet->mergeCells('A2:F2');
+    $sheet->mergeCells('A1:G1');
+    $sheet->mergeCells('A2:G2');
     
-   
+    // Add generation date and time
+    $sheet->setCellValue('A3', 'Generated On: ' . date('Y-m-d H:i:s'));
+    $sheet->mergeCells('A3:G3');
+    
     $titleStyle = [
         'font' => [
             'bold' => true,
@@ -118,7 +127,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             'horizontal' => Alignment::HORIZONTAL_CENTER
         ]
     ];
-    $sheet->getStyle('A1:F1')->applyFromArray($titleStyle);
+    $sheet->getStyle('A1:G1')->applyFromArray($titleStyle);
     
     $subtitleStyle = [
         'font' => [
@@ -129,10 +138,21 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             'horizontal' => Alignment::HORIZONTAL_CENTER
         ]
     ];
-    $sheet->getStyle('A2:F2')->applyFromArray($subtitleStyle);
+    $sheet->getStyle('A2:G2')->applyFromArray($subtitleStyle);
 
+    // Style for generation date/time
+    $dateStyle = [
+        'font' => [
+            'size' => 10,
+            'color' => ['rgb' => '64748b']
+        ],
+        'alignment' => [
+            'horizontal' => Alignment::HORIZONTAL_CENTER
+        ]
+    ];
+    $sheet->getStyle('A3:G3')->applyFromArray($dateStyle);
    
-    $headers = ['Course Code', 'Course Title', 'Program Name', 'Assigned Professor', 'Co-Authors', 'Status', 'Submission Date', 'Due Date'];
+    $headers = ['Course Code', 'Course Title', 'Assigned Professor', 'Co-Authors', 'Status', 'Submission Date', 'Due Date'];
     $sheet->fromArray($headers, NULL, 'A4');
 
  
@@ -140,6 +160,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
         'font' => [
             'bold' => true,
             'color' => ['rgb' => '334155'],
+            'size' => 10,
         ],
         'fill' => [
             'fillType' => Fill::FILL_SOLID,
@@ -153,10 +174,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
         ],
         'alignment' => [
             'horizontal' => Alignment::HORIZONTAL_CENTER,
-            'vertical' => Alignment::VERTICAL_CENTER
+            'vertical' => Alignment::VERTICAL_CENTER,
+            'wrapText' => true,
         ]
     ];
-    $sheet->getStyle('A4:F4')->applyFromArray($headerStyle);
+    $sheet->getStyle('A4:G4')->applyFromArray($headerStyle);
 
    
     $row = 5;
@@ -164,12 +186,11 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
         $coauthors = !empty($a['CoAuthors']) ? implode(', ', $a['CoAuthors']) : '-';
         $sheet->setCellValue('A' . $row, $a['CourseCode']);
         $sheet->setCellValue('B' . $row, $a['CourseTitle']);
-        $sheet->setCellValue('C' . $row, $a['ProgramName']);
-        $sheet->setCellValue('D' . $row, $a['AssignedTo'] ?: 'Unassigned');
-        $sheet->setCellValue('E' . $row, $coauthors);
-        $sheet->setCellValue('F' . $row, $a['Status']);
-        $sheet->setCellValue('G' . $row, $a['SubmissionDate'] ?: '-');
-        $sheet->setCellValue('H' . $row, $task['DueDate']);
+        $sheet->setCellValue('C' . $row, $a['AssignedTo'] ?: 'Unassigned');
+        $sheet->setCellValue('D' . $row, $coauthors);
+        $sheet->setCellValue('E' . $row, getAssignmentStatusLabel($a['Status']));
+        $sheet->setCellValue('F' . $row, $a['SubmissionDate'] ?: '-');
+        $sheet->setCellValue('G' . $row, $task['DueDate']);
         $row++;
     }
 
@@ -182,15 +203,22 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
             ]
         ],
         'alignment' => [
-            'vertical' => Alignment::VERTICAL_CENTER
-        ]
+            'vertical' => Alignment::VERTICAL_CENTER,
+            'wrapText' => true,
+        ],
+        'font' => ['size' => 9],
     ];
-    $sheet->getStyle('A5:H' . ($row-1))->applyFromArray($dataStyle);
+    $sheet->getStyle('A5:G' . ($row-1))->applyFromArray($dataStyle);
 
 
-    foreach (range('A', 'H') as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
-    }
+    // Set column widths for printing (adjusted for Letter portrait, Program Name removed)
+    $sheet->getColumnDimension('A')->setWidth(10);
+    $sheet->getColumnDimension('B')->setWidth(25);
+    $sheet->getColumnDimension('C')->setWidth(20);
+    $sheet->getColumnDimension('D')->setWidth(18);
+    $sheet->getColumnDimension('E')->setWidth(12);
+    $sheet->getColumnDimension('F')->setWidth(15);
+    $sheet->getColumnDimension('G')->setWidth(15);
 
   
     $summarySheet = $spreadsheet->createSheet();
@@ -219,7 +247,9 @@ if (isset($_GET['export']) && $_GET['export'] === 'excel') {
 
     $writer = new Xlsx($spreadsheet);
     header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="task_report_' . $taskId . '.xlsx"');
+    $filename = str_replace([' ', ':', '/', '\\', '?', '*', '[', ']'], '_', $task['Title']);
+    $filename = $filename . ' SUBMISSION REPORT.xlsx';
+    header('Content-Disposition: attachment;filename="' . $filename . '"');
     header('Cache-Control: max-age=0');
     $writer->save('php://output');
     exit;
@@ -396,7 +426,10 @@ function getAssignmentStatusLabel($status) {
                 <th>Submission Date</th>
                 <th>Due Date</th>
             </tr>
-            <?php foreach ($assignments as $a): ?>
+            <?php 
+            $processedIds = [];
+            foreach ($assignments as $a): 
+            ?>
             <tr>
                 <td><?= htmlspecialchars($a['CourseCode']) ?></td>
                 <td><?= htmlspecialchars($a['CourseTitle']) ?></td>

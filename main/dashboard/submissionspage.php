@@ -14,6 +14,15 @@ function getAssignmentStatusLabel($status) {
     }
 }
 
+function createNotification($accountID, $title, $message, $taskID = null) {
+    global $conn;
+    $insertQuery = "INSERT INTO notifications (AccountID, Title, Message, TaskID) VALUES (?, ?, ?, ?)";
+    $insertStmt = $conn->prepare($insertQuery);
+    $insertStmt->bind_param("issi", $accountID, $title, $message, $taskID);
+    $insertStmt->execute();
+    $insertStmt->close();
+}
+
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
     exit();
@@ -30,7 +39,6 @@ $userRole = "";
 $facultyID = null;
 $message = "";
 
-// Add role mapping array
 $roleMap = [
     'DN' => 'College Dean',
     'PH' => 'Program Head',
@@ -56,7 +64,6 @@ if ($result && $result->num_rows > 0) {
 }
 $stmt->close();
 
-// Fetch all faculty members except the current user for co-author selection
 $coauthors = [];
 if ($facultyID) {
     $coauthorQuery = "SELECT PersonnelID, FirstName, LastName FROM personnel WHERE FacultyID = ? AND PersonnelID != ? ORDER BY FirstName, LastName";
@@ -70,14 +77,12 @@ if ($facultyID) {
     $coauthorStmt->close();
 }
 
-// Handle file upload and submission
 if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['task_file'])) {
     $taskID = $_POST['task_id'];
     $courseCode = $_POST['course_code'];
     $programID = $_POST['program_id'];
     $selectedCoauthors = isset($_POST['coauthors']) ? $_POST['coauthors'] : [];
     
-    // Check if directory exists, if not create it
     $uploadDir = "../../uploads/tasks/{$taskID}/";
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0777, true);
@@ -87,11 +92,11 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
     $targetFilePath = $uploadDir . $fileName;
     $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION);
     
-    // Upload file
+  
     if(move_uploaded_file($_FILES["task_file"]["tmp_name"], $targetFilePath)) {
         $relativePath = "uploads/tasks/{$taskID}/" . $fileName;
-        // Get school year and term from the task
-        $taskInfoSql = "SELECT SchoolYear, Term FROM tasks WHERE TaskID = ?";
+       
+        $taskInfoSql = "SELECT SchoolYear, Term, Title FROM tasks WHERE TaskID = ?";
         $taskInfoStmt = $conn->prepare($taskInfoSql);
         $taskInfoStmt->bind_param("i", $taskID);
         $taskInfoStmt->execute();
@@ -100,6 +105,14 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
         $schoolYear = $taskInfo['SchoolYear'];
         $term = $taskInfo['Term'];
         $taskInfoStmt->close();
+
+       
+        $deleteSql = "DELETE FROM submissions WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?";
+        $deleteStmt = $conn->prepare($deleteSql);
+        $deleteStmt->bind_param("isi", $taskID, $courseCode, $programID);
+        $deleteStmt->execute();
+        $deleteStmt->close();
+
         // Insert a new submission record
         $insertSql = "INSERT INTO submissions (FacultyID, TaskID, CourseCode, ProgramID, SubmissionPath, SubmittedBy, SubmissionDate, SchoolYear, Term) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
         $insertStmt = $conn->prepare($insertSql);
@@ -115,6 +128,23 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
                 }
                 $tmStmt->close();
             }
+            
+            // Notify DN, PH, and COR about the submission
+            $notifyQuery = "SELECT p.AccountID, p.Role 
+                           FROM personnel p 
+                           WHERE p.FacultyID = ? AND p.Role IN ('DN', 'PH', 'COR')";
+            $notifyStmt = $conn->prepare($notifyQuery);
+            $notifyStmt->bind_param("i", $facultyID);
+            $notifyStmt->execute();
+            $notifyResult = $notifyStmt->get_result();
+            
+            while ($row = $notifyResult->fetch_assoc()) {
+                $title = "New Submission";
+                $message = "A new submission has been made for task: " . $taskInfo['Title'];
+                createNotification($row['AccountID'], $title, $message, $taskID);
+            }
+            $notifyStmt->close();
+            
             $message = "File uploaded successfully.";
         } else {
             $message = "Error inserting submission: " . $insertStmt->error;
@@ -191,6 +221,41 @@ if (isset($_POST['approve_task']) && $userRole == 'DN') {
     $approveStmt->close();
 }
 
+if (isset($_POST['action']) && $_POST['action'] === 'revise') {
+    $taskAssignmentID = $_POST['task_assignment_id'];
+    $revisionReason = $_POST['revision_reason'];
+  
+    $detailsQuery = "SELECT ta.TaskID, ta.PersonnelID, t.Title, c.CourseCode, c.Title as CourseTitle 
+                    FROM task_assignments ta 
+                    JOIN tasks t ON ta.TaskID = t.TaskID 
+                    JOIN courses c ON ta.CourseCode = c.CourseCode 
+                    WHERE ta.TaskAssignmentID = ?";
+    $detailsStmt = $conn->prepare($detailsQuery);
+    $detailsStmt->bind_param("i", $taskAssignmentID);
+    $detailsStmt->execute();
+    $detailsResult = $detailsStmt->get_result();
+    $details = $detailsResult->fetch_assoc();
+    
+    $updateSql = "UPDATE task_assignments 
+                  SET Status = 'Pending', RevisionReason = ? 
+                  WHERE TaskAssignmentID = ?";
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bind_param("si", $revisionReason, $taskAssignmentID);
+    
+    if($updateStmt->execute()) {
+      
+        $title = "Revision Requested";
+        $message = "A revision has been requested for your submission in " . $details['CourseCode'] . " - " . $details['CourseTitle'];
+        createNotification($details['PersonnelID'], $title, $message, $details['TaskID']);
+        
+        $message = "Revision request sent successfully.";
+    } else {
+        $message = "Error requesting revision: " . $updateStmt->error;
+    }
+    $updateStmt->close();
+    $detailsStmt->close();
+}
+
 $tasks = [];
 
 if (isset($_GET['task_id'])) {
@@ -198,36 +263,22 @@ if (isset($_GET['task_id'])) {
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
-                ta.RevisionReason
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
                 FROM tasks t
-                JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                WHERE t.TaskID = ? AND t.FacultyID = ?";
-    
-    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-        $tasksSql .= " AND pc.PersonnelID = ?";
-    }
-    
-    $tasksSql .= " GROUP BY t.TaskID ORDER BY t.CreatedAt DESC";
+                WHERE t.TaskID = ? AND t.FacultyID = ?
+                GROUP BY t.TaskID";
     
     $tasksStmt = $conn->prepare($tasksSql);
-    if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-        $tasksStmt->bind_param("iii", $taskID, $facultyID, $personnelID);
-    } else {
-        $tasksStmt->bind_param("ii", $taskID, $facultyID);
-    }
+    $tasksStmt->bind_param("ii", $taskID, $facultyID);
 } else if ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR') {
-   
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
-                ta.RevisionReason
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
                 FROM tasks t
-                JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
                 WHERE t.FacultyID = ?
                 GROUP BY t.TaskID
@@ -235,17 +286,14 @@ if (isset($_GET['task_id'])) {
     $tasksStmt = $conn->prepare($tasksSql);
     $tasksStmt->bind_param("i", $facultyID);
 } else {
-
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, 
                 t.SchoolYear, t.Term, COUNT(ta.TaskAssignmentID) as TotalAssignments,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedAssignments,
-                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole,
-                ta.RevisionReason
+                p.FirstName as CreatorFirstName, p.LastName as CreatorLastName, p.Role as CreatorRole
                 FROM tasks t
-                JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                WHERE pc.PersonnelID = ? AND t.FacultyID = ?
+                WHERE ta.PersonnelID = ? AND t.FacultyID = ?
                 GROUP BY t.TaskID
                 ORDER BY t.CreatedAt DESC";
     $tasksStmt = $conn->prepare($tasksSql);
@@ -256,7 +304,6 @@ $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
 
 while ($taskRow = $tasksResult->fetch_assoc()) {
-   
     $assignmentsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.Status as AssignmentStatus, 
                     ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
@@ -264,16 +311,14 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
                     per.PersonnelID as PersonnelID,
                     CONCAT(apr.FirstName, ' ', apr.LastName) as ApprovedBy
                     FROM task_assignments ta
-                    JOIN courses c ON ta.CourseCode = c.CourseCode
-                    JOIN programs p ON ta.ProgramID = p.ProgramID
-                    LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-                    LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                    LEFT JOIN courses c ON ta.CourseCode = c.CourseCode
+                    LEFT JOIN programs p ON ta.ProgramID = p.ProgramID
+                    LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
                     LEFT JOIN personnel apr ON ta.ApprovedBy = apr.PersonnelID
                     WHERE ta.TaskID = ?";
     
     if ($userRole != 'DN' && $userRole != 'PH' && $userRole != 'COR') {
-       
-        $assignmentsSql .= " AND pc.PersonnelID = ?";
+        $assignmentsSql .= " AND ta.PersonnelID = ?";
     }
     
     $assignmentsSql .= " ORDER BY p.ProgramName, ta.CourseCode";
@@ -294,36 +339,6 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
         $assignments[] = $assignmentRow;
     }
     $assignmentsStmt->close();
-    
-    // When displaying each assignment in the task view, fetch and display co-authors
-    foreach ($assignments as &$assignment) {
-        // Find the submission for this assignment
-        if (!empty($assignment['SubmissionPath'])) {
-            $submissionPath = $assignment['SubmissionPath'];
-            // Get SubmissionID
-            $subStmt = $conn->prepare("SELECT SubmissionID FROM submissions WHERE SubmissionPath = ? LIMIT 1");
-            $subStmt->bind_param("s", $submissionPath);
-            $subStmt->execute();
-            $subRes = $subStmt->get_result();
-            if ($subRow = $subRes->fetch_assoc()) {
-                $submissionID = $subRow['SubmissionID'];
-                // Get co-authors
-                $coStmt = $conn->prepare("SELECT p.FirstName, p.LastName FROM teammembers tm JOIN personnel p ON tm.MembersID = p.PersonnelID WHERE tm.SubmissionID = ?");
-                $coStmt->bind_param("i", $submissionID);
-                $coStmt->execute();
-                $coRes = $coStmt->get_result();
-                $coauthorsList = [];
-                while ($coRow = $coRes->fetch_assoc()) {
-                    $coauthorsList[] = $coRow['FirstName'] . ' ' . $coRow['LastName'];
-                }
-                $assignment['CoAuthors'] = $coauthorsList;
-                $coStmt->close();
-            }
-            $subStmt->close();
-        } else {
-            $assignment['CoAuthors'] = [];
-        }
-    }
     
     $taskRow['Assignments'] = $assignments;
     $tasks[] = $taskRow;
@@ -1059,8 +1074,8 @@ if (isset($_GET['from'])) {
       <?php else: ?>
         <?php if (!empty($tasks)): ?>
           <div class="section-header mb-8" style="position: relative; min-height: 48px; display: flex; align-items: center;">
-            <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
-            <h3 class="task-title font-onest" style="font-family: 'Onest', sans-serif; margin-left: 0;">
+            <a href="<?php echo $backUrl; ?>" class="back-arrow-btn" title="Back" style="position: absolute; left: -40px; top: 50%; transform: translateY(-55%); margin: 0;"><i class="fas fa-arrow-left"></i></a>
+            <h3 class="task-title font-onest font-semibold" style="font-family: 'Onest', sans-serif; margin-left: 0;">
               <?php echo htmlspecialchars($tasks[0]['Title']); ?>
             </h3>
             <span class="course-code" style="margin-left: 1rem;">
@@ -1075,7 +1090,7 @@ if (isset($_GET['from'])) {
                 <div class="faculty-info">
                   <div class="faculty-avatar"></div>
                   <div class="faculty-details">
-                    <p class="faculty-name text-lg font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
+                    <p class="faculty-name text-lg font-onest font-semibold"><?php echo htmlspecialchars($task['CreatorFirstName'] . ' ' . $task['CreatorLastName']); ?></p>
                     <p class="faculty-role font-light"><?php echo htmlspecialchars($roleMap[$task['CreatorRole']] ?? $task['CreatorRole']); ?></p>
                   </div>
                 </div>
@@ -1130,14 +1145,19 @@ if (isset($_GET['from'])) {
                         <br>
                         <p class="signed-by font-light">Signed by: <?php echo htmlspecialchars($assignment['ApprovedBy']); ?></p>
                         <p class="text-xs text-gray-500 font-light"><?php echo date("M j, Y", strtotime($assignment['ApprovalDate'])); ?></p>
-                      <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && $userRole == 'DN'): ?>
-                        <form method="POST" action="../task/task_actions.php" class="mt-1">
-                          <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
-                          <input type="hidden" name="action" value="complete">
-                          <button type="submit" class="approval-btn">
-                            Approve
+                      <?php elseif ($assignment['AssignmentStatus'] == 'Submitted' && ($userRole == 'DN' || $userRole == 'PH' || $userRole == 'COR')): ?>
+                        <div class="flex flex-col gap-1 mt-1">
+                          <form method="POST" action="../task/task_actions.php" class="inline">
+                            <input type="hidden" name="task_assignment_id" value="<?php echo $assignment['TaskAssignmentID']; ?>">
+                            <input type="hidden" name="action" value="complete">
+                            <button type="submit" class="text-emerald-600 hover:text-emerald-700 font-medium text-xs font-overpass hover:underline transition-all duration-200">
+                              Mark as Complete
+                            </button>
+                          </form>
+                          <button onclick="event.stopPropagation(); openRevisionModal('<?php echo $assignment['TaskAssignmentID']; ?>', '<?php echo htmlspecialchars($assignment['CourseCode'] . ' - ' . $assignment['CourseTitle']); ?>')" class="text-amber-600 hover:text-amber-700 font-medium text-xs font-overpass hover:underline transition-all duration-200">
+                            Request Revision
                           </button>
-                        </form>
+                        </div>
                       <?php elseif ($assignment['AssignmentStatus'] == 'Submitted'): ?>
                         <p class="text-xs text-gray-500 font-light">Submitted: <?php echo date("M j, Y", strtotime($assignment['SubmissionDate'])); ?></p>
                       <?php endif; ?>
@@ -1198,6 +1218,24 @@ if (isset($_GET['from'])) {
               <input type="hidden" name="task_id" id="taskID">
               <input type="hidden" name="course_code" id="courseCode">
               <input type="hidden" name="program_id" id="programID">
+              
+              <div class="file-input-container mb-6">
+                <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
+                  <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
+                  <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
+                </label>
+                <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
+              </div>
+              <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-file-alt text-blue-500"></i>
+                  <span id="fileName" class="file-name font-medium text-gray-800"></span>
+                </div>
+                <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
+                  <i class="fas fa-times"></i>
+                </span>
+              </div>
+              <div id="filePreview" class="file-preview hidden mb-2"></div>
               <!-- Co-author checkboxes -->
               <?php if (!empty($coauthors)): ?>
               <div class="mb-6">
@@ -1224,25 +1262,8 @@ if (isset($_GET['from'])) {
               </div>
               <?php endif; ?>
               <!-- End co-author checkboxes -->
-              <div class="file-input-container mb-6">
-                <label for="taskFile" class="file-input-label flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition rounded-lg py-8 cursor-pointer">
-                  <i class="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
-                  <span class="text-gray-600 font-medium">Drag and drop your file here<br>or click to browse</span>
-                </label>
-                <input type="file" name="task_file" id="taskFile" class="file-input" onchange="displayFileName()">
-              </div>
-              <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
-                <div class="flex items-center gap-2">
-                  <i class="fas fa-file-alt text-blue-500"></i>
-                  <span id="fileName" class="file-name font-medium text-gray-800"></span>
-                </div>
-                <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
-                  <i class="fas fa-times"></i>
-                </span>
-              </div>
-              <div id="filePreview" class="file-preview hidden"></div>
-              <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
-                Submit and Sign
+              <button type="submit" name="submit_file" class="submit-btn mt-4 w-full py-3 text-lg font-semibold font-onest rounded-lg bg-blue-600 hover:bg-blue-700 transition disabled:opacity-50" id="submitBtn" disabled>
+                Submit
               </button>
             </div>
           </form>
@@ -1395,7 +1416,7 @@ if (isset($_GET['from'])) {
     }
 
     function handleImageError(img) {
-      img.onerror = null; // Prevent infinite loop
+      img.onerror = null;
       img.parentElement.innerHTML = `
         <div class="text-center py-8">
           <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
@@ -1442,7 +1463,7 @@ if (isset($_GET['from'])) {
       }, 3000);
     }
 
-    // Co-author search filter
+ 
     const coauthorSearch = document.getElementById('coauthorSearch');
     const coauthorList = document.getElementById('coauthorList');
     coauthorSearch.addEventListener('input', function() {
@@ -1452,7 +1473,7 @@ if (isset($_GET['from'])) {
         label.style.display = name.includes(term) ? '' : 'none';
       });
     });
-    // None option logic
+
     const noneBox = document.getElementById('coauthorNone');
     const coauthorCheckboxes = coauthorList.querySelectorAll('.coauthor-checkbox');
     noneBox.addEventListener('change', function() {
@@ -1477,17 +1498,13 @@ if (isset($_GET['from'])) {
       const previewTitle = document.getElementById('previewTitle');
   
       previewTitle.textContent = title;
-      
-      // Get file extension
+    
       const extension = path.split('.').pop().toLowerCase();
       
-      // Clear previous content
       previewContent.innerHTML = '';
-      
-      // Show modal
+   
       modal.classList.remove('hidden');
       
-      // Handle different file types
       if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
         previewContent.innerHTML = `<img src="${path}" class="max-w-full h-[93%] object-contain mx-auto" onerror="handleImageError(this)">`;
       } else if (extension === 'pdf') {
@@ -1554,11 +1571,9 @@ if (isset($_GET['from'])) {
   <!-- Add this modal HTML before the closing body tag -->
   <div id="previewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
     <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
-      <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-        <h3 class="text-xl font-semibold dark:text-white" id="previewTitle"></h3>
-        <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-          <i class="fas fa-times text-xl"></i>
-        </button>
+      <div class="flex justify-between items-center px-4 py-2 border-b dark:border-gray-700">
+        <h3 class="text-sm font-medium dark:text-white" id="previewTitle">File Preview</h3>
+        <button onclick="closePreview()" class="text-gray-700 hover:text-red-600 text-2xl font-bold" title="Close">&times;</button>
       </div>
       <div class="flex-1 overflow-auto">
         <div id="previewContent" class="w-full h-full flex items-center justify-center">
@@ -1567,5 +1582,68 @@ if (isset($_GET['from'])) {
       </div>
     </div>
   </div>
+
+  <!-- Revision Modal -->
+  <div id="revisionModal" class="hidden fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-[600px]">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold font-overpass">Request Revision</h2>
+            <button onclick="closeRevisionModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="POST" action="../task/task_actions.php" class="space-y-4">
+            <input type="hidden" name="task_assignment_id" id="revisionTaskId">
+            <input type="hidden" name="action" value="revise">
+            <div>
+                <label class="block mb-1 font-medium">Reason for Revision:</label>
+                <textarea name="revision_reason" required 
+                          class="w-full p-2 border rounded" 
+                          rows="4" 
+                          placeholder="Please provide specific reasons for requesting a revision..."></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeRevisionModal()" 
+                        class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">
+                    Cancel
+                </button>
+                <button type="submit" 
+                        class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700">
+                    Submit Revision Request
+                </button>
+            </div>
+        </form>
+    </div>
+  </div>
+
+  <script>
+    function openRevisionModal(taskId, title) {
+        const modal = document.getElementById('revisionModal');
+        const revisionTaskId = document.getElementById('revisionTaskId');
+        
+        revisionTaskId.value = taskId;
+        modal.classList.remove('hidden');
+    }
+
+    function closeRevisionModal() {
+        const modal = document.getElementById('revisionModal');
+        modal.classList.add('hidden');
+        document.getElementById('revisionReason').value = '';
+    }
+
+    // Close revision modal when clicking outside
+    document.getElementById('revisionModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRevisionModal();
+        }
+    });
+
+    // Close revision modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeRevisionModal();
+        }
+    });
+  </script>
 </body>
 </html>

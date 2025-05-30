@@ -76,7 +76,6 @@ while ($row = $res->fetch_assoc()) {
 }
 $stmt->close();
 
-// 2. Fetch all courses for those curricula and nest them
 if (!empty($curriculaMap)) {
     $curriculumIds = implode(',', array_map('intval', array_keys($curriculaMap)));
     $sqlCourses = "
@@ -124,14 +123,12 @@ if (!empty($curriculaMap)) {
     }
 }
 
-// Helper arrays for year/semester names (for sorting)
 $yearNames = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 $semesterNames = ['1st Semester', '2nd Semester', 'Summer'];
 
-// Sort courses inside each semester
 foreach ($programs as $programId => &$programData) {
     foreach ($programData['curricula'] as $curriculum => &$years) {
-        // Sort years by their order
+       
         uksort($years, function($a, $b) use ($yearNames) {
             $yearOrderA = array_search($a, $yearNames) !== false ? array_search($a, $yearNames) : PHP_INT_MAX;
             $yearOrderB = array_search($b, $yearNames) !== false ? array_search($b, $yearNames) : PHP_INT_MAX;
@@ -369,7 +366,6 @@ $conn->close();
             color: #dc2626;
         }
 
-        /* Personnel dropdown styling similar to faculty_frame.php */
         .assign-personnel-dropdown {
             background-color: #f3f4f6;
             border-radius: 6px;
@@ -590,7 +586,7 @@ $conn->close();
                                     echo "<tr id='$rowId' class='hidden'>";
                                     echo "<td colspan='3' class='bg-gray-50 px-6 py-3 border-b'>";
                                     // Fetch all submissions for this course, current year/term
-                                    $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName
+                                    $fileSql = "SELECT s.SubmissionPath, s.SubmissionDate, per.FirstName, per.LastName, s.SchoolYear
                                                 FROM submissions s
                                                 LEFT JOIN personnel per ON s.SubmittedBy = per.PersonnelID
                                                 JOIN task_assignments ta ON s.TaskID = ta.TaskID AND s.CourseCode = ta.CourseCode AND s.ProgramID = ta.ProgramID
@@ -610,6 +606,7 @@ $conn->close();
                                             $filePath = $fileRow['SubmissionPath'];
                                             $submitter = trim($fileRow['FirstName'] . ' ' . $fileRow['LastName']);
                                             $date = $fileRow['SubmissionDate'] ? date('M j, Y g:i A', strtotime($fileRow['SubmissionDate'])) : '';
+                                            $schoolYear = $fileRow['SchoolYear'];
                                             $fileName = basename($filePath);
                                             $fileUrl = '../../' . htmlspecialchars($filePath);
                                             echo "<li class='mb-1'>";
@@ -639,6 +636,7 @@ $conn->close();
                                                 echo "<span class='text-gray-500 ml-2'>Co-Authors: " . htmlspecialchars(implode(', ', $coauthorsList)) . "</span>";
                                             }
                                             if ($date) echo "<span class='text-gray-400 ml-2'>$date</span>";
+                                            if ($schoolYear) echo "<span class='text-gray-600 ml-2 font-medium'>SY $schoolYear</span>";
                                             echo "</li>";
                                         }
                                         echo "</ul>";
@@ -857,13 +855,17 @@ $conn->close();
 
 </div>
 
-<div id="filePreviewModal" class="hidden fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white p-6 pr-12 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative">
-    <button onclick="closeFilePreviewModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
-    <div class="flex justify-center items-center mb-4" style="position:relative;">
-      <h2 class="text-2xl font-bold w-full text-center font-overpass">File Preview</h2>
+<div id="filePreviewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
+  <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
+    <div class="flex justify-between items-center px-4 py-2 border-b dark:border-gray-700">
+      <h3 class="text-sm font-medium dark:text-white" id="previewTitle">File Preview</h3>
+      <button onclick="closeFilePreviewModal()" class="text-gray-700 hover:text-red-600 text-2xl font-bold" title="Close">&times;</button>
     </div>
-    <div class="flex-1 overflow-hidden" id="filePreviewContent"></div>
+    <div class="flex-1 overflow-auto">
+      <div id="filePreviewContent" class="w-full h-full flex items-center justify-center">
+        <!-- Content will be inserted here -->
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1194,31 +1196,73 @@ $conn->close();
     function openFilePreviewModal(fileUrl) {
         const modal = document.getElementById('filePreviewModal');
         const content = document.getElementById('filePreviewContent');
+        const title = document.getElementById('previewTitle');
+        
         // Determine file type
         const ext = fileUrl.split('.').pop().toLowerCase();
         if (["pdf"].includes(ext)) {
-            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" style="width:100%;height:85vh;">`;
+            content.innerHTML = `<embed src="${fileUrl}" type="application/pdf" class="w-full h-full" onerror="handlePdfError(this)">`;
         } else if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
-            content.innerHTML = `<img src="${fileUrl}" style="max-width:100%;max-height:85vh;display:block;margin:auto;">`;
+            content.innerHTML = `<img src="${fileUrl}" class="max-w-full h-[93%] object-contain mx-auto" onerror="handleImageError(this)">`;
         } else {
-            content.innerHTML = `<div class='text-center text-gray-500'>Preview not available for this file type.</div>`;
+            content.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-file-alt text-4xl text-blue-500 mb-3"></i>
+                    <p class="text-gray-600 dark:text-gray-300">Preview not available for this file type</p>
+                    <a href="${fileUrl}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        Download File
+                    </a>
+                </div>
+            `;
         }
         modal.classList.remove('hidden');
     }
 
-    function closeFilePreviewModal() {
-        document.getElementById('filePreviewModal').classList.add('hidden');
-        document.getElementById('filePreviewContent').innerHTML = '';
+    function handleImageError(img) {
+        img.onerror = null; // Prevent infinite loop
+        img.parentElement.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+                <p class="text-gray-600 dark:text-gray-300">Unable to load image preview</p>
+                <a href="${img.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Download File
+                </a>
+            </div>
+        `;
     }
 
+    function handlePdfError(embed) {
+        embed.onerror = null; // Prevent infinite loop
+        embed.parentElement.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
+                <p class="text-gray-600 dark:text-gray-300">Unable to load PDF preview</p>
+                <a href="${embed.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Download File
+                </a>
+            </div>
+        `;
+    }
+
+    function closeFilePreviewModal() {
+        const modal = document.getElementById('filePreviewModal');
+        const content = document.getElementById('filePreviewContent');
+        content.innerHTML = '';
+        modal.classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
     document.getElementById('filePreviewModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeFilePreviewModal();
         }
     });
 
-    window.addEventListener('keydown', function(e) {
-        if (e.key === "Escape") closeFilePreviewModal();
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeFilePreviewModal();
+        }
     });
 
     if (localStorage.getItem('darkMode') === 'enabled') {

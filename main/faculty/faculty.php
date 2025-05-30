@@ -232,7 +232,7 @@ $conn->close();
     </style>
 </head>
 
-<body class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
+<body class="w-full h-screen bg-[#020A27] px-5 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
     <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">

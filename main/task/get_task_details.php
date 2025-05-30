@@ -41,14 +41,13 @@ if ($taskResult->num_rows === 0) {
 $task = $taskResult->fetch_assoc();
 
 // Get course assignments
-$coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
+$coursesSql = "SELECT DISTINCT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
               p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-              ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, pc.PersonnelID as PersonnelID
+              ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
               FROM task_assignments ta
               JOIN courses c ON ta.CourseCode = c.CourseCode
               JOIN programs p ON ta.ProgramID = p.ProgramID
-              LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-              LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+              LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
               WHERE ta.TaskID = ?
               ORDER BY p.ProgramName, ta.CourseCode";
 $coursesStmt = $conn->prepare($coursesSql);

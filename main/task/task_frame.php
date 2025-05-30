@@ -1381,14 +1381,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
         </div>
 
         <!-- Preview Modal -->
-        <div id="previewModal" class="hidden fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white p-6 pr-12 rounded-lg shadow-lg w-[90vw] max-w-[1200px] max-h-[95vh] flex flex-col relative">
-                <button onclick="closePreviewModal()" class="absolute top-4 right-4 text-gray-700 hover:text-red-600 text-4xl font-bold z-50" title="Close">&times;</button>
-                <div class="flex justify-center items-center mb-4" style="position:relative;">
-                    <h2 class="text-2xl font-bold w-full text-center font-overpass">File Preview</h2>
-                </div>
-                <div class="flex-1 overflow-hidden" id="previewContent"></div>
+        <div id="previewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
+          <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
+            <div class="flex justify-between items-center px-4 py-2 border-b dark:border-gray-700">
+              <h3 class="text-sm font-medium dark:text-white" id="previewTitle">File Preview</h3>
+              <button onclick="closePreviewModal()" class="text-gray-700 hover:text-red-600 text-2xl font-bold" title="Close">&times;</button>
             </div>
+            <div class="flex-1 overflow-auto">
+              <div id="previewContent" class="w-full h-full flex items-center justify-center">
+                <!-- Content will be inserted here -->
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Revision Modal -->
@@ -1482,7 +1486,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         });
                         if (count($completedCourses) > 0):
                         ?>
-                        <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                        <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                              onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                             <div class="flex items-center gap-3">
                                 <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
@@ -1619,13 +1623,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <?php else: ?>
                         <?php foreach ($ongoingTasks as $task): ?>
                             <?php
-                            // Only show courses assigned to the current user
+                          
                             $myOngoingCourses = array_filter($task['Courses'], function($course) use ($personnelID) {
                                 return isset($course['PersonnelID']) && $course['PersonnelID'] == $personnelID && in_array($course['AssignmentStatus'], ['Pending', 'In Progress']);
                             });
                             ?>
                             <?php foreach ($myOngoingCourses as $course): ?>
-                            <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                            <div class="bg-white p-8 font-onest rounded-2xl md:w-[80%] border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
                                     <div class="flex items-center gap-3">
@@ -1672,7 +1676,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 if (count($completedCourses) > 0) {
                             ?>
                             <!-- DN/PH/COR card -->
-                            <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                            <div class="bg-white p-8 font-onest rounded-2xl border md:w-[80%] border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex items-center gap-3">
                                     <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
@@ -1724,7 +1728,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                     return $course['AssignmentStatus'] === 'Completed' && isset($course['PersonnelID']) && $course['PersonnelID'] == $personnelID;
                                 });
                                 if (count($myCompletedCourses) > 0): ?>
-                                    <div class="bg-white p-8 font-overpass rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                                    <div class="bg-white p-8 font-onest rounded-2xl md:w-[80%] border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <div class="flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between">
                                         <div class="flex items-center gap-3">

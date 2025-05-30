@@ -289,7 +289,7 @@ $conn->close();
     </style>
 </head>
 
-<body id="mainBody" class="w-full h-screen bg-[#020A27] px-10 pt-3 flex items-start justify-center">
+<body id="mainBody" class="w-full h-screen bg-[#020A27] px-5 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
     <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg" >
@@ -382,10 +382,10 @@ $conn->close();
                         <!-- Notification Dropdown -->
                         <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
                             <div class="p-4 shadow-md">
-                                <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
+                                <h3 class="text-lg font-onest z-40 font-semibold text-gray-900">Notifications</h3>
                             </div>
-                            <div id="notificationList" class="max-h-96 z-2 overflow-y-auto">
-                                <!-- Notifications will be loaded here -->
+                            <div id="notificationList" class="max-h-96 z-0 overflow-y-auto">
+                                <!-- D2 LALABAS UNG NOTIFS -->
                             </div>
                             <div class="p-4 border-t border-gray-200 text-center">
                                 <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
@@ -771,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const notificationElement = document.createElement('div');
                     notificationElement.className = `p-4 border-b hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
                     notificationElement.innerHTML = `
-                        <div class="flex items-start z-0">
+                        <div class="flex items-start z-[-1]">
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-gray-900">${notification.title}</p>
                                 <p class="text-sm text-gray-500">${notification.message}</p>

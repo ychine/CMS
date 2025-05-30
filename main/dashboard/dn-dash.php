@@ -251,9 +251,10 @@ $conn->close();
                 <div class="flex gap-5 flex-1 max-w-[900px] flex-col">
                     <div class="flex gap-5">
                         <!-- Submissions -->
-                        <div class="flex-1 bg-white p-[30px] font-overpass rounded-lg shadow-md h-[225px]">
+                        <div class="flex-1 bg-white p-[30px] rounded-sm font-overpass shadow-md h-[225px]">
                             <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-lg font-bold">Submissions</h2>
+                                <h2 class="text-[18px] font-semibold">Submissions</h2>
+                                <hr class="border-gray-400 mb-6">
                                 <?php if ($ongoingTaskTitle): ?>
                                     <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>&from=dn-dash" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
                                 <?php endif; ?>
@@ -325,9 +326,9 @@ $conn->close();
                             <?php endif; ?>
                         </div>
                         <!-- Faculty -->
-                        <div class="w-[300px] bg-white p-[30px] rounded-lg shadow-md font-overpass h-[225px]">
+                        <div class="w-[300px] bg-white p-[30px] rounded-sm shadow-md font-overpass h-[225px]">
                             <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-lg font-bold">Faculty</h2>
+                                <h2 class="text-[18px] font-semibold">Faculty</h2>
                                 <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
                                     Total: <?php echo $totalFaculty; ?> members
                                 </a>
