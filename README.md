@@ -12,21 +12,5 @@
 >>Benitez, Richelle Dorothy  
 >>Martinez, John Edrian  
 >>Santos, Milan Franco  
->> Navarro, Rex  
->> Cantorna, Rhonalyn 
-
-
-Hello
-
-
-
-#### Let's go kaya natin tohhhhhh!!!!
-
-
-lezgoooooooo
-
-
-palagay lang mga bakz
-
-npx @tailwindcss/cli -i ./src/tailwind/input.css -o ./src/tailwind/output.css --watch
-
+>>Navarro, Rex  
+>>Cantorna, Rhonalyn 
