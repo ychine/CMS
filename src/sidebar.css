@@ -1,4 +1,7 @@
 /* Sidebar Styles */
+
+
+
 #sidebar {
     transition: width 0.6s ease-in-out;
     overflow: hidden;
@@ -32,7 +35,10 @@
 }
 
 .collapsed .link-text {
-    display: none;      
+    opacity: 0;
+    transform: translateX(-20px);
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
 }
 
 .collapsed {
@@ -62,16 +68,6 @@
     margin-left: 0;
 }
 
-.collapsed .menu-item {
-    width: 50px; 
-    height: 50px;
-    justify-content: center;
-    align-items: center;
-    margin: 0 auto;
-    padding: 0; 
-    border-radius: 20%; 
-}
-
 .menu-item {
     user-select: none;
     display: flex;
@@ -79,8 +75,10 @@
     padding: 10px;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: width 0.6s ease-in-out, height 0.6s ease-in-out, border-radius 0.6s ease-in-out, padding 0.6s ease-in-out, margin 0.6s ease-in-out;
     margin-right: 10px;
+    position: relative;
+    overflow: hidden;
 }
 
 .menu-item:hover {
@@ -88,7 +86,14 @@
 }
 
 .collapsed .menu-item {
-    margin-right: 0;
+    width: 50px;
+    height: 50px;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    padding: 0;
+    border-radius: 20%;
+    transition: width 0.6s ease-in-out, height 0.6s ease-in-out, border-radius 0.6s ease-in-out, padding 0.6s ease-in-out, margin 0.6s ease-in-out;
 }
 
 .link-text {
@@ -96,8 +101,23 @@
     color: #E3E3E3;
     font-family: 'Onest', sans-serif;
     font-weight: 400;
-    transition: opacity 0.3s ease;
     margin-left: 10px;
+    white-space: nowrap;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.collapsed .link-text {
+    opacity: 0;
+    transform: translateX(-20px);
+    width: 0;
+    margin: 0;
+}
+
+.menu-item img {
+    width: 22px;
+    height: 22px;
+    margin-right: 22px;
+    transition: margin 0.3s ease-in-out;
 }
 
 .collapsed .menu-item img {
@@ -292,17 +312,17 @@ body.dark {
 }
 
 .sidebar-footer {
-    transition: all 0.6s ease-in-out;
+    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
     opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-   
+    transform: scale(1);
+    position: relative;
+    width: 100%;
 }
 
 .collapsed .sidebar-footer {
     opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.6s ease-in-out, visibility 0s 0.6s;
-    animation: fadeOut 0.6s ease-in-out;
+    transform: scale(0.8);
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 } 

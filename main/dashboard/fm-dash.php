@@ -244,11 +244,14 @@ $totalStmt->close();
                 <div class="flex gap-5 flex-1 max-w-[900px]">
                     <!-- Tasks -->
                     <div class="flex-1 select-none bg-white p-[30px] pb-[20px] font-overpass rounded-sm shadow-md h-[210px] relative" id="tasksContainer">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center justify-between mb-0">
                             <h2 class="text-lg font-bold">Tasks</h2>
                             <a href="../task/task_frame.php" class="text-sm text-blue-600 hover:underline">See all tasks</a>
+                            
                         </div>
-
+                        <div class="flex justify-center">
+                            <hr class="border-gray-100 mb-3 mt-1 w-full">
+                        </div>
                         <?php
                         $taskQuery = "SELECT DISTINCT t.TaskID, t.Title, t.DueDate, ta.Status, ta.CourseCode, c.Title AS CourseTitle 
                                     FROM tasks t 
@@ -316,7 +319,7 @@ $totalStmt->close();
                                 <?php endwhile; ?>
                             </div>
                         <?php else: ?>
-                            <div class="h-[calc(100%-3rem)] flex items-center justify-center">
+                            <div class="h-[calc(100%-3.1rem)] font-onest flex items-center justify-center">
                                 <span class="text-lg text-gray-500">No active tasks</span>
                             </div>
                         <?php endif; ?>

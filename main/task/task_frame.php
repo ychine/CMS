@@ -294,7 +294,7 @@ if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR') {
                     FROM tasks t
                     LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                     LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                    WHERE t.FacultyID = ? AND t.CreatedBy = ?
+                    WHERE t.FacultyID = ? AND t.CreatedBy = ? AND t.Status != 'Completed'
                     GROUP BY t.TaskID
                     ORDER BY t.CreatedAt DESC";
         $tasksStmt = $conn->prepare($tasksSql);
@@ -311,7 +311,7 @@ if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR') {
                     LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                     LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
                     LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                    WHERE t.FacultyID = ? AND pc.PersonnelID = ?
+                    WHERE t.FacultyID = ? AND pc.PersonnelID = ? AND t.Status != 'Completed'
                     GROUP BY t.TaskID
                     ORDER BY t.CreatedAt DESC";
         $tasksStmt = $conn->prepare($tasksSql);
@@ -326,7 +326,7 @@ if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR') {
                     FROM tasks t
                     LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                     LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                    WHERE t.FacultyID = ?
+                    WHERE t.FacultyID = ? AND t.Status != 'Completed'
                     GROUP BY t.TaskID
                     ORDER BY t.CreatedAt DESC";
         $tasksStmt = $conn->prepare($tasksSql);
@@ -345,7 +345,7 @@ if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR') {
                 LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
                 LEFT JOIN personnel p ON p.AccountID = ?
                 LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
-                WHERE t.FacultyID = ? AND pc.PersonnelID = ?
+                WHERE t.FacultyID = ? AND pc.PersonnelID = ? AND t.Status != 'Completed'
                 GROUP BY t.TaskID
                 ORDER BY t.CreatedAt DESC";
     $tasksStmt = $conn->prepare($tasksSql);
@@ -1428,7 +1428,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             </div>
         </div>
 
-        <!-- Add Completed Tasks Section -->
+        <!-- Completed Tasks Section -->
         <?php if (isset($_GET['view']) && $_GET['view'] === 'completed'): ?>
         <div class="mb-8">
             <?php
@@ -1486,24 +1486,26 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         });
                         if (count($completedCourses) > 0):
                         ?>
-                        <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                        <div class="bg-white p-6 font-onest md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                              onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
-                            <div class="flex items-center gap-3">
-                                <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
-                                    <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
-                                        <circle cx="12" cy="12" r="9" />
-                                    </svg>
-                                    Completed
-                                </span>
+                            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-1 mb-1">
+                                <div class="flex items-center gap-3">
+                                    <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
+                                        <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+                                            <circle cx="12" cy="12" r="9" />
+                                        </svg>
+                                        Completed
+                                    </span>
+                                </div>
+                                <div class="flex flex-col text-sm text-gray-500 space-y-0.5 text-right">
+                                    <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
+                                    <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
+                                    <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
+                                </div>
                             </div>
-                            <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
-                            <div class="flex flex-col md:items-end text-sm text-gray-500">
-                                <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
-                                <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
-                                <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
-                            </div>
+                            <p class="text-gray-600 mt-1 mb-3 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                             <div class="text-blue-700 font-semibold text-base mb-2 flex items-center gap-2">
                                 <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="9"/>
@@ -1511,11 +1513,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 </svg>
                                 Completed Courses:
                             </div>
-                            <div class="bg-green-50 rounded-lg p-4 mb-4 shadow-sm">
-                                <ul class="space-y-2">
+                            <div class="bg-green-50 rounded-lg p-3 mb-3 shadow-sm">
+                                <ul class="space-y-1">
                                     <?php foreach ($completedCourses as $course): ?>
                                         <li class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                            <span class="inline-block bg-green-200 text-green-900 font-semibold px-2 py-1 rounded text-xs">
+                                            <span class="inline-block bg-green-200 text-green-900 font-semibold px-2 py-0.5 rounded text-xs">
                                                 <?php echo htmlspecialchars($course['CourseCode']); ?>
                                             </span>
                                             <span class="font-medium text-gray-800"><?php echo htmlspecialchars($course['CourseTitle']); ?></span>
@@ -1676,24 +1678,26 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 if (count($completedCourses) > 0) {
                             ?>
                             <!-- DN/PH/COR card -->
-                            <div class="bg-white p-8 font-onest rounded-2xl border md:w-[80%] border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                            <div class="bg-white p-8 md:w-[80%] font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
-                                <div class="flex items-center gap-3">
-                                    <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
-                                        <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
-                                            <circle cx="12" cy="12" r="9" />
-                                        </svg>
-                                        Completed
-                                    </span>
+                                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-2">
+                                    <div class="flex items-center gap-3">
+                                        <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1 bg-green-100 text-green-700">
+                                            <svg class="w-4 h-4 mr-1 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+                                                <circle cx="12" cy="12" r="9" />
+                                            </svg>
+                                            Completed
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-col text-sm text-gray-500 space-y-0.5 text-right">
+                                        <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
+                                        <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
+                                        <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
+                                    </div>
                                 </div>
                                 <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
-                                <div class="flex flex-col md:items-end text-sm text-gray-500">
-                                    <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
-                                    <span>Completed on: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['CreatedAt'])); ?></span></span>
-                                    <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
-                                </div>
                                 <div class="text-blue-700 font-semibold text-base mb-2 flex items-center gap-2">
                                     <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <circle cx="12" cy="12" r="9"/>

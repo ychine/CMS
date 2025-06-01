@@ -73,75 +73,63 @@ $ongoingTaskSql = "SELECT DISTINCT t.TaskID, t.Title
                        WHERE TaskID = t.TaskID 
                        AND Status != 'Completed'
                    )
-                   ORDER BY t.CreatedAt DESC LIMIT 1";
+                   ORDER BY t.CreatedAt DESC";
 $ongoingTaskStmt = $conn->prepare($ongoingTaskSql);
 $ongoingTaskStmt->bind_param("i", $facultyId);
 $ongoingTaskStmt->execute();
 $ongoingTaskResult = $ongoingTaskStmt->get_result();
+$allTasks = [];
 if ($ongoingTaskResult && $ongoingTaskResult->num_rows > 0) {
-    $ongoingTaskRow = $ongoingTaskResult->fetch_assoc();
-    $ongoingTaskTitle = $ongoingTaskRow['Title'];
-    $ongoingTaskId = $ongoingTaskRow['TaskID'];
+    while ($row = $ongoingTaskResult->fetch_assoc()) {
+        $taskId = $row['TaskID'];
+        $taskTitle = $row['Title'];
+     
+        $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
+            JOIN tasks t ON ta.TaskID = t.TaskID
+            WHERE t.TaskID = ? AND ta.Status = 'Submitted'";
+        $stmtPending = $conn->prepare($sqlPending);
+        $stmtPending->bind_param("i", $taskId);
+        $stmtPending->execute();
+        $pendingCount = $stmtPending->get_result()->fetch_assoc()['cnt'];
+        $stmtPending->close();
+
+        $sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
+            JOIN tasks t ON ta.TaskID = t.TaskID
+            WHERE t.TaskID = ? AND ta.Status = 'Completed'";
+        $stmtComplete = $conn->prepare($sqlComplete);
+        $stmtComplete->bind_param("i", $taskId);
+        $stmtComplete->execute();
+        $completeCount = $stmtComplete->get_result()->fetch_assoc()['cnt'];
+        $stmtComplete->close();
+
+        $sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
+            JOIN tasks t ON ta.TaskID = t.TaskID
+            WHERE t.TaskID = ? AND ta.Status = 'Pending'";
+        $stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
+        $stmtUnaccomplished->bind_param("i", $taskId);
+        $stmtUnaccomplished->execute();
+        $unaccomplishedCount = $stmtUnaccomplished->get_result()->fetch_assoc()['cnt'];
+        $stmtUnaccomplished->close();
+
+        $totalSubmissions = $pendingCount + $unaccomplishedCount + $completeCount;
+        $progress = $totalSubmissions > 0 ? round(($completeCount / $totalSubmissions) * 100) : 0;
+
+        $allTasks[] = [
+            'TaskID' => $taskId,
+            'Title' => $taskTitle,
+            'PendingCount' => $pendingCount,
+            'CompleteCount' => $completeCount,
+            'UnaccomplishedCount' => $unaccomplishedCount,
+            'Progress' => $progress
+        ];
+    }
+
+    if (!empty($allTasks)) {
+        $ongoingTaskTitle = $allTasks[0]['Title'];
+        $ongoingTaskId = $allTasks[0]['TaskID'];
+    }
 }
 $ongoingTaskStmt->close();
-
-// Count all task assignments in the faculty
-$sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
-    JOIN tasks t ON ta.TaskID = t.TaskID
-    WHERE t.FacultyID = ? AND ta.Status = 'Submitted'";
-$stmtPending = $conn->prepare($sqlPending);
-$stmtPending->bind_param("i", $facultyId);
-$stmtPending->execute();
-$res = $stmtPending->get_result();
-$pendingCount = $res->fetch_assoc()['cnt'];
-$stmtPending->close();
-
-$sqlComplete = "SELECT COUNT(*) as cnt FROM task_assignments ta
-    JOIN tasks t ON ta.TaskID = t.TaskID
-    WHERE t.FacultyID = ? AND ta.Status = 'Completed'";
-$stmtComplete = $conn->prepare($sqlComplete);
-$stmtComplete->bind_param("i", $facultyId);
-$stmtComplete->execute();
-$res = $stmtComplete->get_result();
-$completeCount = $res->fetch_assoc()['cnt'];
-$stmtComplete->close();
-
-$sqlUnaccomplished = "SELECT COUNT(*) as cnt FROM task_assignments ta
-    JOIN tasks t ON ta.TaskID = t.TaskID
-    WHERE t.FacultyID = ? AND ta.Status = 'Pending'";
-$stmtUnaccomplished = $conn->prepare($sqlUnaccomplished);
-$stmtUnaccomplished->bind_param("i", $facultyId);
-$stmtUnaccomplished->execute();
-$res = $stmtUnaccomplished->get_result();
-$unaccomplishedCount = $res->fetch_assoc()['cnt'];
-$stmtUnaccomplished->close();
-
-$totalSubmissions = $pendingCount + $unaccomplishedCount + $completeCount;
-$progress = $totalSubmissions > 0 ? round(($completeCount / $totalSubmissions) * 100) : 0;
-
-// Get pending submissions for display
-$pendingSubmissionsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.SubmissionDate,
-                         t.Title as TaskTitle, t.TaskID,
-                         c.Title as CourseTitle, p.ProgramName,
-                         CONCAT(per.FirstName, ' ', per.LastName) as SubmittedBy
-                         FROM task_assignments ta
-                         JOIN tasks t ON ta.TaskID = t.TaskID
-                         JOIN courses c ON ta.CourseCode = c.CourseCode
-                         JOIN programs p ON ta.ProgramID = p.ProgramID
-                         JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-                         JOIN personnel per ON pc.PersonnelID = per.PersonnelID
-                         WHERE t.FacultyID = ? AND ta.Status = 'Submitted'
-                         ORDER BY ta.SubmissionDate DESC
-                         LIMIT 5";
-$pendingSubmissionsStmt = $conn->prepare($pendingSubmissionsSql);
-$pendingSubmissionsStmt->bind_param("i", $facultyId);
-$pendingSubmissionsStmt->execute();
-$pendingSubmissionsResult = $pendingSubmissionsStmt->get_result();
-$pendingSubmissions = [];
-while ($row = $pendingSubmissionsResult->fetch_assoc()) {
-    $pendingSubmissions[] = $row;
-}
-$pendingSubmissionsStmt->close();
 
 $roleColors = [
     'DN' => '#4F46E5',
@@ -239,6 +227,27 @@ $conn->close();
         .dark .text-blue-800 {
             color: #93c5fd !important;
         }
+        .task-gallery {
+            position: relative;
+            overflow: hidden;
+        }
+        .task-slide {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .task-slide.active {
+            display: block;
+            opacity: 1;
+        }
+  
+        @keyframes progressFill {
+            from { width: 0; }
+            to { width: var(--progress-width); }
+        }
+        .progress-bar-fill {
+            animation: progressFill 1s ease-out forwards;
+        }
     </style>
 </head>
 <body>
@@ -251,73 +260,110 @@ $conn->close();
                 <div class="flex gap-5 flex-1 max-w-[900px] flex-col">
                     <div class="flex gap-5">
                         <!-- Submissions -->
-                        <div class="flex-1 bg-white p-[30px] rounded-sm font-overpass shadow-md h-[225px]">
-                            <div class="flex items-center justify-between mb-6">
-                                <h2 class="text-[18px] font-semibold">Submissions</h2>
-                                <hr class="border-gray-400 mb-6">
-                                <?php if ($ongoingTaskTitle): ?>
-                                    <a href="submissionspage.php?task_id=<?php echo $ongoingTaskId; ?>&from=dn-dash" class="text-sm text-blue-600 hover:underline">On-Going Task: <?php echo htmlspecialchars($ongoingTaskTitle); ?></a>
+                        <div class="flex-1 bg-white rounded-sm font-overpass shadow-md h-[225px] flex">
+                            <?php if (!empty($allTasks)): ?>
+                                <?php if (count($allTasks) > 1): ?>
+                                    <div class="w-8 h-full bg-white hover:bg-gradient-to-l hover:from-white hover:to-gray-100 transition-all duration-300 ease-in-out flex items-center justify-center rounded-sm">
+                                        <button class="w-full h-full flex items-center justify-center" onclick="prevTask()">
+                                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 <?php endif; ?>
-                            </div>
 
-                            <?php if ($ongoingTaskTitle): ?>
-                                <div class="flex space-x-4 mb-5">
-                                    <a href="submissionspage.php?type=pending&from=dn-dash" class="flex-1">
-                                        <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #f59e0b;">
-                                            <div class="flex items-center w-full">
-                                                <div class="text-2xl font-bold mr-2 font-onest"><?php echo $pendingCount; ?></div>
-                                                <div class="text-xs font-onest whitespace-nowrap">Pending Review</div>
-                                                <div class="ml-auto">
-                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                    </svg>
-                                                </div>
+                                <div class="flex-1 flex flex-col">
+                                    <div class="<?php echo count($allTasks) > 1 ? 'pt-[30px]' : 'px-[30px] pt-[30px]'; ?>">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h2 class="text-[18px] font-semibold">Submissions</h2>
+                                            <div id="ongoingTaskTitle" class="text-sm font-onest">
+                                                Task: 
+                                                <?php if (!empty($allTasks)): ?>
+                                                    <a href="submissionspage.php?task_id=<?php echo $allTasks[0]['TaskID']; ?>&from=dn-dash" class="text-blue-600 hover:underline">
+                                                        <?php echo htmlspecialchars($allTasks[0]['Title']); ?>
+                                                    </a>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
-                                    </a>
+                                    </div>
+                                    <div class="flex justify-center">
+                                        <hr class="border-gray-100 mb-4 w-[90%]">
+                                    </div>
 
-                                    <a href="submissionspage.php?type=unaccomplished&from=dn-dash" class="flex-1">
-                                        <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #ef4444;">
-                                            <div class="flex items-center w-full">
-                                                <div class="text-2xl font-bold mr-2 font-onest"><?php echo $unaccomplishedCount; ?></div>
-                                                <div class="text-xs font-onest whitespace-nowrap">Unaccomplished</div>
-                                                <div class="ml-auto">
-                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                    </svg>
+                                    <div class="flex-1 task-gallery <?php echo count($allTasks) > 1 ? '' : 'px-[30px]'; ?>">
+                                        <?php foreach ($allTasks as $index => $task): ?>
+                                            <div class="task-slide <?php echo $index === 0 ? 'active' : ''; ?>" data-task-id="<?php echo $task['TaskID']; ?>" data-task-title="<?php echo htmlspecialchars($task['Title']); ?>">
+                                                <div class="flex space-x-4">
+                                                    <a href="submissionspage.php?type=pending&task_id=<?php echo $task['TaskID']; ?>&from=dn-dash" class="flex-1">
+                                                        <div class="bg-gray-100 rounded-lg p-1 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #f59e0b;">
+                                                            <div class="flex items-center w-full">
+                                                                <div class="text-2xl font-bold mr-2 font-onest ml-3"><?php echo $task['PendingCount']; ?></div>
+                                                                <div class="text-xs font-onest whitespace-nowrap">Pending Review</div>
+                                                                <div class="ml-auto">
+                                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+
+                                                    <a href="submissionspage.php?type=unaccomplished&task_id=<?php echo $task['TaskID']; ?>&from=dn-dash" class="flex-1">
+                                                        <div class="bg-gray-100 rounded-lg p-1 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #ef4444;">
+                                                            <div class="flex items-center w-full">
+                                                                <div class="text-2xl font-bold mr-2 font-onest ml-3"><?php echo $task['UnaccomplishedCount']; ?></div>
+                                                                <div class="text-xs font-onest whitespace-nowrap">Unaccomplished</div>
+                                                                <div class="ml-auto">
+                                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+
+                                                    <a href="submissionspage.php?type=complete&task_id=<?php echo $task['TaskID']; ?>&from=dn-dash" class="flex-1">
+                                                        <div class="bg-gray-100 rounded-lg p-1 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #10b981;">
+                                                            <div class="flex items-center w-full">
+                                                                <div class="text-2xl font-bold mr-2 font-onest ml-3"><?php echo $task['CompleteCount']; ?></div>
+                                                                <div class="text-xs font-onest whitespace-nowrap">Complete</div>
+                                                                <div class="ml-auto">
+                                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+
+                                                <div class="flex items-center mt-4">
+                                                    <div class="text-xs mr-2 font-medium"><?php echo $task['Progress']; ?>%</div>
+                                                    <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                                        <div class="progress-bar-fill bg-green-500 h-2" style="--progress-width: <?php echo $task['Progress']; ?>%"></div>
+                                                    </div>
+                                                    <div class="ml-2">
+                                                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </a>
-
-                                    <a href="submissionspage.php?type=complete&from=dn-dash" class="flex-1">
-                                        <div class="bg-gray-100 rounded-lg p-3 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #10b981;">
-                                            <div class="flex items-center w-full">
-                                                <div class="text-2xl font-bold mr-2 font-onest"><?php echo $completeCount; ?></div>
-                                                <div class="text-xs font-onest whitespace-nowrap">Complete</div>
-                                                <div class="ml-auto">
-                                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </a>
+                                        <?php endforeach; ?>
+                                    </div>
                                 </div>
 
-                                <div class="flex items-center">
-                                    <div class="text-xs mr-2 font-medium"><?php echo $progress; ?>%</div>
-                                    <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                                        <div class="bg-green-500 h-2" style="width: <?php echo $progress; ?>%"></div>
+                                <?php if (count($allTasks) > 1): ?>
+                                    <div class="w-8 h-full bg-white hover:bg-gradient-to-r hover:from-white hover:to-gray-100 transition-all duration-300 ease-in-out flex items-center justify-center rounded-sm">
+                                        <button class="w-full h-full flex items-center justify-center" onclick="nextTask()">
+                                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <div class="ml-2">
-                                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                                    </div>
-                                </div>
+                                <?php endif; ?>
                             <?php else: ?>
-                                <div class="h-[calc(100%-3rem)] flex flex-col items-center justify-center gap-4">
+                                <div class="flex-1 flex flex-col items-center justify-center gap-4">
                                     <span class="text-lg text-gray-500">No tasks active</span>
                                     <a href="../task/task_frame.php" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                                         Create a Task
@@ -440,6 +486,36 @@ $conn->close();
 
     if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
+    }
+
+    let currentTaskIndex = 0;
+    const taskSlides = document.querySelectorAll('.task-slide');
+    const totalTasks = taskSlides.length;
+    const ongoingTaskTitle = document.getElementById('ongoingTaskTitle');
+
+    function showTask(index) {
+        taskSlides.forEach(slide => slide.classList.remove('active'));
+        taskSlides[index].classList.add('active');
+        currentTaskIndex = index;
+       
+        const currentTask = taskSlides[index];
+        const taskId = currentTask.dataset.taskId;
+        const taskTitle = currentTask.dataset.taskTitle;
+        ongoingTaskTitle.innerHTML = `Task: <a href="submissionspage.php?task_id=${taskId}&from=dn-dash" class="text-blue-600 hover:underline">${taskTitle}</a>`;
+    }
+
+    function nextTask() {
+        const nextIndex = (currentTaskIndex + 1) % totalTasks;
+        showTask(nextIndex);
+    }
+
+    function prevTask() {
+        const prevIndex = (currentTaskIndex - 1 + totalTasks) % totalTasks;
+        showTask(prevIndex);
+    }
+
+    if (taskSlides.length > 0) {
+        showTask(0);
     }
     </script>
 </body>
