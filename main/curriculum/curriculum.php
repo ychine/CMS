@@ -593,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 data.notifications.forEach(notification => {
                     const notificationElement = document.createElement('div');
-                    notificationElement.className = `p-4 border-b hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
+                    notificationElement.className = `p-4 border-b border-gray-200 hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
                     notificationElement.innerHTML = `
                         <div class="flex items-start">
                             <div class="flex-1">
