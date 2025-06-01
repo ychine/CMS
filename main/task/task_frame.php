@@ -14,6 +14,41 @@ function getAssignmentStatusLabel($status) {
     }
 }
 
+function getDueDateClass($dueDate) {
+    $today = new DateTime();
+    $due = new DateTime($dueDate);
+    
+    $today->setTime(0, 0, 0);
+    $due->setTime(0, 0, 0);
+    
+    $diff = $today->diff($due);
+    $daysUntilDue = $diff->days;
+    
+    if ($today > $due) {
+        $daysUntilDue = -$daysUntilDue;
+    }
+    
+    return $daysUntilDue <= 3 ? 'text-red-500' : 'text-gray-700';
+}
+
+function getDueDateTooltip($dueDate) {
+    $today = new DateTime();
+    $due = new DateTime($dueDate);
+    
+    $today->setTime(0, 0, 0);
+    $due->setTime(0, 0, 0);
+    
+    $diff = $today->diff($due);
+    $daysUntilDue = $diff->days;
+    
+    if ($today > $due) {
+        return "Overdue by " . $diff->days . " day/s";
+    } else if ($daysUntilDue <= 3) {
+        return "Due in " . $daysUntilDue . " day/s";
+    }
+    return "Due in " . $daysUntilDue . " day/s";
+}
+
 if (!isset($_SESSION['Username'])) {
     header("Location: ../../index.php");
     exit();
@@ -223,7 +258,6 @@ if (isset($_POST['create_task'])) {
                     $programID = $parts[0];
                     $courseCode = $parts[1];
 
-                    // Get the assigned professor's PersonnelID for this course
                     $profQuery = "SELECT PersonnelID FROM program_courses WHERE ProgramID = ? AND CourseCode = ? AND FacultyID = ?";
                     $profStmt = $conn->prepare($profQuery);
                     $profStmt->bind_param("isi", $programID, $courseCode, $facultyID);
@@ -235,7 +269,7 @@ if (isset($_POST['create_task'])) {
                         $assignmentStmt->execute();
 
                         if ($assignedPersonnelID) {
-                            // Get the AccountID for this PersonnelID
+                          
                             $accQuery = "SELECT AccountID FROM personnel WHERE PersonnelID = ?";
                             $accStmt = $conn->prepare($accQuery);
                             $accStmt->bind_param("i", $assignedPersonnelID);
@@ -244,7 +278,7 @@ if (isset($_POST['create_task'])) {
                             if ($accRow = $accResult->fetch_assoc()) {
                                 $assignedAccountID = $accRow['AccountID'];
                                 if ($assignedAccountID) {
-                                    // Insert notification for the assigned professor
+                                  
                                     $insertNotificationSql = "INSERT INTO notifications (AccountID, Title, Message, TaskID) 
                                         VALUES (?, ?, ?, ?)";
                                     $notificationTitle = "New Task Assigned";
@@ -845,9 +879,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                      onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
                                         <!-- 3-dot menu trigger -->
-                                        <div class="absolute top-4 right-4">
+                                        <div class="absolute top-3 right-3 z-10">
                                             <button type="button" class="three-dot-btn p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="event.stopPropagation(); toggleTaskMenu(this)">
-                                                <!-- 3-dot vertical ellipsis SVG -->
+                                               
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <circle cx="12" cy="5" r="1.5"/>
                                                     <circle cx="12" cy="12" r="1.5"/>
@@ -894,7 +928,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                             </div>
                                         </div>
                                     <?php endif; ?>
-                                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-0">
                                         <div class="flex items-center gap-3">
                                             <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1
@@ -917,13 +951,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                 <?php echo $task['Status']; ?>
                                             </span>
                                         </div>
-                                        <div class="flex flex-col md:items-end text-sm text-gray-500 mr-6 md:mr-10">
+                                        <div class="flex flex-col text-sm text-gray-500 space-y-1 text-right mr-3">
                                             <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
-                                            <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
+                                            <span class="flex items-center justify-end gap-1">Due: 
+                                                <?php 
+                                                echo '<span class="font-semibold ' . getDueDateClass($task['DueDate']) . ' cursor-help" title="' . getDueDateTooltip($task['DueDate']) . '">' . date("F j, Y", strtotime($task['DueDate'])) . '</span>';
+                                                ?>
+                                            </span>
                                             <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                         </div>
                                     </div>
-                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
+                                    <p class="text-gray-600 -mt-2 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="font-medium text-gray-700">Progress:</span>
                                         <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1072,9 +1110,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($assignedTasks as $task): ?>
-                                    <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                                    <div class="bg-white p-6 font-onest w-full md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                          onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
-                                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                                        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-0">
                                             <div class="flex items-center gap-3">
                                                 <h3 class="text-2xl font-bold text-gray-900 mr-2"><?php echo htmlspecialchars($task['Title']); ?></h3>
                                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold gap-1
@@ -1097,13 +1135,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                     <?php echo $task['Status']; ?>
                                                 </span>
                                             </div>
-                                            <div class="flex flex-col md:items-end text-sm text-gray-500">
+                                            <div class="flex flex-col text-sm text-gray-500 space-y-1 text-right mr-3">
                                                 <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
-                                                <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
+                                                <span class="flex items-center justify-end gap-1">Due: 
+                                                    <?php 
+                                                    echo '<span class="font-semibold ' . getDueDateClass($task['DueDate']) . ' cursor-help" title="' . getDueDateTooltip($task['DueDate']) . '">' . date("F j, Y", strtotime($task['DueDate'])) . '</span>';
+                                                    ?>
+                                                </span>
                                                 <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                             </div>
                                         </div>
-                                        <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
+                                        <p class="text-gray-600 -mt-2 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                         <div class="flex items-center gap-3 mb-2">
                                             <span class="font-medium text-gray-700">Progress:</span>
                                             <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1128,7 +1170,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                             <?php foreach ($tasks as $task): ?>
                                 <div class=" bg-white p-8 rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                      onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
-                                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-0">
                                         <div class="flex items-center gap-3">
                                             <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
                                                 <form method="POST" action="task_actions.php" class="inline mb-2" onclick="event.stopPropagation();">
@@ -1162,13 +1204,17 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                 <?php echo $task['Status']; ?>
                                             </span>
                                         </div>
-                                        <div class="flex flex-col md:items-end align-right text-sm text-gray-500">
+                                        <div class="flex flex-col text-sm text-gray-500 space-y-1 text-right mr-3">
                                             <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
-                                            <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
+                                            <span class="flex items-center justify-end gap-1">Due: 
+                                                <?php 
+                                                echo '<span class="font-semibold ' . getDueDateClass($task['DueDate']) . ' cursor-help" title="' . getDueDateTooltip($task['DueDate']) . '">' . date("F j, Y", strtotime($task['DueDate'])) . '</span>';
+                                                ?>
+                                            </span>
                                             <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                         </div>
                                     </div>
-                                    <p class="text-gray-600 mt-1 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
+                                    <p class="text-gray-600 -mt-2 mb-4 text-base"><?php echo nl2br(htmlspecialchars($task['Description'])); ?></p>
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="font-medium text-gray-700">Progress:</span>
                                         <?php $progress = ($task['AssignedCourses'] > 0) ? round(($task['CompletedCount'] / $task['AssignedCourses']) * 100) : 0; ?>
@@ -1486,7 +1532,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         });
                         if (count($completedCourses) > 0):
                         ?>
-                        <div class="bg-white p-6 font-onest md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                        <div class="bg-white p-6 font-onest w-full md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                              onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-1 mb-1">
                                 <div class="flex items-center gap-3">
@@ -1545,7 +1591,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         if (count($myCompletedCourses) > 0):
                             $renderedTaskIds[] = $task['TaskID'];
                     ?>
-                        <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                        <div class="bg-white p-6 font-onest w-full md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                              onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                             <div class="flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between">
                                 <div class="flex items-center gap-3">
@@ -1631,7 +1677,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                             });
                             ?>
                             <?php foreach ($myOngoingCourses as $course): ?>
-                            <div class="bg-white p-8 font-onest rounded-2xl md:w-[80%] border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                            <div class="bg-white p-6 font-onest w-full md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
                                     <div class="flex items-center gap-3">
@@ -1646,7 +1692,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                     </div>
                                     <div class="flex flex-col md:items-end text-sm text-gray-500">
                                         <span>Created by: <span class="font-semibold text-gray-700"><?php echo htmlspecialchars($task['CreatorName']); ?></span></span>
-                                        <span>Due: <span class="font-semibold text-gray-700"><?php echo date("F j, Y", strtotime($task['DueDate'])); ?></span></span>
+                                        <span class="flex items-center justify-end gap-1">Due: 
+                                            <?php 
+                                            echo '<span class="font-semibold ' . getDueDateClass($task['DueDate']) . ' cursor-help" title="' . getDueDateTooltip($task['DueDate']) . '">' . date("F j, Y", strtotime($task['DueDate'])) . '</span>';
+                                            ?>
+                                        </span>
                                         <span>School Year: <?php echo htmlspecialchars($task['SchoolYear']); ?> | Term: <?php echo htmlspecialchars($task['Term']); ?></span>
                                     </div>
                                 </div>
@@ -1678,7 +1728,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 if (count($completedCourses) > 0) {
                             ?>
                             <!-- DN/PH/COR card -->
-                            <div class="bg-white p-8 md:w-[80%] font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                            <div class="bg-white p-6 font-onest w-full md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                 <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-2">
                                     <div class="flex items-center gap-3">
@@ -1732,7 +1782,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                     return $course['AssignmentStatus'] === 'Completed' && isset($course['PersonnelID']) && $course['PersonnelID'] == $personnelID;
                                 });
                                 if (count($myCompletedCourses) > 0): ?>
-                                    <div class="bg-white p-8 font-onest rounded-2xl md:w-[80%] border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                                    <div class="bg-white p-6 font-onest w-full md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                  onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                     <div class="flex flex-col gap-2 mb-2 md:flex-row md:items-center md:justify-between">
                                         <div class="flex items-center gap-3">

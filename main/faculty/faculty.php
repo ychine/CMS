@@ -319,15 +319,14 @@ $conn->close();
                             <!-- Red Dot Indicator (always present, outside PHP if-block) -->
                             <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50 transition-all duration-300"></span>
                         </button> 
-                        <!-- Notification Dropdown -->
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                            <div class="p-4 shadow-md">
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[100] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                            <div class="p-4 shadow-md relative z-[101] bg-white">
                                 <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
                             </div>
-                            <div id="notificationList" class="max-h-96 overflow-y-auto">
-                                <!-- Notifications will be loaded here -->
+                            <div id="notificationList" class="max-h-96 overflow-y-auto relative z-[100] bg-white">
+                                <!-- D2 LALABAS UNG NOTIFS -->
                             </div>
-                            <div class="p-4 border-t border-gray-200 text-center">
+                            <div class="p-4 border-t border-gray-200 text-center relative z-[101] bg-white">
                                 <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
                             </div>
                         </div>

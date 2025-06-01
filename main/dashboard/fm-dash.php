@@ -245,8 +245,8 @@ $totalStmt->close();
                     <!-- Tasks -->
                     <div class="flex-1 select-none bg-white p-[30px] pb-[20px] font-overpass rounded-sm shadow-md h-[210px] relative" id="tasksContainer">
                         <div class="flex items-center justify-between mb-0">
-                            <h2 class="text-lg font-bold">Tasks</h2>
-                            <a href="../task/task_frame.php" class="text-sm text-blue-600 hover:underline">See all tasks</a>
+                            <h2 class="text-[20px] font-semibold">Tasks</h2>
+                            <a href="../task/task_frame.php" class="text-sm font-onest text-blue-600 hover:underline">See all tasks</a>
                             
                         </div>
                         <div class="flex justify-center">
@@ -331,8 +331,8 @@ $totalStmt->close();
                     <!-- Faculty -->
                     <div class="w-[300px] bg-white p-[30px] pb-[20px] rounded-sm shadow-md font-overpass h-[210px]">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg font-bold">Faculty</h2>
-                            <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
+                            <h2 class="text-[20px] font-semibold">Faculty</h2>
+                            <a href="../faculty/faculty_frame.php" class="text-xs font-onest text-blue-600 hover:underline">
                                 Total: <?php echo $totalFaculty; ?> members
                             </a>
                         </div>

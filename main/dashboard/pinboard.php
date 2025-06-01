@@ -167,7 +167,7 @@ $conn->close();
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold">Pinboard 📌</h2>
             <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
-            <button onclick="openPinboardModal()" class="text-xs text-blue-600 hover:underline">Post Announcement</button>
+            <button onclick="openPinboardModal()" class="text-xs text-right pr-[10px] font-onest text-blue-600 hover:underline">Post Announcement</button>
             <?php endif; ?>
         </div>
         <div class="space-y-4 overflow-y-auto h-[calc(100%-100px)] pr-4 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-500">
@@ -213,7 +213,7 @@ $conn->close();
                 <div class="flex justify-between items-center mb-3">
                     <h2 class="text-lg pt-4 font-bold">Syllabus Format</h2>
                     <?php if (in_array($role, ['DN', 'PH', 'COR'])): ?>
-                    <button onclick="openSyllabusModal()" class="text-xs text-blue-600 pt-3 hover:underline"><?php echo empty($syllabusFormats) ? 'Upload Format' : 'Update Format'; ?></button>
+                    <button onclick="openSyllabusModal()" class="text-xs text-blue-600 pt-3 font-onest hover:underline"><?php echo empty($syllabusFormats) ? 'Upload' : 'Update'; ?></button>
                     <?php endif; ?>
                 </div>
                 <div class="space-y-4">

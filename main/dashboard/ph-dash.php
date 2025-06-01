@@ -64,7 +64,7 @@ $totalFaculty = $totalRow['total'];
 
 $ongoingTaskTitle = null;
 $ongoingTaskId = null;
-$ongoingTaskSql = "SELECT DISTINCT t.TaskID, t.Title 
+$ongoingTaskSql = "SELECT DISTINCT t.TaskID, t.Title, t.DueDate 
                    FROM tasks t 
                    JOIN task_assignments ta ON t.TaskID = ta.TaskID 
                    WHERE t.FacultyID = ? 
@@ -83,6 +83,7 @@ if ($ongoingTaskResult && $ongoingTaskResult->num_rows > 0) {
     while ($row = $ongoingTaskResult->fetch_assoc()) {
         $taskId = $row['TaskID'];
         $taskTitle = $row['Title'];
+        $dueDate = $row['DueDate'];
      
         $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
             JOIN tasks t ON ta.TaskID = t.TaskID
@@ -120,7 +121,8 @@ if ($ongoingTaskResult && $ongoingTaskResult->num_rows > 0) {
             'PendingCount' => $pendingCount,
             'CompleteCount' => $completeCount,
             'UnaccomplishedCount' => $unaccomplishedCount,
-            'Progress' => $progress
+            'Progress' => $progress,
+            'DueDate' => $dueDate
         ];
     }
 
@@ -152,6 +154,37 @@ $stmt->close();
 $roleStmt->close();
 $totalStmt->close();
 $conn->close();
+
+function getDueDateClass($dueDate) {
+    $today = new DateTime();
+    $due = new DateTime($dueDate);
+    $diff = $today->diff($due);
+    $daysUntilDue = $diff->days;
+    
+    if ($today > $due) {
+        $daysUntilDue = -$daysUntilDue;
+    }
+    
+    return $daysUntilDue <= 3 ? 'text-red-500' : 'text-gray-500';
+}
+
+function getDueDateTooltip($dueDate) {
+    $today = new DateTime();
+    $due = new DateTime($dueDate);
+   
+    $today->setTime(0, 0, 0);
+    $due->setTime(0, 0, 0);
+    
+    $diff = $today->diff($due);
+    $daysUntilDue = $diff->days;
+    
+    if ($today > $due) {
+        return "Overdue by " . $diff->days . " day/s";
+    } else if ($daysUntilDue <= 3) {
+        return "Due in " . $daysUntilDue . " day/s";
+    }
+    return "Due in " . $daysUntilDue . " day/s";
+}
 ?>
 
 <!DOCTYPE html>
@@ -260,7 +293,7 @@ $conn->close();
                 <div class="flex gap-5 flex-1 max-w-[900px] flex-col">
                     <div class="flex gap-5">
                         <!-- Submissions -->
-                        <div class="flex-1 bg-white rounded-sm font-overpass shadow-md h-[225px] flex">
+                        <div class="flex-1 bg-white rounded-sm font-overpass shadow-md h-[230px] flex">
                             <?php if (!empty($allTasks)): ?>
                                 <?php if (count($allTasks) > 1): ?>
                                     <div class="w-8 h-full bg-white hover:bg-gradient-to-l hover:from-white hover:to-gray-100 transition-all duration-300 ease-in-out flex items-center justify-center rounded-sm">
@@ -274,8 +307,8 @@ $conn->close();
 
                                 <div class="flex-1 flex flex-col">
                                     <div class="<?php echo count($allTasks) > 1 ? 'pt-[30px]' : 'px-[30px] pt-[30px]'; ?>">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <h2 class="text-[18px] font-semibold">Submissions</h2>
+                                        <div class="flex items-center justify-between mb-0">
+                                            <h2 class="text-[20px] font-semibold">Submissions</h2>
                                             <div id="ongoingTaskTitle" class="text-sm font-onest">
                                                 Task: 
                                                 <?php if (!empty($allTasks)): ?>
@@ -285,14 +318,24 @@ $conn->close();
                                                 <?php endif; ?>
                                             </div>
                                         </div>
+                                        <div class="flex items-center gap-2 mt-0 mb-3 font-onest">
+                                        <hr class="border-gray-100 flex-1">
+                                        <span class="text-xs whitespace-nowrap <?php echo getDueDateClass($allTasks[0]['DueDate']); ?> cursor-help" 
+                                              title="<?php echo getDueDateTooltip($allTasks[0]['DueDate']); ?>">
+                                            Due: <?php echo date('M j, Y', strtotime($allTasks[0]['DueDate'])); ?>
+                                        </span>
                                     </div>
-                                    <div class="flex justify-center">
-                                        <hr class="border-gray-100 mb-4 w-[90%]">
                                     </div>
+                                    
 
                                     <div class="flex-1 task-gallery <?php echo count($allTasks) > 1 ? '' : 'px-[30px]'; ?>">
                                         <?php foreach ($allTasks as $index => $task): ?>
-                                            <div class="task-slide <?php echo $index === 0 ? 'active' : ''; ?>" data-task-id="<?php echo $task['TaskID']; ?>" data-task-title="<?php echo htmlspecialchars($task['Title']); ?>">
+                                            <div class="task-slide <?php echo $index === 0 ? 'active' : ''; ?>" 
+                                                data-task-id="<?php echo $task['TaskID']; ?>" 
+                                                data-task-title="<?php echo htmlspecialchars($task['Title']); ?>"
+                                                data-due-date="<?php echo date('M j, Y', strtotime($task['DueDate'])); ?>"
+                                                data-is-near-deadline="<?php echo (strtotime($task['DueDate']) - time()) <= (3 * 24 * 60 * 60) ? 'true' : 'false'; ?>"
+                                                data-due-date-tooltip="<?php echo getDueDateTooltip($task['DueDate']); ?>">
                                                 <div class="flex space-x-4">
                                                     <a href="submissionspage.php?type=pending&task_id=<?php echo $task['TaskID']; ?>&from=dn-dash" class="flex-1">
                                                         <div class="bg-gray-100 rounded-lg p-1 hover:bg-gray-200 transition-all duration-300 ease-in-out cursor-pointer h-[80px] flex items-center transform hover:-translate-y-1 hover:shadow-md" style="border-bottom: 4px solid #f59e0b;">
@@ -348,6 +391,7 @@ $conn->close();
                                                         </svg>
                                                     </div>
                                                 </div>
+                                             
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
@@ -372,10 +416,10 @@ $conn->close();
                             <?php endif; ?>
                         </div>
                         <!-- Faculty -->
-                        <div class="w-[300px] bg-white p-[30px] rounded-sm shadow-md font-overpass h-[225px]">
+                        <div class="w-[300px] bg-white p-[30px] rounded-sm shadow-md font-overpass h-[230px]">
                             <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-[18px] font-semibold">Faculty</h2>
-                                <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 hover:underline">
+                                <h2 class="text-[20px] font-semibold">Faculty</h2>
+                                <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 font-onest hover:underline">
                                     Total: <?php echo $totalFaculty; ?> members
                                 </a>
                             </div>
@@ -501,7 +545,15 @@ $conn->close();
         const currentTask = taskSlides[index];
         const taskId = currentTask.dataset.taskId;
         const taskTitle = currentTask.dataset.taskTitle;
+        const taskDueDate = currentTask.dataset.dueDate;
+        const isNearDeadline = currentTask.dataset.isNearDeadline === 'true';
+        const dueDateTooltip = currentTask.dataset.dueDateTooltip;
+        
         ongoingTaskTitle.innerHTML = `Task: <a href="submissionspage.php?task_id=${taskId}&from=dn-dash" class="text-blue-600 hover:underline">${taskTitle}</a>`;
+        const dueDateSpan = document.querySelector('.text-xs.whitespace-nowrap');
+        dueDateSpan.innerHTML = `Due: ${taskDueDate}`;
+        dueDateSpan.className = `text-xs whitespace-nowrap ${isNearDeadline ? 'text-red-500' : 'text-gray-500'} cursor-help`;
+        dueDateSpan.title = dueDateTooltip;
     }
 
     function nextTask() {
