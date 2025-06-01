@@ -364,7 +364,7 @@ $conn->close();
                 <div class="font-onest text-[24px] font-semibold mt-1" style="letter-spacing: -0.03em;">
                     <?php echo htmlspecialchars($facultyName); ?>
                 </div>
-             
+                    
                 <div class="flex items-center gap-4">   
                     <!-- Notification Icon -->
                     <div class="relative border p-[2px] border-gray-200 rounded-lg">
