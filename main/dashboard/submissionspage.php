@@ -106,6 +106,11 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
         $term = $taskInfo['Term'];
         $taskInfoStmt->close();
 
+        $deleteTeamSql = "DELETE FROM teammembers WHERE SubmissionID IN (SELECT SubmissionID FROM submissions WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?)";
+        $deleteTeamStmt = $conn->prepare($deleteTeamSql);
+        $deleteTeamStmt->bind_param("isi", $taskID, $courseCode, $programID);
+        $deleteTeamStmt->execute();
+        $deleteTeamStmt->close();
        
         $deleteSql = "DELETE FROM submissions WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?";
         $deleteStmt = $conn->prepare($deleteSql);
@@ -113,13 +118,12 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
         $deleteStmt->execute();
         $deleteStmt->close();
 
-        // Insert a new submission record
         $insertSql = "INSERT INTO submissions (FacultyID, TaskID, CourseCode, ProgramID, SubmissionPath, SubmittedBy, SubmissionDate, SchoolYear, Term) VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
         $insertStmt = $conn->prepare($insertSql);
         $insertStmt->bind_param("iisssiss", $facultyID, $taskID, $courseCode, $programID, $relativePath, $personnelID, $schoolYear, $term);
         if($insertStmt->execute()) {
             $submissionID = $conn->insert_id;
-            // Save co-authors in teammembers table
+           
             if (!empty($selectedCoauthors)) {
                 $tmStmt = $conn->prepare("INSERT INTO teammembers (SubmissionID, MembersID) VALUES (?, ?)");
                 foreach ($selectedCoauthors as $coauthorID) {
@@ -129,7 +133,6 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
                 $tmStmt->close();
             }
             
-            // Notify DN, PH, and COR about the submission
             $notifyQuery = "SELECT p.AccountID, p.Role 
                            FROM personnel p 
                            WHERE p.FacultyID = ? AND p.Role IN ('DN', 'PH', 'COR')";
@@ -138,9 +141,20 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
             $notifyStmt->execute();
             $notifyResult = $notifyStmt->get_result();
             
+            $profQuery = "SELECT p.FirstName, p.LastName, c.Title as CourseTitle
+                         FROM personnel p 
+                         JOIN courses c ON c.CourseCode = ? 
+                         WHERE p.PersonnelID = ?";
+            $profStmt = $conn->prepare($profQuery);
+            $profStmt->bind_param("si", $courseCode, $personnelID);
+            $profStmt->execute();
+            $profResult = $profStmt->get_result();
+            $profInfo = $profResult->fetch_assoc();
+            $profStmt->close();
+            
             while ($row = $notifyResult->fetch_assoc()) {
-                $title = "New Submission";
-                $message = "A new submission has been made for task: " . $taskInfo['Title'];
+                $title = "✅ New Submission for " . $taskInfo['Title'];
+                $message = $profInfo['FirstName'] . " " . $profInfo['LastName'] . " submitted for " . $profInfo['CourseTitle'];
                 createNotification($row['AccountID'], $title, $message, $taskID);
             }
             $notifyStmt->close();
@@ -150,13 +164,13 @@ if (isset($_POST['submit_file']) && isset($_POST['task_id']) && isset($_FILES['t
             $message = "Error inserting submission: " . $insertStmt->error;
         }
         $insertStmt->close();
-        // Optionally, update task_assignments status for workflow
-        $updateSql = "UPDATE task_assignments SET Status = 'Submitted', SubmissionDate = NOW(), SubmissionPath = ? WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?";
+       
+        $updateSql = "UPDATE task_assignments SET Status = 'Submitted', ReviewStatus = 'Not Reviewed', SubmissionDate = NOW(), SubmissionPath = ? WHERE TaskID = ? AND CourseCode = ? AND ProgramID = ?";
         $updateStmt = $conn->prepare($updateSql);
         $updateStmt->bind_param("sisi", $relativePath, $taskID, $courseCode, $programID);
         $updateStmt->execute();
         $updateStmt->close();
-        // Also update the parent task's status to 'Submitted'
+     
         $updateTaskSql = "UPDATE tasks SET Status = 'Submitted' WHERE TaskID = ?";
         $updateTaskStmt = $conn->prepare($updateTaskSql);
         $updateTaskStmt->bind_param("i", $taskID);
@@ -237,7 +251,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'revise') {
     $details = $detailsResult->fetch_assoc();
     
     $updateSql = "UPDATE task_assignments 
-                  SET Status = 'Pending', RevisionReason = ? 
+                  SET Status = 'Pending', 
+                      ReviewStatus = 'Not Reviewed',
+                      RevisionReason = ? 
                   WHERE TaskAssignmentID = ?";
     $updateStmt = $conn->prepare($updateSql);
     $updateStmt->bind_param("si", $revisionReason, $taskAssignmentID);
@@ -305,7 +321,7 @@ $tasksResult = $tasksStmt->get_result();
 
 while ($taskRow = $tasksResult->fetch_assoc()) {
     $assignmentsSql = "SELECT ta.TaskAssignmentID, ta.CourseCode, ta.ProgramID, ta.Status as AssignmentStatus, 
-                    ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
+                    ta.ReviewStatus, ta.SubmissionPath, ta.SubmissionDate, ta.ApprovalDate, ta.RevisionReason,
                     c.Title as CourseTitle, p.ProgramName, p.ProgramCode,
                     CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
                     per.PersonnelID as PersonnelID,
@@ -348,38 +364,56 @@ $tasksStmt->close();
 $conn->close();
 
 $backUrl = '../../main/dashboard/dn-dash.php';
-if (isset($_GET['from'])) {
-  switch ($_GET['from']) {
-    case 'task_frame':
-      $backUrl = '../../main/task/task_frame.php';
-      break;
-    case 'dn-dash':
-      $backUrl = '../../main/dashboard/dn-dash.php';
-      break;
-    case 'fm-dash':
-      $backUrl = '../../main/dashboard/fm-dash.php';
-      break;
-    case 'ph-dash':
-      $backUrl = '../../main/dashboard/ph-dash.php';
-      break;
-  }
+if (isset($_GET['return_to'])) {
+    switch ($_GET['return_to']) {
+        case 'curriculum.php':
+            $backUrl = '../../main/curriculum/curriculum_frame.php';
+            break;
+        case 'faculty.php':
+            $backUrl = '../../main/faculty/faculty_frame.php';
+            break;
+        case 'tasks.php':
+            $backUrl = '../../main/task/task_frame.php';
+            break;
+        case 'audit_log.php':
+            $backUrl = '../../main/auditlog/audit_log_frame.php';
+            break;
+        case 'settings.php':
+            $backUrl = '../../main/settings/settings_frame.php';
+            break;
+        case 'profile.php':
+            $backUrl = '../../main/profile/profile_frame.php';
+            break;
+    }
+} else if (isset($_GET['from'])) {
+    switch ($_GET['from']) {
+        
+        case 'dn-dash':
+            $backUrl = '../../main/dashboard/dn-dash.php';
+            break;
+        case 'fm-dash':
+            $backUrl = '../../main/dashboard/fm-dash.php';
+            break;
+        case 'ph-dash':
+            $backUrl = '../../main/dashboard/ph-dash.php';
+            break;
+    }
 } else {
-
-  switch ($userRole) {
-    case 'FM':
-      $backUrl = '../../main/dashboard/fm-dash.php';
-      break;
-    case 'PH':
-      $backUrl = '../../main/dashboard/ph-dash.php';
-      break;
-    case 'COR':
-      $backUrl = '../../main/dashboard/ph-dash.php';
-      break;
-    case 'DN':
-    default:
-      $backUrl = '../../main/dashboard/dn-dash.php';
-      break;
-  }
+    switch ($userRole) {
+        case 'FM':
+            $backUrl = '../../main/dashboard/fm-dash.php';
+            break;
+        case 'PH':
+            $backUrl = '../../main/dashboard/ph-dash.php';
+            break;
+        case 'COR':
+            $backUrl = '../../main/dashboard/ph-dash.php';
+            break;
+        case 'DN':
+        default:
+            $backUrl = '../../main/dashboard/dn-dash.php';
+            break;
+    }
 }
 ?>
 
@@ -1229,13 +1263,12 @@ if (isset($_GET['from'])) {
               <div id="selectedFile" class="selected-file hidden flex items-center justify-between bg-blue-100 rounded-full px-4 py-2 mb-4">
                 <div class="flex items-center gap-2">
                   <i class="fas fa-file-alt text-blue-500"></i>
-                  <span id="fileName" class="file-name font-medium text-gray-800"></span>
+                  <span id="fileName" class="file-name font-medium text-gray-800 cursor-pointer hover:underline" title="Preview file"></span>
                 </div>
                 <span class="remove-file ml-2 hover:text-red-600 transition" onclick="removeFile()">
                   <i class="fas fa-times"></i>
                 </span>
               </div>
-              <div id="filePreview" class="file-preview hidden mb-2"></div>
               <!-- Co-author checkboxes -->
               <?php if (!empty($coauthors)): ?>
               <div class="mb-6">
@@ -1302,56 +1335,32 @@ if (isset($_GET['from'])) {
       const submitBtn = document.getElementById('submitBtn');
       const fileInput = document.getElementById('taskFile');
       const selectedFile = document.getElementById('selectedFile');
-      const filePreview = document.getElementById('filePreview');
-      const fileName = document.getElementById('fileName');
 
       if (selector.value === '') {
         uploadForm.classList.add('hidden');
         if (fileInput) fileInput.value = '';
         if (selectedFile) selectedFile.classList.add('hidden');
-        if (filePreview) filePreview.classList.add('hidden');
-        if (submitBtn) submitBtn.disabled = true;
+        submitBtn.disabled = true;
         return;
       }
 
       const taskData = <?php echo json_encode($uploadableTasks); ?>[selector.value];
 
-      // Set hidden fields
       document.getElementById('taskID').value = taskData.taskID;
       document.getElementById('courseCode').value = taskData.courseCode;
       document.getElementById('programID').value = taskData.programID;
 
-      // If there's already a submission, show it
       if (taskData.submissionPath) {
-        // Extract file name from path
         const pathParts = taskData.submissionPath.split('/');
         const file = pathParts[pathParts.length - 1];
-        fileName.textContent = file;
+        document.getElementById('fileName').textContent = file;
         selectedFile.classList.remove('hidden');
-
-        // Show file preview based on extension
-        const extension = file.split('.').pop().toLowerCase();
-        if (["jpg", "jpeg", "png", "gif"].includes(extension)) {
-          filePreview.innerHTML = `<img src="${taskData.submissionPath}" class="image-preview">`;
-          filePreview.classList.remove('hidden');
-        } else if (extension === 'pdf') {
-          filePreview.innerHTML = `<embed src="${taskData.submissionPath}" type="application/pdf" class="pdf-preview">`;
-          filePreview.classList.remove('hidden');
-        } else {
-          filePreview.innerHTML = `<div class=\"doc-preview\">
-            <i class=\"fas fa-file-alt text-4xl text-blue-500\"></i>
-            <p class=\"mt-2\">Preview not available for this file type</p>
-          </div>`;
-          filePreview.classList.remove('hidden');
-        }
         submitBtn.disabled = true;
       } else {
         selectedFile.classList.add('hidden');
-        filePreview.classList.add('hidden');
         submitBtn.disabled = true;
       }
 
-      
       uploadForm.classList.remove('hidden');
     }
 
@@ -1365,12 +1374,9 @@ if (isset($_GET['from'])) {
         fileName.textContent = fileInput.files[0].name;
         selectedFile.classList.remove('hidden');
         submitBtn.disabled = false;
-   
-        previewFile(fileInput.files[0]);
       } else {
         selectedFile.classList.add('hidden');
         submitBtn.disabled = true;
-        document.getElementById('filePreview').classList.add('hidden');
       }
     }
 
@@ -1381,37 +1387,37 @@ if (isset($_GET['from'])) {
       const fileName = document.getElementById('fileName');
       selectedFile.classList.add('hidden');
       fileInput.value = '';
-      document.getElementById('filePreview').classList.add('hidden');
       submitBtn.disabled = true;
       if (fileName) fileName.textContent = '';
     }
 
-    function previewFile(file) {
-      const filePreview = document.getElementById('filePreview');
-      const fileType = file.type;
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
-      if (validImageTypes.includes(fileType)) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          filePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" onerror="handleImageError(this)">`;
-          filePreview.classList.remove('hidden');
-        }
-        reader.readAsDataURL(file);
-      } else if (fileType === 'application/pdf') {
-        const objectUrl = URL.createObjectURL(file);
-        filePreview.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="pdf-preview" onerror="handlePdfError(this)">`;
-        filePreview.classList.remove('hidden');
+    function previewSubmission(path, title) {
+      const modal = document.getElementById('previewModal');
+      const previewContent = document.getElementById('previewContent');
+      const previewTitle = document.getElementById('previewTitle');
+  
+      previewTitle.textContent = title;
+    
+      const extension = path.split('.').pop().toLowerCase();
+      
+      previewContent.innerHTML = '';
+   
+      modal.classList.remove('hidden');
+      
+      if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+        previewContent.innerHTML = `<img src="${path}" class="max-w-full h-[93%] object-contain mx-auto" onerror="handleImageError(this)">`;
+      } else if (extension === 'pdf') {
+        previewContent.innerHTML = `<embed src="${path}" type="application/pdf" class="w-full h-full" onerror="handlePdfError(this)">`;
       } else {
-        filePreview.innerHTML = `
+        previewContent.innerHTML = `
           <div class="text-center py-8">
             <i class="fas fa-file-alt text-4xl text-blue-500 mb-3"></i>
             <p class="text-gray-600 dark:text-gray-300">Preview not available for this file type</p>
-            <a href="${file.name}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            <a href="${path}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
               Download File
             </a>
           </div>
         `;
-        filePreview.classList.remove('hidden');
       }
     }
 
@@ -1429,7 +1435,7 @@ if (isset($_GET['from'])) {
     }
 
     function handlePdfError(embed) {
-      embed.onerror = null; // Prevent infinite loop
+      embed.onerror = null; 
       embed.parentElement.innerHTML = `
         <div class="text-center py-8">
           <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
@@ -1522,45 +1528,18 @@ if (isset($_GET['from'])) {
       }
     }
 
-    function handleImageError(img) {
-      img.onerror = null; // Prevent infinite loop
-      img.parentElement.innerHTML = `
-        <div class="text-center py-8">
-          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
-          <p class="text-gray-600 dark:text-gray-300">Unable to load image preview</p>
-          <a href="${img.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Download File
-          </a>
-        </div>
-      `;
-    }
-
-    function handlePdfError(embed) {
-      embed.onerror = null; // Prevent infinite loop
-      embed.parentElement.innerHTML = `
-        <div class="text-center py-8">
-          <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
-          <p class="text-gray-600 dark:text-gray-300">Unable to load PDF preview</p>
-          <a href="${embed.src}" target="_blank" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            Download File
-          </a>
-        </div>
-      `;
-    }
-
     function closePreview() {
       const modal = document.getElementById('previewModal');
       modal.classList.add('hidden');
     }
 
-    // Close modal when clicking outside
+
     document.getElementById('previewModal').addEventListener('click', function(e) {
       if (e.target === this) {
         closePreview();
       }
     });
 
-    // Close modal with Escape key
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closePreview();
@@ -1568,7 +1547,6 @@ if (isset($_GET['from'])) {
     });
   </script>
 
-  <!-- Add this modal HTML before the closing body tag -->
   <div id="previewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
     <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
       <div class="flex justify-between items-center px-4 py-2 border-b dark:border-gray-700">
@@ -1577,7 +1555,7 @@ if (isset($_GET['from'])) {
       </div>
       <div class="flex-1 overflow-auto">
         <div id="previewContent" class="w-full h-full flex items-center justify-center">
-          <!-- Content will be inserted here -->
+          <!-- contents here -->
         </div>
       </div>
     </div>
@@ -1631,19 +1609,98 @@ if (isset($_GET['from'])) {
         document.getElementById('revisionReason').value = '';
     }
 
-    // Close revision modal when clicking outside
     document.getElementById('revisionModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeRevisionModal();
         }
     });
 
-    // Close revision modal with Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeRevisionModal();
         }
     });
+  </script>
+
+  <!-- Add the preview modal if not already present -->
+  <div id="uploadPreviewModal" class="fixed inset-0 hidden z-50 flex items-center justify-center overflow-hidden">
+    <div class="bg-gray-300 dark:bg-gray-800 rounded-lg shadow-xl w-full m-4 max-w-[98%] h-screen flex flex-col">
+      <div class="flex justify-between items-center px-4 py-2 border-b dark:border-gray-700">
+        <h3 class="text-sm font-medium dark:text-white" id="uploadPreviewTitle">File Preview</h3>
+        <button onclick="closeUploadPreviewModal()" class="text-gray-700 hover:text-red-600 text-2xl font-bold" title="Close">&times;</button>
+      </div>
+      <div class="flex-1 overflow-auto">
+        <div id="uploadPreviewContent" class="w-full h-full flex items-center justify-center">
+          <!-- Content  here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    const fileNameElem = document.getElementById('fileName');
+    if (fileNameElem) {
+      fileNameElem.onclick = function() {
+        const fileInput = document.getElementById('taskFile');
+        if (fileInput.files.length > 0) {
+          previewUploadFile(fileInput.files[0]);
+        }
+      };
+    }
+
+    function previewUploadFile(file) {
+      const modal = document.getElementById('uploadPreviewModal');
+      const content = document.getElementById('uploadPreviewContent');
+      const title = document.getElementById('uploadPreviewTitle');
+      title.textContent = file.name;
+      content.innerHTML = '';
+      modal.classList.remove('hidden');
+      const fileType = file.type;
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+      if (validImageTypes.includes(fileType)) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          content.innerHTML = `<img src="${e.target.result}" class="max-w-full h-[93%] object-contain mx-auto" onerror="handleImageError(this)">`;
+        };
+        reader.readAsDataURL(file);
+      } else if (fileType === 'application/pdf') {
+        const objectUrl = URL.createObjectURL(file);
+        content.innerHTML = `<embed src="${objectUrl}" type="application/pdf" class="w-full h-full" onerror="handlePdfError(this)">`;
+      } else {
+        content.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-file-alt text-4xl text-blue-500 mb-3"></i>
+            <p class="text-gray-600 dark:text-gray-300">Preview not available for this file type</p>
+            <a href="#" onclick="downloadUploadFile()" class="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Download File</a>
+          </div>
+        `;
+      }
+    }
+
+    function closeUploadPreviewModal() {
+      const modal = document.getElementById('uploadPreviewModal');
+      const content = document.getElementById('uploadPreviewContent');
+      content.innerHTML = '';
+      modal.classList.add('hidden');
+    }
+
+    function downloadUploadFile() {
+      const fileInput = document.getElementById('taskFile');
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
+      }
+    }
   </script>
 </body>
 </html>

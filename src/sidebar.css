@@ -76,7 +76,7 @@
     border-radius: 10px;
     cursor: pointer;
     transition: width 0.6s ease-in-out, height 0.6s ease-in-out, border-radius 0.6s ease-in-out, padding 0.6s ease-in-out, margin 0.6s ease-in-out;
-    margin-right: 10px;
+    margin-right: 5px;
     position: relative;
     overflow: hidden;
 }

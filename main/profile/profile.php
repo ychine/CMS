@@ -244,7 +244,38 @@ $conn->close();
             transition: all 1s ease-in-out;
         }
 
-        
+        .menu-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: none;
+            border: 1px solid #2A4484;
+          
+        }
+
+        .menu-item:hover {
+            background: #1D387B !important;
+            box-shadow: -5px -5px 15px rgba(81, 213, 90, 0.3),
+                        5px 5px 15px rgba(0, 0, 0, 0.5);
+            transform: translateY(-1px);
+            border-color: #51D55A;
+        }
+
+        .menu-item:active {
+            transform: translateY(0);
+            box-shadow: -3px -3px 10px rgba(81, 213, 90, 0.2),
+                        3px 3px 10px rgba(0, 0, 0, 0.3);
+            border-color: #51D55A;
+            border-width: 2px;
+        }
+
+        .menu-item.active {
+            background: #1D387B !important;
+            box-shadow: -5px -5px 15px rgba(81, 213, 90, 0.3),
+                        5px 5px 15px rgba(0, 0, 0, 0.5);
+            border-color: #51D55A;
+            border-width: 2px;
+        }
         
     </style>
 </head>
@@ -336,9 +367,9 @@ $conn->close();
                             <!-- Red Dot Indicator (always present, outside PHP if-block) -->
                             <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50 transition-all duration-300"></span>
                         </button> 
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[100] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                            <div class="p-4 shadow-md relative z-[101] bg-white">
-                                <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
+                        <div id="notificationDropdown" class="hidden border border-gray-200  absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[100] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                            <div class="p-4 shadow-md rounded-t-lg relative z-[101] bg-white">
+                                <h3 class="text-lg  font-onest font-semibold text-gray-900">Notifications</h3>
                             </div>
                             <div id="notificationList" class="max-h-96 overflow-y-auto relative z-[100] bg-white">
                                 <!-- D2 LALABAS UNG NOTIFS -->

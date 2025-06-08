@@ -23,7 +23,6 @@ if (!isset($_GET['task_id'])) {
 $taskId = $_GET['task_id'];
 $accountID = $_SESSION['AccountID'];
 
-// Get faculty ID
 $facultyQuery = "SELECT FacultyID FROM personnel WHERE AccountID = ?";
 $facultyStmt = $conn->prepare($facultyQuery);
 $facultyStmt->bind_param("i", $accountID);
@@ -38,7 +37,6 @@ if ($facultyRow = $facultyResult->fetch_assoc()) {
 }
 $facultyStmt->close();
 
-// Get all (ProgramID, CourseCode) already assigned to this task
 $assigned = [];
 $assignedSql = "SELECT ProgramID, CourseCode FROM task_assignments WHERE TaskID = ?";
 $assignedStmt = $conn->prepare($assignedSql);
@@ -50,9 +48,8 @@ while ($row = $assignedResult->fetch_assoc()) {
 }
 $assignedStmt->close();
 
-// Get all courses for this faculty (with assigned profs)
 $courses = [];
-$coursesSql = "SELECT pc.ProgramID, p.ProgramCode, p.ProgramName, pc.CourseCode, c.Title, cu.Name AS CurriculumName, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo
+$coursesSql = "SELECT pc.ProgramID, p.ProgramCode, p.ProgramName, pc.CourseCode, c.Title, cu.ID as CurriculumID, cu.Name AS CurriculumName, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo
     FROM program_courses pc
     JOIN courses c ON pc.CourseCode = c.CourseCode
     JOIN programs p ON pc.ProgramID = p.ProgramID
@@ -73,6 +70,7 @@ while ($row = $coursesResult->fetch_assoc()) {
             'ProgramName' => $row['ProgramName'],
             'CourseCode' => $row['CourseCode'],
             'Title' => $row['Title'],
+            'CurriculumID' => $row['CurriculumID'],
             'CurriculumName' => $row['CurriculumName'],
             'AssignedTo' => $row['AssignedTo']
         ];

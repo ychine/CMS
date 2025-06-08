@@ -61,6 +61,46 @@ $totalResult = $totalStmt->get_result();
 $totalRow = $totalResult->fetch_assoc();
 $totalFaculty = $totalRow['total'];
 
+$pendingSubmissionsStmt = $conn->prepare("SELECT ta.TaskID, ta.CourseCode, ta.SubmissionDate, 
+                          c.Title as CourseTitle, t.Title as TaskTitle,
+                          p.ProgramName, CONCAT(per.FirstName, ' ', per.LastName) as SubmittedBy
+                          FROM task_assignments ta
+                          JOIN tasks t ON ta.TaskID = t.TaskID
+                          JOIN courses c ON ta.CourseCode = c.CourseCode
+                          JOIN programs p ON ta.ProgramID = p.ProgramID
+                          JOIN personnel per ON ta.PersonnelID = per.PersonnelID
+                          WHERE t.FacultyID = ? 
+                          AND ta.Status = 'Submitted' 
+                          AND ta.ReviewStatus = 'Not Reviewed'
+                          ORDER BY ta.SubmissionDate DESC");
+$pendingSubmissionsStmt->bind_param("i", $facultyId);
+$pendingSubmissionsStmt->execute();
+$pendingSubmissionsResult = $pendingSubmissionsStmt->get_result();
+$pendingSubmissions = [];
+while ($row = $pendingSubmissionsResult->fetch_assoc()) {
+    $pendingSubmissions[] = $row;
+}
+$pendingSubmissionsStmt->close();
+
+// Execute the activity query before closing any connections
+$activityQuery = "SELECT ta.TaskID, t.Title, ta.Status, t.CreatedAt as UpdatedAt, c.CourseCode,
+                CONCAT(p.FirstName, ' ', p.LastName) as PersonnelName
+                FROM task_assignments ta
+                JOIN tasks t ON ta.TaskID = t.TaskID
+                JOIN courses c ON ta.CourseCode = c.CourseCode
+                JOIN personnel p ON ta.PersonnelID = p.PersonnelID
+                WHERE t.FacultyID = ?
+                ORDER BY t.CreatedAt DESC
+                LIMIT 5";
+$activityStmt = $conn->prepare($activityQuery);
+$activityStmt->bind_param("i", $facultyId);
+$activityStmt->execute();
+$activityResult = $activityStmt->get_result();
+$activities = [];
+while ($row = $activityResult->fetch_assoc()) {
+    $activities[] = $row;
+}
+$activityStmt->close();
 
 $ongoingTaskTitle = null;
 $ongoingTaskId = null;
@@ -87,7 +127,7 @@ if ($ongoingTaskResult && $ongoingTaskResult->num_rows > 0) {
      
         $sqlPending = "SELECT COUNT(*) as cnt FROM task_assignments ta
             JOIN tasks t ON ta.TaskID = t.TaskID
-            WHERE t.TaskID = ? AND ta.Status = 'Submitted'";
+            WHERE t.TaskID = ? AND ta.Status = 'Submitted' AND ta.ReviewStatus = 'Not Reviewed'";
         $stmtPending = $conn->prepare($sqlPending);
         $stmtPending->bind_param("i", $taskId);
         $stmtPending->execute();
@@ -150,6 +190,7 @@ foreach ($roleLabels as $code => $label) {
 }
 $roleDataJSON = json_encode($formattedRoleData);
 
+// Close all statements and the connection after all database operations are complete
 $stmt->close();
 $roleStmt->close();
 $totalStmt->close();
@@ -484,11 +525,18 @@ function getDueDateTooltip($dueDate) {
                             </div>
                         <?php endif; ?>
                     </div>
+
+                   
+
+                    
                 </div>
                 <!-- Pinboard sa right -->
                 <?php include 'pinboard.php'; ?>
             </div>
+
+            
         </div>
+         <hr class="border-gray-300 w-full my-[50px]">
     </div>
 
     <script>

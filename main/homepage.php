@@ -286,10 +286,52 @@ $conn->close();
         .dark .link-text, .dark .font-onest, .dark .font-overpass {
             color: #e3e3e3 !important;
         }
+
+        .menu-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: none;
+            border: 1px solid #2A4484;
+        }
+
+        .menu-item:hover {
+            background: #1D387B !important;
+            box-shadow: -5px -5px 15px rgba(81, 213, 90, 0.3),
+                        5px 5px 15px rgba(0, 0, 0, 0.5);
+            transform: translateY(-1px);
+            border-color: #51D55A;
+        }
+
+        .menu-item:active {
+            transform: translateY(0);
+            box-shadow: -3px -3px 10px rgba(81, 213, 90, 0.2),
+                        3px 3px 10px rgba(0, 0, 0, 0.3);
+            border-color: #51D55A;
+            border-width: 2px;
+        }
+
+        .menu-item.active {
+            background: #1D387B !important;
+            box-shadow: -5px -5px 15px rgba(81, 213, 90, 0.3),
+                        5px 5px 15px rgba(0, 0, 0, 0.5);
+            border-color: #51D55A;
+            border-width: 2px;
+        }
+
+        .menu-item .link-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .menu-item img {
+            position: relative;
+            z-index: 2;
+        }
     </style>
 </head>
 
-<body id="mainBody" class="w-full h-screen bg-[#020A27] px-5 pt-3 flex items-start justify-center">
+<body id="mainBody" class="w-full h-screen bg-[#020A27] px-3 pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
     <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg" >
@@ -310,28 +352,28 @@ $conn->close();
             </div>
 
             <div class="p-2 flex flex-col gap-[8px]">
-                <a href="homepage.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="homepage.php" class="bg-[#13275B] menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/dashboard.png" alt="Dashboard" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Dashboard</span>
                 </a>
 
-                <a href="faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="faculty/faculty.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/faculty-icon.png" alt="Faculty" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Faculty</span>
                 </a>
 
-                <a href="curriculum/curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="curriculum/curriculum.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/materials-icon.png" alt="Curriculum Materials" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Curricula</span>
                 </a>
 
-                <a href="task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="task/tasks.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/task.png" alt="Tasks" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Tasks</span>
                 </a>
                 
                 <?php if ($row['Role'] === 'DN'): ?>
-                <a href="auditlog/audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] hover:bg-[#13275B] active:border-[#51D55A] cursor-pointer transition">
+                <a href="auditlog/audit_log.php" class="menu-item flex items-center px-7 py-3 h-[53px] border-2 border-[#2A4484] text-[16px] font-onest text-[#E3E3E3] font-[400] rounded-[10px] active:border-[#51D55A] cursor-pointer transition">
                     <img src="../img/Audit.png" alt="Audit Log" class="w-[22px] mr-[22px]" />
                     <span class="link-text">Audit Log</span>
                 </a>
@@ -377,9 +419,14 @@ $conn->close();
                             <?php endif; ?>
                             <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50 transition-all duration-300"></span>
                         </button> 
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[100] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                            <div class="p-4 shadow-md relative z-[101] bg-white">
-                                <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
+                        <div id="notificationDropdown" class="hidden border border-gray-200  absolute right-0 mt-2 w-90 bg-white rounded-lg shadow-lg z-[100] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                            <div class="p-4 shadow-md rounded-t-lg relative z-[101] bg-white">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
+                                    <button id="clearNotifications" class="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                                        Clear All
+                                    </button>
+                                </div>
                             </div>
                             <div id="notificationList" class="max-h-96 overflow-y-auto relative z-[100] bg-white">
                                 <!-- D2 LALABAS UNG NOTIFS -->
@@ -721,28 +768,108 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationButton = document.getElementById('notificationButton');
     const notificationDropdown = document.getElementById('notificationDropdown');
     const notificationList = document.getElementById('notificationList');
+    const clearNotificationsButton = document.getElementById('clearNotifications');
 
     loadNotifications();
 
+    // Add click handler for clear notifications button
+    clearNotificationsButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (confirm('Are you sure you want to clear all notifications?')) {
+            clearAllNotifications();
+        }
+    });
+
+    // Add click handler for the entire document
+    document.addEventListener('click', function(e) {
+        // Check if click is outside the notification dropdown and button
+        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+            // Close the dropdown with animation
+            notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            notificationDropdown.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+            }, 300);
+        }
+    });
+
+    // Add click handler for iframe
+    const iframe = document.getElementById('contentIframe');
+    if (iframe) {
+        iframe.addEventListener('load', function() {
+            try {
+                iframe.contentWindow.document.addEventListener('click', function() {
+                    // Close the dropdown with animation
+                    notificationDropdown.classList.remove('opacity-100', 'scale-100');
+                    notificationDropdown.classList.add('opacity-0', 'scale-95');
+                    
+                    setTimeout(() => {
+                        notificationDropdown.classList.add('hidden');
+                    }, 300);
+                });
+            } catch (e) {
+                console.log('Could not add click listener to iframe content');
+            }
+        });
+    }
+
+    function clearAllNotifications() {
+        // Use absolute path
+        fetch('../src/scripts/clear_notifications.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                // Clear the notification list
+                notificationList.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
+                
+                // Remove the notification badge if it exists
+                const badge = notificationButton.querySelector('span');
+                if (badge) {
+                    badge.remove();
+                }
+                
+                // Hide the notification dot
+                const notifDot = document.getElementById('notifDot');
+                if (notifDot) {
+                    notifDot.style.display = 'none';
+                }
+                
+                // Reload notifications to ensure UI is in sync
+                loadNotifications();
+            } else {
+                // Show error message from server
+                alert(data.message || 'Failed to clear notifications. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error clearing notifications:', error);
+            alert('Failed to clear notifications. Please try again.');
+        });
+    }
 
     setInterval(loadNotifications, 30000);
 
-   
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
         if (notificationDropdown.classList.contains('hidden')) {
-      
             notificationDropdown.classList.remove('hidden');
-     
             setTimeout(() => {
                 notificationDropdown.classList.remove('opacity-0', 'scale-95');
                 notificationDropdown.classList.add('opacity-100', 'scale-100');
             }, 10);
         } else {
-   
             notificationDropdown.classList.remove('opacity-100', 'scale-100');
             notificationDropdown.classList.add('opacity-0', 'scale-95');
-         
             setTimeout(() => {
                 notificationDropdown.classList.add('hidden');
             }, 300);
@@ -751,7 +878,6 @@ document.addEventListener('DOMContentLoaded', function() {
             loadNotifications();
         }
     });
-
 
     function loadNotifications() {
         fetch('src/scripts/get_notifications.php')
