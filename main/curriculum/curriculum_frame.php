@@ -1,5 +1,5 @@
 <?php
-// curriculum_frame.php
+
 session_start();
 
 if (!isset($_SESSION['Username'])) {
@@ -117,7 +117,8 @@ if (!empty($curriculaMap)) {
             $programs[$programId]['curricula'][$curriculum][$yearName][$semesterName][] = [
                 'title' => $courseTitle,
                 'code' => $courseCode,
-                'assigned_to' => $assignedPersonnel
+                'assigned_to' => $assignedPersonnel,
+                'curriculum_id' => $curriculumId
             ];
         }
     }
@@ -206,14 +207,12 @@ if ($row = $taskResult->fetch_assoc()) {
 }
 $taskStmt->close();
 
-// Fetch academic years
 $yearOptions = [];
 $yearQuery = $conn->query("SELECT YearID, YearName FROM academic_years ORDER BY YearOrder");
 while ($row = $yearQuery->fetch_assoc()) {
     $yearOptions[] = $row;
 }
 
-// Fetch semesters
 $semesterOptions = [];
 $semesterQuery = $conn->query("SELECT SemesterID, SemesterName FROM semesters ORDER BY SemesterOrder");
 while ($row = $semesterQuery->fetch_assoc()) {
@@ -479,7 +478,16 @@ $conn->close();
 
 
 <div class="flex-1 flex flex-col px-[50px] pt-[15px] pb-[50px] overflow-y-auto">
-    <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1>
+    <div class="flex justify-between items-center">
+        <h1 class="py-[5px] text-[35px] tracking-tight font-overpass font-bold">Curricula</h1>
+        <div class="relative w-96">
+            <input type="text" id="globalSearch" placeholder="Search courses..." 
+                class="w-full p-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500 font-onest">
+            <div id="searchResults" class="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
+                
+            </div>
+        </div>
+    </div>
     <hr class="border-gray-400">
     <p class="text-gray-500 mt-3 mb-5 font-onest">
         Manage academic programs and curricula. Create programs, add courses, and assign faculty members. Track curriculum changes over time.
@@ -495,7 +503,6 @@ $conn->close();
                 $curricula = $programData['curricula'];
                 $progId = 'prog_' . md5($programName);
                 
-                // Program level - visible by default
                 echo "<div class='mt-4'>";
                 echo "<div class='flex items-center justify-between'>";
                 echo "<button onclick=\"toggleCollapse('$progId')\" class=\"w-full text-left px-4 py-2 bg-blue-100 text-blue-800 rounded font-bold text-lg shadow hover:bg-blue-200 transition-all duration-200\">\n        <span class='collapse-arrow'>▶</span> $programName\n      </button>";
@@ -504,10 +511,10 @@ $conn->close();
                 }
                 echo "</div>";
                 
-                // Curricula level - hidden by default
+               
                 echo "<div id=\"$progId\" class='ml-4 mt-2 hidden'>";
                 foreach ($curricula as $curriculum => $years) {
-                    // Always render the curriculum, even if $years is empty
+                  
                     $currId = 'curr_' . md5($programName . $curriculum);
                     echo "<div class='mt-2'>";
                     echo "<div class='flex items-center justify-between'>";
@@ -546,7 +553,7 @@ $conn->close();
                                     $assignedTo = $courseData['assigned_to'] ?? '';
                                     $courseCode = $courseData['code'] ?? $courseTitle;
                                     $rowId = 'files_' . md5($programName . $curriculum . $yearName . $semesterName . $courseTitle . $idx);
-                                    echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\">";
+                                    echo "<tr class='hover:bg-gray-50 cursor-pointer' onclick=\"toggleCollapse('$rowId')\" data-course-code='" . htmlspecialchars($courseCode) . "'>";
                                     echo "<td class='text-right px-4 py-2 border-b w-[15%]'>" . htmlspecialchars($courseCode) . "</td>";
                                     echo "<td class='px-4 py-2 border-b w-[55%]'>" . htmlspecialchars($courseTitle) . "</td>";
                                     echo "<td class='px-4 py-2 border-b w-[30%]'>";
@@ -594,10 +601,11 @@ $conn->close();
                                                 AND s.SubmissionPath IS NOT NULL
                                                 AND s.SubmissionPath != ''
                                                 AND s.CourseCode = ?
+                                                AND ta.CurriculumID = ?
                                                 AND ta.ReviewStatus = 'Approved'
                                                 ORDER BY s.SubmissionDate DESC";
                                     $fileStmt = $conn->prepare($fileSql);
-                                    $fileStmt->bind_param("is", $facultyID, $courseCode);
+                                    $fileStmt->bind_param("isi", $facultyID, $courseCode, $courseData['curriculum_id']);
                                     $fileStmt->execute();
                                     $fileResult = $fileStmt->get_result();
                                     if ($fileResult->num_rows > 0) {
@@ -934,13 +942,13 @@ $conn->close();
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Show a success modal (no reload)
+                     
                         showAssignSuccessModal('Professor assigned successfully!');
-                        // Optionally, you can update the dropdown or highlight it here
+                        
                     } else {
-                        // Show error modal instead of alert
+                    
                         showAssignErrorModal(data.message || 'Failed to assign personnel');
-                        // Reset the dropdown to its previous value
+                       
                         this.value = '';
                     }
                 })
@@ -1007,11 +1015,11 @@ $conn->close();
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'OK'
                 }).then((result) => {
-                    // Reload the page after the user clicks OK
+                    
                     location.reload();
                 });
             } else {
-                // Show error message with SweetAlert2
+                
                 Swal.fire({
                     title: 'Error!',
                     text: data.message || 'Failed to delete program',
@@ -1019,7 +1027,7 @@ $conn->close();
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'OK'
                 });
-                // Reset button
+           
                 confirmBtn.textContent = originalText;
                 confirmBtn.disabled = false;
             }
@@ -1188,10 +1196,72 @@ $conn->close();
           
             const button = document.querySelector(`button[onclick="toggleCollapse('${id}')"]`);
             if (button) {
-                button.classList.toggle('collapsed');
+                const arrow = button.querySelector('.collapse-arrow');
+                if (arrow) {
+                    arrow.textContent = el.classList.contains('hidden') ? '▶' : '▼';
+                }
             }
         }
     }
+
+    
+    function focusOnCourse(courseCode, curriculumId) {
+
+        const courseRow = document.querySelector(`tr[data-course-code="${courseCode}"]`);
+        if (courseRow) {
+          
+            const semesterDiv = courseRow.closest('div[id^="sem_"]');
+            const yearDiv = semesterDiv.closest('div[id^="year_"]');
+            const curriculumDiv = yearDiv.closest('div[id^="curr_"]');
+
+            if (curriculumDiv) {
+                curriculumDiv.classList.remove('hidden');
+                const curriculumButton = document.querySelector(`button[onclick="toggleCollapse('${curriculumDiv.id}')"]`);
+                if (curriculumButton) {
+                    const arrow = curriculumButton.querySelector('.collapse-arrow');
+                    if (arrow) arrow.textContent = '▼';
+                }
+            }
+            
+            if (yearDiv) {
+                yearDiv.classList.remove('hidden');
+                const yearButton = document.querySelector(`button[onclick="toggleCollapse('${yearDiv.id}')"]`);
+                if (yearButton) {
+                    const arrow = yearButton.querySelector('.collapse-arrow');
+                    if (arrow) arrow.textContent = '▼';
+                }
+            }
+            
+            if (semesterDiv) {
+                semesterDiv.classList.remove('hidden');
+                const semesterButton = document.querySelector(`button[onclick="toggleCollapse('${semesterDiv.id}')"]`);
+                if (semesterButton) {
+                    const arrow = semesterButton.querySelector('.collapse-arrow');
+                    if (arrow) arrow.textContent = '▼';
+                }
+            }
+
+            courseRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            courseRow.classList.add('bg-yellow-100');
+            setTimeout(() => {
+                courseRow.classList.remove('bg-yellow-100');
+            }, 2000);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseCode = urlParams.get('course');
+        const curriculumId = urlParams.get('curriculum');
+        
+        if (courseCode && curriculumId) {
+            
+            setTimeout(() => {
+                focusOnCourse(courseCode, curriculumId);
+            }, 500);
+        }
+    });
 
     function openFilePreviewModal(fileUrl) {
         const modal = document.getElementById('filePreviewModal');
@@ -1219,7 +1289,7 @@ $conn->close();
     }
 
     function handleImageError(img) {
-        img.onerror = null; // Prevent infinite loop
+        img.onerror = null;
         img.parentElement.innerHTML = `
             <div class="text-center py-8">
                 <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
@@ -1232,7 +1302,7 @@ $conn->close();
     }
 
     function handlePdfError(embed) {
-        embed.onerror = null; // Prevent infinite loop
+        embed.onerror = null; 
         embed.parentElement.innerHTML = `
             <div class="text-center py-8">
                 <i class="fas fa-exclamation-circle text-4xl text-red-500 mb-3"></i>
@@ -1251,14 +1321,12 @@ $conn->close();
         modal.classList.add('hidden');
     }
 
-    // Close modal when clicking outside
     document.getElementById('filePreviewModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeFilePreviewModal();
         }
     });
 
-    // Close modal with Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeFilePreviewModal();
@@ -1550,16 +1618,16 @@ $conn->close();
     document.getElementById('addCourseForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
-        // Collect selected courses from the UI
+    
         const selectedCourses = Array.from(document.querySelectorAll('#selectedCoursesList > div')).map(div => ({
             code: div.querySelector('.font-semibold').textContent,
             title: div.querySelector('.text-sm').textContent
         }));
-        // Check if new course fields are filled
+      
         const newCourseCode = document.getElementById('course_code').value.trim();
         const newCourseTitle = document.getElementById('course_title').value.trim();
         if (newCourseCode && newCourseTitle) {
-            // Only add if not already in selectedCourses
+          
             if (!selectedCourses.some(c => c.code === newCourseCode)) {
                 selectedCourses.push({ code: newCourseCode, title: newCourseTitle });
             }
@@ -1611,6 +1679,136 @@ $conn->close();
     function closeAssignSuccessModal() {
         document.getElementById('assignSuccessModal').classList.add('hidden');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('globalSearch');
+        const searchResults = document.getElementById('searchResults');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            if (searchTerm.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+            
+                const courseRows = document.querySelectorAll('tbody tr:not([id^="files_"])');
+                let matches = new Map(); 
+                courseRows.forEach(row => {
+                    const courseCode = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const courseTitle = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    
+                    if (courseCode.includes(searchTerm) || courseTitle.includes(searchTerm)) {
+                        const originalCode = row.querySelector('td:first-child').textContent;
+                        const originalTitle = row.querySelector('td:nth-child(2)').textContent;
+                        
+                        if (!matches.has(originalCode)) {
+                            matches.set(originalCode, {
+                                code: originalCode,
+                                title: originalTitle,
+                                instances: []
+                            });
+                        }
+                        matches.get(originalCode).instances.push(row);
+                    }
+                });
+
+                if (matches.size > 0) {
+                    searchResults.innerHTML = '';
+                    matches.forEach((match, code) => {
+                        const div = document.createElement('div');
+                        div.className = 'p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-200 last:border-b-0';
+                        div.innerHTML = `
+                            <div class="font-semibold">${match.code}</div>
+                            <div class="text-sm text-gray-600">${match.title}</div>
+                            <div class="text-xs text-gray-500 mt-1">Found in ${match.instances.length} curriculum${match.instances.length > 1 ? 's' : ''}</div>
+                        `;
+                        div.addEventListener('click', () => {
+                            
+                            match.instances.forEach(instance => {
+                                let currentElement = instance;
+                                while (currentElement) {
+                                    if (currentElement.id) {
+                                        const button = document.querySelector(`button[onclick="toggleCollapse('${currentElement.id}')"]`);
+                                        if (button) {
+                                            const targetId = currentElement.id;
+                                            if (document.getElementById(targetId).classList.contains('hidden')) {
+                                                toggleCollapse(targetId);
+                                            }
+                                        }
+                                    }
+                                    currentElement = currentElement.parentElement;
+                                }
+                               
+                                instance.style.backgroundColor = '#fef3c7';
+                                setTimeout(() => {
+                                    instance.style.backgroundColor = '';
+                                }, 2000);
+                            });
+                            
+                            if (match.instances.length > 0) {
+                                match.instances[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                           
+                            searchResults.classList.add('hidden');
+                            searchInput.value = '';
+                        });
+                        searchResults.appendChild(div);
+                    });
+                    searchResults.classList.remove('hidden');
+                } else {
+                    searchResults.innerHTML = '<div class="p-3 text-gray-500">No courses found</div>';
+                    searchResults.classList.remove('hidden');
+                }
+            }, 300);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+    });
+
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'focusCourse') {
+            const courseCode = event.data.courseCode;
+            const curriculumId = event.data.curriculumId;
+   
+            const courseRow = document.querySelector(`tr[data-course-code="${courseCode}"]`);
+            if (courseRow) {
+       
+                const parentElements = [];
+                let current = courseRow;
+                while (current) {
+                    if (current.classList.contains('hidden')) {
+                        parentElements.push(current);
+                    }
+                    current = current.parentElement;
+                }
+      
+                parentElements.forEach(element => {
+                    element.classList.remove('hidden');
+          
+                    const arrow = element.previousElementSibling?.querySelector('.collapse-arrow');
+                    if (arrow) {
+                        arrow.textContent = '▼';
+                    }
+                });
+                
+                courseRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                courseRow.style.backgroundColor = '#fff3cd';
+                setTimeout(() => {
+                    courseRow.style.backgroundColor = '';
+                }, 2000);
+            }
+        }
+    });
 
 </script>
 

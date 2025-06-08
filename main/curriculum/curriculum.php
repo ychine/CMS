@@ -229,12 +229,53 @@ $conn->close();
             transition: all 1s ease-in-out;
         }
 
-        
+        .menu-item {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: none;
+            border: 1px solid #2A4484;
+       
+        }
+
+        .menu-item:hover {
+            background: #1D387B !important;
+            box-shadow: -5px -5px 15px rgba(81, 213, 90, 0.3),
+                        5px 5px 15px rgba(0, 0, 0, 0.5);
+            transform: translateY(-1px);
+            border-color: #51D55A;
+        }
+
+        .menu-item:active {
+            transform: translateY(0);
+            box-shadow: -3px -3px 10px rgba(81, 213, 90, 0.2),
+                        3px 3px 10px rgba(0, 0, 0, 0.3);
+            border-color: #51D55A;
+            border-width: 2px;
+        }
+
+        .menu-item.active {
+            background: #1D387B !important;
+            box-shadow: -5px -5px 15px rgba(81, 213, 90, 0.3),
+                        5px 5px 15px rgba(0, 0, 0, 0.5);
+            border-color: #51D55A;
+            border-width: 2px;
+        }
+
+        .menu-item .link-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .menu-item img {
+            position: relative;
+            z-index: 2;
+        }
 
     </style>
 </head>
 
-<body class="w-full h-screen bg-[#020A27] px-5 pt-3 flex items-start justify-center">
+<body class="w-full h-screen bg-[#020A27] px-3  pt-3 flex items-start justify-center">
 
     <!-- Wrapper -->
     <div class="w-full h-full flex flex-row rounded-t-[15px] overflow-hidden bg-gray-200 shadow-lg">
@@ -311,24 +352,27 @@ $conn->close();
                 
                 <div class="flex items-center gap-4">
                     <!-- Notification Icon -->
-                    <div class="relative border p-[2px] border-gray-200 rounded-lg">
-                    <button id="notificationButton" class="p-2 hover:bg-gray-100 transition-all duration-300 ease-in-out focus:outline-none focus:border-[#51D55A] focus:rounded-lg focus:border-2 flex items-center justify-center active:scale-95" style="position: relative; width: 40px; height: 40px;">
+                    <div class="relative border p-[2px] border-gray-200 rounded-lg z-[102]">
+                        <button id="notificationButton" class="p-2 hover:bg-gray-100 transition-all duration-300 ease-in-out focus:outline-none focus:border-[#51D55A] focus:rounded-lg focus:border-2 flex items-center justify-center active:scale-95" style="position: relative; width: 40px; height: 40px;">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            <!-- Notification Badge -->
                             <?php if ($notificationCount > 0): ?>
                             <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full transition-all duration-300"><?php echo $notificationCount; ?></span>
                             <?php endif; ?>
-                            <!-- Red Dot Indicator (always present, outside PHP if-block) -->
                             <span id="notifDot" class="absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50 transition-all duration-300"></span>
                         </button> 
-                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[100] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                            <div class="p-4 shadow-md relative z-[101] bg-white">
-                                <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
+                        <div id="notificationDropdown" class="hidden border border-gray-200 absolute right-0 mt-2 w-90 bg-white rounded-lg shadow-lg z-[100] transform transition-all duration-300 ease-in-out opacity-0 scale-95" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+                            <div class="p-4 shadow-md rounded-t-lg relative z-[101] bg-white">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg font-onest font-semibold text-gray-900">Notifications</h3>
+                                    <button id="clearNotifications" class="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                                        Clear All
+                                    </button>
+                                </div>
                             </div>
                             <div id="notificationList" class="max-h-96 overflow-y-auto relative z-[100] bg-white">
-                                <!-- D2 LALABAS UNG NOTIFS -->
+                                <!-- Notifications will be loaded here -->
                             </div>
                             <div class="p-4 border-t border-gray-200 text-center relative z-[101] bg-white">
                                 <a href="../task/tasks.php" class="text-blue-600 hover:text-blue-800 text-sm font-medium">View All Tasks</a>
@@ -401,85 +445,102 @@ $conn->close();
         </div>
     </div>
 
-        <script>
-           
-
-
-            function showToast(message, type = 'error') {
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                toast.innerText = message;
-                document.body.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.remove();
-                }, 3500);
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                            <?php if ($autoShowJoinForm): ?>
-                                showJoinForm();
-                            <?php endif; ?>
-                        });
-
-
-            function showMainMenu() {
-            document.getElementById('popup-menu').classList.remove('hidden');
-            document.getElementById('welcome-section').classList.remove('hidden');
-            document.getElementById('join-title').classList.add('hidden');
-            document.getElementById('create-title').classList.add('hidden');
-            document.getElementById('join-form').classList.add('hidden');
-            document.getElementById('create-form').classList.add('hidden');
-
-                           
-            }
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseCode = urlParams.get('course');
+            const curriculumId = urlParams.get('curriculum');
             
-            function showCreateForm() {
-            document.getElementById('popup-menu').classList.add('hidden');
-            document.getElementById('welcome-section').classList.add('hidden');
-            document.getElementById('create-title').classList.remove('hidden');
-            document.getElementById('join-title').classList.add('hidden');
-            document.getElementById('create-form').classList.remove('hidden');
-            document.getElementById('join-form').classList.add('hidden');
-
-                const createTitle = document.getElementById('create-title');
-                if (!createTitle.querySelector('.back-button')) {
-                    const backButton = document.createElement('button');
-                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
-                    backButton.onclick = showMainMenu;
-                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5"></path>
-                    <path d="M12 19l-7-7 7-7"></path>
-                    </svg>`;
-                    
-                    createTitle.prepend(backButton);
-                }
+            if (courseCode && curriculumId) {
+                const iframe = document.getElementById('contentIframe');
+                iframe.onload = function() {
+                    iframe.contentWindow.postMessage({
+                        type: 'focusCourse',
+                        courseCode: courseCode,
+                        curriculumId: curriculumId
+                    }, '*');
+                };
             }
+        });
+    </script>
 
-            function showJoinForm() {
-            document.getElementById('popup-menu').classList.add('hidden');
-            document.getElementById('welcome-section').classList.add('hidden');
-            document.getElementById('join-title').classList.remove('hidden');
-            document.getElementById('create-title').classList.add('hidden');
-            document.getElementById('join-form').classList.remove('hidden');
-            document.getElementById('create-form').classList.add('hidden');
+    <script>
+        function showToast(message, type = 'error') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            document.body.appendChild(toast);
 
-                const joinTitle = document.getElementById('join-title');
-                if (!joinTitle.querySelector('.back-button')) {
-                    const backButton = document.createElement('button');
-                    backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
-                    backButton.onclick = showMainMenu;
-                    backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5"></path>
-                    <path d="M12 19l-7-7 7-7"></path>
-                    </svg>`;
-                    
-                    joinTitle.prepend(backButton);
-                }
+            setTimeout(() => {
+                toast.remove();
+            }, 3500);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+                        <?php if ($autoShowJoinForm): ?>
+                            showJoinForm();
+                        <?php endif; ?>
+                    });
+
+
+        function showMainMenu() {
+        document.getElementById('popup-menu').classList.remove('hidden');
+        document.getElementById('welcome-section').classList.remove('hidden');
+        document.getElementById('join-title').classList.add('hidden');
+        document.getElementById('create-title').classList.add('hidden');
+        document.getElementById('join-form').classList.add('hidden');
+        document.getElementById('create-form').classList.add('hidden');
+
+                       
+        }
+        
+        function showCreateForm() {
+        document.getElementById('popup-menu').classList.add('hidden');
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('create-title').classList.remove('hidden');
+        document.getElementById('join-title').classList.add('hidden');
+        document.getElementById('create-form').classList.remove('hidden');
+        document.getElementById('join-form').classList.add('hidden');
+
+            const createTitle = document.getElementById('create-title');
+            if (!createTitle.querySelector('.back-button')) {
+                const backButton = document.createElement('button');
+                backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                backButton.onclick = showMainMenu;
+                backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"></path>
+                <path d="M12 19l-7-7 7-7"></path>
+                </svg>`;
+                
+                createTitle.prepend(backButton);
             }
+        }
 
-            
-        </script>
+        function showJoinForm() {
+        document.getElementById('popup-menu').classList.add('hidden');
+        document.getElementById('welcome-section').classList.add('hidden');
+        document.getElementById('join-title').classList.remove('hidden');
+        document.getElementById('create-title').classList.add('hidden');
+        document.getElementById('join-form').classList.remove('hidden');
+        document.getElementById('create-form').classList.add('hidden');
+
+            const joinTitle = document.getElementById('join-title');
+            if (!joinTitle.querySelector('.back-button')) {
+                const backButton = document.createElement('button');
+                backButton.className = 'back-button text-white hover:text-gray-300 transition-colors duration-200 mr-2 cursor-pointer';
+                backButton.onclick = showMainMenu;
+                backButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"></path>
+                <path d="M12 19l-7-7 7-7"></path>
+                </svg>`;
+                
+                joinTitle.prepend(backButton);
+            }
+        }
+
+        
+    </script>
 
 <script src="../../src/sidebar.js"></script>
 
@@ -541,42 +602,108 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationButton = document.getElementById('notificationButton');
     const notificationDropdown = document.getElementById('notificationDropdown');
     const notificationList = document.getElementById('notificationList');
+    const clearNotificationsButton = document.getElementById('clearNotifications');
 
     loadNotifications();
-    //30 seconds
+
+    // Add click handler for clear notifications button
+    clearNotificationsButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (confirm('Are you sure you want to clear all notifications?')) {
+            clearAllNotifications();
+        }
+    });
+
+    // Add click handler for the entire document
+    document.addEventListener('click', function(e) {
+        // Check if click is outside the notification dropdown and button
+        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+            // Close the dropdown with animation
+            notificationDropdown.classList.remove('opacity-100', 'scale-100');
+            notificationDropdown.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                notificationDropdown.classList.add('hidden');
+            }, 300);
+        }
+    });
+
+    // Add click handler for iframe
+    const iframe = document.getElementById('contentIframe');
+    if (iframe) {
+        iframe.addEventListener('load', function() {
+            try {
+                iframe.contentWindow.document.addEventListener('click', function() {
+                    // Close the dropdown with animation
+                    notificationDropdown.classList.remove('opacity-100', 'scale-100');
+                    notificationDropdown.classList.add('opacity-0', 'scale-95');
+                    
+                    setTimeout(() => {
+                        notificationDropdown.classList.add('hidden');
+                    }, 300);
+                });
+            } catch (e) {
+                console.log('Could not add click listener to iframe content');
+            }
+        });
+    }
+
+    function clearAllNotifications() {
+        fetch('../src/scripts/clear_notifications.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Clear the notification list
+                notificationList.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
+                
+                // Remove the notification badge if it exists
+                const badge = notificationButton.querySelector('span');
+                if (badge) {
+                    badge.remove();
+                }
+                
+                // Hide the notification dot
+                const notifDot = document.getElementById('notifDot');
+                if (notifDot) {
+                    notifDot.style.display = 'none';
+                }
+                
+                // Reload notifications to ensure UI is in sync
+                loadNotifications();
+            } else {
+                alert(data.message || 'Failed to clear notifications. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error clearing notifications:', error);
+            alert('Failed to clear notifications. Please try again.');
+        });
+    }
+
     setInterval(loadNotifications, 30000);
 
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
         if (notificationDropdown.classList.contains('hidden')) {
-        
             notificationDropdown.classList.remove('hidden');
-           
             setTimeout(() => {
                 notificationDropdown.classList.remove('opacity-0', 'scale-95');
                 notificationDropdown.classList.add('opacity-100', 'scale-100');
             }, 10);
         } else {
-            // Hide dropdown with animation
             notificationDropdown.classList.remove('opacity-100', 'scale-100');
             notificationDropdown.classList.add('opacity-0', 'scale-95');
-            // Wait for animation to complete before hiding
             setTimeout(() => {
                 notificationDropdown.classList.add('hidden');
             }, 300);
         }
         if (!notificationDropdown.classList.contains('hidden')) {
             loadNotifications();
-        }
-    });
-
-    document.addEventListener('click', function(e) {
-        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
-            notificationDropdown.classList.remove('opacity-100', 'scale-100');
-            notificationDropdown.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => {
-                notificationDropdown.classList.add('hidden');
-            }, 300);
         }
     });
 
@@ -595,7 +722,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const notificationElement = document.createElement('div');
                     notificationElement.className = `p-4 border-b border-gray-200 hover:bg-gray-50 cursor-pointer ${notification.is_read ? 'bg-white' : 'bg-blue-50'}`;
                     notificationElement.innerHTML = `
-                        <div class="flex items-start">
+                        <div class="flex items-start z-[-1]">
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-gray-900">${notification.title}</p>
                                 <p class="text-sm text-gray-500">${notification.message}</p>
@@ -615,9 +742,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 let fromParam = '';
                                 if (userRole === 'Faculty Member') fromParam = 'fm-dash';
                                 else if (userRole === 'Program Head') fromParam = 'ph-dash';
-                                else if (userRole === 'College Dean') fromParam = 'dn-dash';
-                                else if (userRole === 'Courseware Coordinator') fromParam = 'ph-dash';
-                                iframe.src = `../dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}`;
+                                else if (userRole === 'Dean') fromParam = 'dn-dash';
+                                else if (userRole === 'Coordinator') fromParam = 'ph-dash';
+                                // Store the current page URL and pass it as a parameter
+                                const currentPage = window.location.pathname.split('/').pop();
+                                iframe.src = `../dashboard/submissionspage.php?task_id=${notification.task_id}&from=${fromParam}&return_to=${currentPage}`;
                                 document.getElementById('notificationDropdown').classList.add('hidden');
                             }
                         }
@@ -638,7 +767,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('notification_id', notificationId);
 
-        fetch('../../src/scripts/mark_notification_read.php', {
+        fetch('../src/scripts/mark_notification_read.php', {
             method: 'POST',
             body: formData
         })
@@ -668,9 +797,7 @@ document.addEventListener('DOMContentLoaded', function() {
             notifDot.className = 'absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50';
             notificationButton.appendChild(notifDot);
         }
-      
         const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
-    
         if (hasUnread) {
             notifDot.style.display = '';
         } else {

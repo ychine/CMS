@@ -66,6 +66,8 @@ $facultyID = null;
 $facultyCoursePairs = [];
 $message = "";
 
+// Get curriculum ID from URL
+$curriculumID = isset($_GET['curriculum_id']) ? intval($_GET['curriculum_id']) : null;
 
 $debug = false;
 if ($debug) {
@@ -166,11 +168,13 @@ if ($userRole === 'FM') {
     while ($taskRow = $ongoingTasksResult->fetch_assoc()) {
         $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
             p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
+            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID,
+            cu.id as CurriculumID, cu.name as CurriculumName
             FROM task_assignments ta
             JOIN courses c ON ta.CourseCode = c.CourseCode
             JOIN programs p ON ta.ProgramID = p.ProgramID
             LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
+            LEFT JOIN curricula cu ON ta.CurriculumID = cu.id
             WHERE ta.TaskID = ?
             ORDER BY p.ProgramName, ta.CourseCode";
         $coursesStmt = $conn->prepare($coursesSql);
@@ -190,42 +194,50 @@ if ($userRole === 'FM') {
     // Fetch completed tasks for FM
     $completedTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
         t.CreatedBy,
-        COUNT(ta.CourseCode) as AssignedCourses,
+        COUNT(DISTINCT ta.CourseCode) as AssignedCourses,
         SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
-        p.Role as UserRole,
-        CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName
+        ? as UserRole,
+        CONCAT(p.FirstName, ' ', p.LastName) as CreatorName,
+        ta.CurriculumID,
+        c.name as CurriculumName
         FROM tasks t
-        JOIN task_assignments ta ON t.TaskID = ta.TaskID
-        JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-        LEFT JOIN personnel p ON p.AccountID = ?
-        LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
-        WHERE pc.PersonnelID = ? AND ta.Status = 'Completed'
-        GROUP BY t.TaskID
+        LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+        LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode 
+            AND ta.ProgramID = pc.ProgramID 
+            AND ta.CurriculumID = pc.CurriculumID
+        LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
+        LEFT JOIN curricula c ON ta.CurriculumID = c.id
+        WHERE t.FacultyID = ? AND t.Status = 'Completed'
+        GROUP BY t.TaskID, ta.CurriculumID
         ORDER BY t.CreatedAt DESC";
     $completedTasksStmt = $conn->prepare($completedTasksSql);
-    $completedTasksStmt->bind_param("ii", $accountID, $personnelID);
+    $completedTasksStmt->bind_param("si", $userRole, $facultyID);
     $completedTasksStmt->execute();
     $completedTasksResult = $completedTasksStmt->get_result();
     $completedTasks = [];
     while ($taskRow = $completedTasksResult->fetch_assoc()) {
         $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
             p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
+            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID,
+            cu.id as CurriculumID, cu.name as CurriculumName
             FROM task_assignments ta
             JOIN courses c ON ta.CourseCode = c.CourseCode
             JOIN programs p ON ta.ProgramID = p.ProgramID
             LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
+            LEFT JOIN curricula cu ON ta.CurriculumID = cu.id
             WHERE ta.TaskID = ?
             ORDER BY p.ProgramName, ta.CourseCode";
         $coursesStmt = $conn->prepare($coursesSql);
         $coursesStmt->bind_param("i", $taskRow['TaskID']);
         $coursesStmt->execute();
         $coursesResult = $coursesStmt->get_result();
+        
         $courses = [];
         while ($courseRow = $coursesResult->fetch_assoc()) {
             $courses[] = $courseRow;
         }
         $coursesStmt->close();
+        
         $taskRow['Courses'] = $courses;
         $completedTasks[] = $taskRow;
     }
@@ -238,6 +250,7 @@ if (isset($_POST['create_task'])) {
     $dueDate = $_POST['due_date'];
     $schoolYear = $_POST['school_year'];
     $term = $_POST['term'];
+    $curriculumId = $_POST['curriculum_id']; // Add this line
     
     $taskInsertSql = "INSERT INTO tasks (Title, Description, CreatedBy, FacultyID, DueDate, Status, CreatedAt, SchoolYear, Term) 
                       VALUES (?, ?, ?, ?, ?, 'Pending', NOW(), ?, ?)";
@@ -248,8 +261,8 @@ if (isset($_POST['create_task'])) {
         $taskID = $taskStmt->insert_id;
         
         if (isset($_POST['assigned']) && is_array($_POST['assigned'])) {
-            $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status) 
-                                    VALUES (?, ?, ?, ?, ?, 'Pending')";
+            $assignmentInsertSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status, CurriculumID) 
+                                    VALUES (?, ?, ?, ?, ?, 'Pending', ?)";
             $assignmentStmt = $conn->prepare($assignmentInsertSql);
 
             foreach ($_POST['assigned'] as $assignment) {
@@ -258,18 +271,30 @@ if (isset($_POST['create_task'])) {
                     $programID = $parts[0];
                     $courseCode = $parts[1];
 
-                    $profQuery = "SELECT PersonnelID FROM program_courses WHERE ProgramID = ? AND CourseCode = ? AND FacultyID = ?";
-                    $profStmt = $conn->prepare($profQuery);
-                    $profStmt->bind_param("isi", $programID, $courseCode, $facultyID);
-                    $profStmt->execute();
-                    $profResult = $profStmt->get_result();
-                    if ($profRow = $profResult->fetch_assoc()) {
-                        $assignedPersonnelID = $profRow['PersonnelID'];
-                        $assignmentStmt->bind_param("iisii", $taskID, $programID, $courseCode, $facultyID, $assignedPersonnelID);
+                    // First get the curriculum ID from program_courses
+                    $curriculumQuery = "SELECT pc.CurriculumID, pc.PersonnelID 
+                                      FROM program_courses pc 
+                                      WHERE pc.ProgramID = ? 
+                                      AND pc.CourseCode = ? 
+                                      AND pc.FacultyID = ? 
+                                      ORDER BY pc.PersonnelID IS NOT NULL DESC, pc.CurriculumID DESC
+                                      LIMIT 1";
+                    $curriculumStmt = $conn->prepare($curriculumQuery);
+                    $curriculumStmt->bind_param("isi", $programID, $courseCode, $facultyID);
+                    $curriculumStmt->execute();
+                    $curriculumResult = $curriculumStmt->get_result();
+                    
+                    while ($curriculumRow = $curriculumResult->fetch_assoc()) {
+                        $curriculumId = $curriculumRow['CurriculumID'];
+                        $assignedPersonnelID = $curriculumRow['PersonnelID'];
+                        
+                        // Debug log
+                        error_log("Creating task assignment for ProgramID: $programID, CourseCode: $courseCode, FacultyID: $facultyID, CurriculumID: $curriculumId, PersonnelID: $assignedPersonnelID");
+                        
+                        $assignmentStmt->bind_param("iisiii", $taskID, $programID, $courseCode, $facultyID, $assignedPersonnelID, $curriculumId);
                         $assignmentStmt->execute();
 
                         if ($assignedPersonnelID) {
-                          
                             $accQuery = "SELECT AccountID FROM personnel WHERE PersonnelID = ?";
                             $accStmt = $conn->prepare($accQuery);
                             $accStmt->bind_param("i", $assignedPersonnelID);
@@ -278,7 +303,6 @@ if (isset($_POST['create_task'])) {
                             if ($accRow = $accResult->fetch_assoc()) {
                                 $assignedAccountID = $accRow['AccountID'];
                                 if ($assignedAccountID) {
-                                  
                                     $insertNotificationSql = "INSERT INTO notifications (AccountID, Title, Message, TaskID) 
                                         VALUES (?, ?, ?, ?)";
                                     $notificationTitle = "New Task Assigned";
@@ -292,7 +316,7 @@ if (isset($_POST['create_task'])) {
                             $accStmt->close();
                         }
                     }
-                    $profStmt->close();
+                    $curriculumStmt->close();
                 }
             }
             $assignmentStmt->close();
@@ -321,69 +345,100 @@ if ($userRole === 'DN' || $userRole === 'PH' || $userRole === 'COR') {
     if ($view === 'created') {
         $tasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                     t.CreatedBy,
-                    COUNT(ta.CourseCode) as AssignedCourses,
-                    SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
-                    ? as UserRole,
-                    CONCAT(p.FirstName, ' ', p.LastName) as CreatorName
-                    FROM tasks t
-                    LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                    LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                    WHERE t.FacultyID = ? AND t.CreatedBy = ? AND t.Status != 'Completed'
-                    GROUP BY t.TaskID
-                    ORDER BY t.CreatedAt DESC";
-        $tasksStmt = $conn->prepare($tasksSql);
-        $tasksStmt->bind_param("sii", $userRole, $facultyID, $personnelID);
-    } elseif ($view === 'foryou') {
-        // Show only tasks assigned to the current user
-        $tasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
-                    t.CreatedBy,
-                    COUNT(ta.CourseCode) as AssignedCourses,
-                    SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
-                    ? as UserRole,
-                    CONCAT(p.FirstName, ' ', p.LastName) as CreatorName
+                    (SELECT COUNT(*) FROM task_assignments WHERE TaskID = t.TaskID) as AssignedCourses,
+                    (SELECT COUNT(*) FROM task_assignments WHERE TaskID = t.TaskID AND Status = 'Completed' AND ReviewStatus = 'Approved') as CompletedCount,
+                    p.Role as UserRole,
+                    CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName,
+                    ta.CurriculumID,
+                    c.name as CurriculumName
                     FROM tasks t
                     LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                     LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
-                    LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                    WHERE t.FacultyID = ? AND pc.PersonnelID = ? AND t.Status != 'Completed'
+                    LEFT JOIN personnel p ON p.AccountID = ?
+                    LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
+                    LEFT JOIN curricula c ON ta.CurriculumID = c.id
+                    WHERE t.FacultyID = ? AND t.Status != 'Completed'
+                    " . ($curriculumID ? "AND ta.CurriculumID = ?" : "") . "
                     GROUP BY t.TaskID
                     ORDER BY t.CreatedAt DESC";
         $tasksStmt = $conn->prepare($tasksSql);
-        $tasksStmt->bind_param("sii", $userRole, $facultyID, $personnelID);
+        if ($curriculumID) {
+            $tasksStmt->bind_param("iii", $accountID, $facultyID, $curriculumID);
+        } else {
+            $tasksStmt->bind_param("ii", $accountID, $facultyID);
+        }
+    } elseif ($view === 'foryou') {
+        $tasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
+                    t.CreatedBy,
+                    (SELECT COUNT(*) FROM task_assignments WHERE TaskID = t.TaskID) as AssignedCourses,
+                    (SELECT COUNT(*) FROM task_assignments WHERE TaskID = t.TaskID AND Status = 'Completed' AND ReviewStatus = 'Approved') as CompletedCount,
+                    p.Role as UserRole,
+                    CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName,
+                    ta.CurriculumID,
+                    c.name as CurriculumName
+                    FROM tasks t
+                    LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                    LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                    LEFT JOIN personnel p ON p.AccountID = ?
+                    LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
+                    LEFT JOIN curricula c ON ta.CurriculumID = c.id
+                    WHERE t.FacultyID = ? AND pc.PersonnelID = ? AND t.Status != 'Completed'
+                    " . ($curriculumID ? "AND ta.CurriculumID = ?" : "") . "
+                    GROUP BY t.TaskID
+                    ORDER BY t.CreatedAt DESC";
+        $tasksStmt = $conn->prepare($tasksSql);
+        if ($curriculumID) {
+            $tasksStmt->bind_param("iiii", $accountID, $facultyID, $personnelID, $curriculumID);
+        } else {
+            $tasksStmt->bind_param("iii", $accountID, $facultyID, $personnelID);
+        }
     } else {
         $tasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                     t.CreatedBy,
-                    COUNT(ta.CourseCode) as AssignedCourses,
-                    SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
-                    ? as UserRole,
-                    CONCAT(p.FirstName, ' ', p.LastName) as CreatorName
+                    (SELECT COUNT(*) FROM task_assignments WHERE TaskID = t.TaskID) as AssignedCourses,
+                    (SELECT COUNT(*) FROM task_assignments WHERE TaskID = t.TaskID AND Status = 'Completed' AND ReviewStatus = 'Approved') as CompletedCount,
+                    p.Role as UserRole,
+                    CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName,
+                    ta.CurriculumID,
+                    c.name as CurriculumName
                     FROM tasks t
                     LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
-                    LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
+                    LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
+                    LEFT JOIN personnel p ON p.AccountID = ?
+                    LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
+                    LEFT JOIN curricula c ON ta.CurriculumID = c.id
                     WHERE t.FacultyID = ? AND t.Status != 'Completed'
+                    " . ($curriculumID ? "AND ta.CurriculumID = ?" : "") . "
                     GROUP BY t.TaskID
                     ORDER BY t.CreatedAt DESC";
         $tasksStmt = $conn->prepare($tasksSql);
-        $tasksStmt->bind_param("si", $userRole, $facultyID);
+        if ($curriculumID) {
+            $tasksStmt->bind_param("iii", $accountID, $facultyID, $curriculumID);
+        } else {
+            $tasksStmt->bind_param("ii", $accountID, $facultyID);
+        }
     }
 } else {
     // Regular faculty view remains unchanged
     $tasksSql = "SELECT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                 t.CreatedBy,
-                COUNT(ta.CourseCode) as AssignedCourses,
-                SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
+                COUNT(DISTINCT CASE WHEN ta.CurriculumID = ? THEN ta.CourseCode END) as AssignedCourses,
+                SUM(CASE WHEN ta.Status = 'Completed' AND ta.CurriculumID = ? THEN 1 ELSE 0 END) as CompletedCount,
                 p.Role as UserRole,
-                CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName
+                CONCAT(creator.FirstName, ' ', creator.LastName) as CreatorName,
+                ta.CurriculumID,
+                c.name as CurriculumName
                 FROM tasks t
                 LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                 LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
                 LEFT JOIN personnel p ON p.AccountID = ?
                 LEFT JOIN personnel creator ON t.CreatedBy = creator.PersonnelID
-                WHERE t.FacultyID = ? AND pc.PersonnelID = ? AND t.Status != 'Completed'
+                LEFT JOIN curricula c ON ta.CurriculumID = c.id
+                WHERE t.FacultyID = ? AND t.Status != 'Completed'
                 GROUP BY t.TaskID
                 ORDER BY t.CreatedAt DESC";
     $tasksStmt = $conn->prepare($tasksSql);
-    $tasksStmt->bind_param("iii", $accountID, $facultyID, $personnelID);
+    $tasksStmt->bind_param("iiii", $curriculumID, $curriculumID, $accountID, $facultyID);
 }
 $tasksStmt->execute();
 $tasksResult = $tasksStmt->get_result();
@@ -393,11 +448,13 @@ while ($taskRow = $tasksResult->fetch_assoc()) {
 
     $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                   p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-                  ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
+                  ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID,
+                  cu.id as CurriculumID, cu.name as CurriculumName
                   FROM task_assignments ta
                   JOIN courses c ON ta.CourseCode = c.CourseCode
                   JOIN programs p ON ta.ProgramID = p.ProgramID
                   LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
+                  LEFT JOIN curricula cu ON ta.CurriculumID = cu.id
                   WHERE ta.TaskID = ?
                   ORDER BY p.ProgramName, ta.CourseCode";
     $coursesStmt = $conn->prepare($coursesSql);
@@ -877,7 +934,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                             <?php foreach ($tasks as $task): ?>
                                 <div class="bg-white p-8 font-onest rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-12 relative cursor-pointer"
                                      onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
-                                    <?php if ($userRole === 'DN' || $userRole === 'COR'): ?>
+                                    <?php if ($userRole === 'DN' || $userRole === 'COR' || $userRole === 'PH'): ?>
                                         <!-- 3-dot menu trigger -->
                                         <div class="absolute top-3 right-3 z-10">
                                             <button type="button" class="three-dot-btn p-2 text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="event.stopPropagation(); toggleTaskMenu(this)">
@@ -1057,16 +1114,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         if (!isset($_GET['view']) || $_GET['view'] === 'all' || $_GET['view'] === 'foryou'):
                         $assignedTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                             t.CreatedBy,
-                            COUNT(ta.CourseCode) as AssignedCourses,
+                            COUNT(DISTINCT ta.CourseCode) as AssignedCourses,
                             SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
                             ? as UserRole,
-                            CONCAT(p.FirstName, ' ', p.LastName) as CreatorName
+                            CONCAT(p.FirstName, ' ', p.LastName) as CreatorName,
+                            ta.CurriculumID,
+                            c.name as CurriculumName
                             FROM tasks t
                             LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
                             LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID
                             LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
-                            WHERE t.FacultyID = ? 
-                            AND pc.PersonnelID = ?
+                            LEFT JOIN curricula c ON ta.CurriculumID = c.id
+                            WHERE t.FacultyID = ? AND pc.PersonnelID = ? AND t.Status != 'Completed'
                             GROUP BY t.TaskID
                             ORDER BY t.CreatedAt DESC";
                         $assignedTasksStmt = $conn->prepare($assignedTasksSql);
@@ -1079,11 +1138,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                             
                             $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                                         p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-                                        ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
+                                        ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID,
+                                        cu.id as CurriculumID, cu.name as CurriculumName
                                         FROM task_assignments ta
                                         JOIN courses c ON ta.CourseCode = c.CourseCode
                                         JOIN programs p ON ta.ProgramID = p.ProgramID
-                                        LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
+                                        LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode AND ta.ProgramID = pc.ProgramID AND ta.CurriculumID = pc.CurriculumID
+                                        LEFT JOIN personnel per ON pc.PersonnelID = per.PersonnelID
+                                        LEFT JOIN curricula cu ON ta.CurriculumID = cu.id
                                         WHERE ta.TaskID = ?
                                         ORDER BY p.ProgramName, ta.CourseCode";
                             $coursesStmt = $conn->prepare($coursesSql);
@@ -1110,7 +1172,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                 </div>
                             <?php else: ?>
                                 <?php foreach ($assignedTasks as $task): ?>
-                                    <div class="bg-white p-6 font-onest w-full md:w-[80%] rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
+                                    <div class="bg-white p-6 font-onest w-full rounded-2xl border border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 mb-8 cursor-pointer"
                                          onclick="window.location.href='../../main/dashboard/submissionspage.php?task_id=<?php echo $task['TaskID']; ?>&from=task_frame'">
                                         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-0">
                                             <div class="flex items-center gap-3">
@@ -1266,17 +1328,19 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     <div class="grid grid-cols-2 gap-8">
                         <!--  Task Details -->
                         <div class="space-y-4">
-                            <div class="space-y-2">
-                                <label class="block text-lg font-semibold text-gray-700">Task Title:</label>
-                                <input type="text" name="title" placeholder="Enter task title" required 
-                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
-                            </div>
-                            
-                            <div class="space-y-2">
-                                <label class="block text-lg font-semibold text-gray-700">Task Description:</label>
-                                <textarea name="description" placeholder="Describe the task" 
-                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
-                                    rows="5" style="white-space: pre-wrap;"></textarea>
+                            <div class="space-y-4">
+                                <div class="space-y-2">
+                                    <!-- label class="block text-lg font-semibold text-gray-700">Task Title:</label -->
+                                    <input type="text" name="title" placeholder="Enter task title" required 
+                                        class="w-full p-3 font-bold border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" />
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <!-- label class="block text-lg font-semibold text-gray-700">Task Description:</label -->
+                                    <textarea name="description" placeholder="Enter task message..." 
+                                        class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-500" 
+                                        rows="5" style="white-space: pre-wrap;"></textarea>
+                                </div>
                             </div>
                             
                             <div class="space-y-2">
@@ -1391,9 +1455,11 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                                                             Assigned to: <?= htmlspecialchars($pair['AssignedTo']) ?>
                                                         </span>
                                                     <?php else: ?>
-                                                        <span class="text-sm text-red-600">
+                                                        <a href="javascript:void(0)" 
+                                                           onclick="parent.location.href='../../main/curriculum/curriculum.php?course=<?= htmlspecialchars($pair['CourseCode']) ?>&curriculum=<?= htmlspecialchars($pair['CurriculumID']) ?>'"
+                                                           class="text-sm text-red-600 hover:text-red-800 hover:underline cursor-pointer">
                                                             No assigned professor
-                                                        </span>
+                                                        </a>
                                                     <?php endif; ?>
                                                 </span>
                                             </label>
@@ -1413,6 +1479,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                         </div>
                     </div>
                     <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
+                        <input type="hidden" name="curriculum_id" id="curriculum_id" value="">
                         <button type="button" onclick="closeTaskModal()" 
                             class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
                             Cancel
@@ -1480,15 +1547,21 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             <?php
             $completedTasksSql = "SELECT DISTINCT t.TaskID, t.Title, t.Description, t.DueDate, t.Status, t.CreatedAt, t.SchoolYear, t.Term,
                 t.CreatedBy,
-                COUNT(ta.CourseCode) as AssignedCourses,
+                COUNT(DISTINCT ta.CourseCode) as AssignedCourses,
                 SUM(CASE WHEN ta.Status = 'Completed' THEN 1 ELSE 0 END) as CompletedCount,
                 ? as UserRole,
-                CONCAT(p.FirstName, ' ', p.LastName) as CreatorName
+                CONCAT(p.FirstName, ' ', p.LastName) as CreatorName,
+                ta.CurriculumID,
+                c.name as CurriculumName
                 FROM tasks t
                 LEFT JOIN task_assignments ta ON t.TaskID = ta.TaskID
+                LEFT JOIN program_courses pc ON ta.CourseCode = pc.CourseCode 
+                    AND ta.ProgramID = pc.ProgramID 
+                    AND ta.CurriculumID = pc.CurriculumID
                 LEFT JOIN personnel p ON t.CreatedBy = p.PersonnelID
+                LEFT JOIN curricula c ON ta.CurriculumID = c.id
                 WHERE t.FacultyID = ? AND t.Status = 'Completed'
-                GROUP BY t.TaskID
+                GROUP BY t.TaskID, ta.CurriculumID
                 ORDER BY t.CreatedAt DESC";
             $completedTasksStmt = $conn->prepare($completedTasksSql);
             $completedTasksStmt->bind_param("si", $userRole, $facultyID);
@@ -1499,11 +1572,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             while ($taskRow = $completedTasksResult->fetch_assoc()) {
                 $coursesSql = "SELECT ta.TaskAssignmentID, ta.ProgramID, ta.CourseCode, c.Title as CourseTitle, 
                             p.ProgramName, p.ProgramCode, CONCAT(per.FirstName, ' ', per.LastName) as AssignedTo,
-                            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID
+                            ta.Status as AssignmentStatus, ta.SubmissionPath, ta.SubmissionDate, ta.PersonnelID as PersonnelID,
+                            cu.id as CurriculumID, cu.name as CurriculumName
                             FROM task_assignments ta
                             JOIN courses c ON ta.CourseCode = c.CourseCode
                             JOIN programs p ON ta.ProgramID = p.ProgramID
                             LEFT JOIN personnel per ON ta.PersonnelID = per.PersonnelID
+                            LEFT JOIN curricula cu ON ta.CurriculumID = cu.id
                             WHERE ta.TaskID = ?
                             ORDER BY p.ProgramName, ta.CourseCode";
                 $coursesStmt = $conn->prepare($coursesSql);
@@ -1954,6 +2029,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     </div>
 
                     <div class="flex-none flex justify-end gap-4 pt-4 mt-4 border-t border-gray-200">
+                        <input type="hidden" name="curriculum_id" id="curriculum_id" value="">
                         <button type="button" onclick="closeModifyTaskModal()" 
                             class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
                             Cancel
@@ -2160,14 +2236,13 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
             });
 
             function validateTaskForm() {
-                const title = document.querySelector('input[name="title"]').value.trim();
-                const description = document.querySelector('textarea[name="description"]').value.trim();
-                const dueDate = document.querySelector('input[name="due_date"]').value;
-                const schoolYear = document.querySelector('input[name="school_year"]').value.trim();
-                const term = document.querySelector('select[name="term"]').value;
+                const title = document.getElementById('taskTitle').value.trim();
+                const description = document.getElementById('taskDescription').value.trim();
+                const dueDate = document.getElementById('taskDueDate').value;
+                const schoolYear = document.getElementById('taskSchoolYear').value.trim();
+                const term = document.getElementById('taskTerm').value;
                 const selectedCourses = document.querySelectorAll('input[name="assigned[]"]:checked');
-
-             
+                
                 if (!title) {
                     alert('Please enter a task title');
                     return false;
@@ -2188,10 +2263,16 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     alert('Please select a term');
                     return false;
                 }
-
                 if (selectedCourses.length === 0) {
-                    alert('Please select at least one course to assign the task to');
+                    alert('Please select at least one course');
                     return false;
+                }
+
+                // Set curriculum ID from first selected course
+                if (selectedCourses.length > 0) {
+                    const firstCourse = selectedCourses[0].closest('.course-item');
+                    const curriculumId = firstCourse.dataset.curriculumId;
+                    document.getElementById('curriculum_id').value = curriculumId;
                 }
 
                 return true;
@@ -2414,7 +2495,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'discard') {
                     const div = document.createElement('div');
                     div.className = 'flex items-center gap-2 mb-2 p-2 rounded hover:bg-gray-50';
                     div.innerHTML = `
-                        <input type="checkbox" name="add_assignment[]" value="${course.ProgramID}|${course.CourseCode}" class="mr-2">
+                        <input type="checkbox" name="add_assignment[]" value="${course.ProgramID}|${course.CourseCode}|${course.CurriculumID}" class="mr-2">
                         <span class="font-medium">${course.CourseCode}</span> -
                         <span>${course.Title}</span>
                         <span class="text-sm text-gray-500 ml-2">(${course.CurriculumName})</span>

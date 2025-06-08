@@ -19,7 +19,7 @@ $checkStmt->execute();
 $roleResult = $checkStmt->get_result();
 $roleData = $roleResult->fetch_assoc();
 
-if ($roleData['Role'] !== 'DN' && $roleData['Role'] !== 'COR') {
+if ($roleData['Role'] !== 'DN' && $roleData['Role'] !== 'COR' && $roleData['Role'] !== 'PH') {
     header("Location: task_frame.php");
     exit();
 }
@@ -186,6 +186,7 @@ if (isset($_POST['action'])) {
         $dueDate = $_POST['due_date'];
         $schoolYear = $_POST['school_year'];
         $term = $_POST['term'];
+        $curriculumId = $_POST['curriculum_id'];
         
         // Update task details
         $updateTaskSql = "UPDATE tasks SET 
@@ -214,20 +215,27 @@ if (isset($_POST['action'])) {
             // Handle course assignment additions
             if (isset($_POST['add_assignment']) && is_array($_POST['add_assignment'])) {
                 foreach ($_POST['add_assignment'] as $assignment) {
-                    list($programId, $courseCode) = explode('|', $assignment);
+                    list($programId, $courseCode, $curriculumId) = explode('|', $assignment);
                     // Get PersonnelID and FacultyID for this course
-                    $profQuery = "SELECT PersonnelID, FacultyID FROM program_courses WHERE ProgramID = ? AND CourseCode = ?";
+                    $profQuery = "SELECT PersonnelID, FacultyID FROM program_courses WHERE ProgramID = ? AND CourseCode = ? AND CurriculumID = ?";
                     $profStmt = $conn->prepare($profQuery);
-                    $profStmt->bind_param("is", $programId, $courseCode);
+                    $profStmt->bind_param("isi", $programId, $courseCode, $curriculumId);
                     $profStmt->execute();
                     $profResult = $profStmt->get_result();
                     if ($profRow = $profResult->fetch_assoc()) {
                         $personnelId = $profRow['PersonnelID'];
                         $facultyId = $profRow['FacultyID'];
-                        // Insert new task assignment with PersonnelID
-                        $insertAssignmentSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status) VALUES (?, ?, ?, ?, ?, 'Pending')";
+                        // Insert new task assignment with PersonnelID and CurriculumID
+                        $insertAssignmentSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status, CurriculumID) VALUES (?, ?, ?, ?, ?, 'Pending', ?)";
                         $insertAssignmentStmt = $conn->prepare($insertAssignmentSql);
-                        $insertAssignmentStmt->bind_param("iisis", $taskId, $programId, $courseCode, $facultyId, $personnelId);
+                        $insertAssignmentStmt->bind_param("iisiii", $taskId, $programId, $courseCode, $facultyId, $personnelId, $curriculumId);
+                        $insertAssignmentStmt->execute();
+                        $insertAssignmentStmt->close();
+                    } else {
+                        // If no professor is assigned, still create the task assignment
+                        $insertAssignmentSql = "INSERT INTO task_assignments (TaskID, ProgramID, CourseCode, FacultyID, PersonnelID, Status, CurriculumID) VALUES (?, ?, ?, ?, NULL, 'Pending', ?)";
+                        $insertAssignmentStmt = $conn->prepare($insertAssignmentSql);
+                        $insertAssignmentStmt->bind_param("iisii", $taskId, $programId, $courseCode, $facultyID, $curriculumId);
                         $insertAssignmentStmt->execute();
                         $insertAssignmentStmt->close();
                     }
