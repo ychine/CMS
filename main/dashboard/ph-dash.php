@@ -82,7 +82,6 @@ while ($row = $pendingSubmissionsResult->fetch_assoc()) {
 }
 $pendingSubmissionsStmt->close();
 
-// Execute the activity query before closing any connections
 $activityQuery = "SELECT ta.TaskID, t.Title, ta.Status, t.CreatedAt as UpdatedAt, c.CourseCode,
                 CONCAT(p.FirstName, ' ', p.LastName) as PersonnelName
                 FROM task_assignments ta
@@ -190,7 +189,6 @@ foreach ($roleLabels as $code => $label) {
 }
 $roleDataJSON = json_encode($formattedRoleData);
 
-// Close all statements and the connection after all database operations are complete
 $stmt->close();
 $roleStmt->close();
 $totalStmt->close();
