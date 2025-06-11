@@ -332,7 +332,7 @@ function getDueDateTooltip($dueDate) {
                 <div class="flex gap-5 flex-1 max-w-[900px] flex-col">
                     <div class="flex gap-5">
                         <!-- Submissions -->
-                        <div class="flex-1 bg-white rounded-sm font-overpass shadow-md h-[230px] flex">
+                        <div class="flex-1 bg-white rounded-sm font-overpass shadow-lg h-[230px] flex">
                             <?php if (!empty($allTasks)): ?>
                                 <?php if (count($allTasks) > 1): ?>
                                     <div class="w-8 h-full bg-white hover:bg-gradient-to-l hover:from-white hover:to-gray-100 transition-all duration-300 ease-in-out flex items-center justify-center rounded-sm">
@@ -455,7 +455,7 @@ function getDueDateTooltip($dueDate) {
                             <?php endif; ?>
                         </div>
                         <!-- Faculty -->
-                        <div class="w-[300px] bg-white p-[30px] rounded-sm shadow-md font-overpass h-[230px]">
+                        <div class="w-[300px] bg-white p-[30px] rounded-sm shadow-lg font-overpass h-[230px]">
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-[20px] font-semibold">Faculty</h2>
                                 <a href="../faculty/faculty_frame.php" class="text-xs text-blue-600 font-onest hover:underline">
