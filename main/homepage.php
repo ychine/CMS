@@ -107,7 +107,7 @@ $conn->close();
     <link href="../src/styles.css" rel="stylesheet" />
     <link href="../src/sidebar.css" rel="stylesheet" />
     <title>Home | CourseDock</title>
-    <link href="../img/cdicon.svg" rel="icon">
+        
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Onest:wght@200;300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -847,7 +847,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function clearAllNotifications() {
-        // Use absolute path
+      
         fetch('../src/scripts/clear_notifications.php', {
             method: 'POST',
             headers: {
@@ -861,25 +861,22 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('Response data:', data);
             if (data.success) {
-                // Clear the notification list
+                
                 notificationList.innerHTML = '<div class="p-4 text-center text-gray-500">No notifications</div>';
                 
-                // Remove the notification badge if it exists
                 const badge = notificationButton.querySelector('span');
                 if (badge) {
                     badge.remove();
                 }
                 
-                // Hide the notification dot
                 const notifDot = document.getElementById('notifDot');
                 if (notifDot) {
                     notifDot.style.display = 'none';
                 }
                 
-                // Reload notifications to ensure UI is in sync
                 loadNotifications();
             } else {
-                // Show error message from server
+              
                 alert(data.message || 'Failed to clear notifications. Please try again.');
             }
         })
@@ -1000,9 +997,9 @@ document.addEventListener('DOMContentLoaded', function() {
             notifDot.className = 'absolute top-1 right-1 w-3 h-3 bg-red-600 rounded-full z-50';
             notificationButton.appendChild(notifDot);
         }
-        // Check for unread notifications in the list
+     
         const hasUnread = notificationList && notificationList.querySelector('.bg-blue-50');
-        // Show the dot only if there are unread notifications
+        
         if (hasUnread) {
             notifDot.style.display = '';
         } else {
